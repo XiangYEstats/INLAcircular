@@ -1,0 +1,26 @@
+{
+    "id": "EB14707D",
+    "path": "~/INLAcircular/R/cc.model.R",
+    "project_path": "R/cc.model.R",
+    "type": "r_source",
+    "hash": "2009675008",
+    "contents": "",
+    "dirty": false,
+    "created": 1773671541584.0,
+    "source_on_save": false,
+    "relative_order": 9,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "29,27",
+        "scrollLine": "2"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1776258262,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1776258262423,
+    "read_only": false,
+    "read_only_alternatives": []
+}

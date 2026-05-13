@@ -1,0 +1,16 @@
+Package: INLAcircular
+Type: Package
+Title: Bayesian Joint Circular Regression
+Version: 0.1.0
+Authors@R: person(
+    given = "Xiang",
+    family = "Ye",
+    email = "xiang.ye@kaust.edu.sa",
+    role = c("aut", "cre", "cph")
+  )
+Description: A Bayesian regression framework for models with circular responses and covariates.
+    Continuation lines should be indented.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.3

@@ -1,0 +1,16 @@
+# R specific files
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+.Rcheck/
+/vignettes/*.html
+/vignettes/*.pdf
+
+# C++ compiled files
+src/*.o
+src/*.so
+src/*.dll
+
+# OS generated files
+.DS_Store
