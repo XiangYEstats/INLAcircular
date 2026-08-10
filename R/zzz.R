@@ -12,15 +12,27 @@
     display_date <- as.character(as.Date(pkg_date))
   }
 
-  inla_version <- utils::packageVersion("INLA")
+  inla_version <- tryCatch(
+    as.character(utils::packageVersion("INLA")),
+    error = function(e) "not installed"
+  )
 
   msg <- paste0(
     "=============================================================\n",
     " INLAcircular: Bayesian Joint Circular Regression with INLA\n",
     " Version: ", pkg_version, " (", display_date, ")\n",
-    " Currently running on INLA version: ", inla_version, "\n",
+    " INLA version: ", inla_version, "\n",
     "============================================================="
   )
 
   packageStartupMessage(msg)
+
+  # graphpcor is deliberately optional because it is needed only for the
+  # multivariate LKJ covariance model. Check availability without attaching
+  # or loading its namespace.
+  if (!nzchar(system.file(package = "graphpcor"))) {
+    packageStartupMessage(
+      "Optional dependency 'graphpcor' is required for model = \"iidkd_LKJ\"."
+    )
+  }
 }

@@ -132,7 +132,7 @@ double lavm_pc_prior_0(double th, double lam) {
 // =========================================================================
 double *inla_cloglike_lavm(inla_cloglike_cmd_tp cmd, double *theta, inla_cgeneric_data_tp *data, int ny, double *y, int nx, double *x, double *result) {
   double *ret = NULL, init_th = 6.0, prior_u = 0.5, prior_alpha = 0.5;
-  int link = 0, prior_code = 0;
+  int link = 0, prior_code = 0, fixed_th = 0;
 
   if (data) {
     for (int i = 0; i < data->n_doubles; i++) {
@@ -141,19 +141,27 @@ double *inla_cloglike_lavm(inla_cloglike_cmd_tp cmd, double *theta, inla_cgeneri
       else if (strcmp(data->doubles[i]->name, "lavm.u") == 0) prior_u = data->doubles[i]->doubles[0];
       else if (strcmp(data->doubles[i]->name, "lavm.alpha") == 0) prior_alpha = data->doubles[i]->doubles[0];
       else if (strcmp(data->doubles[i]->name, "lavm.initial.theta") == 0) init_th = data->doubles[i]->doubles[0];
+      else if (strcmp(data->doubles[i]->name, "lavm.fixed.theta") == 0) fixed_th = (int)data->doubles[i]->doubles[0];
     }
   }
 
-  double th = 0.0;
-  if (theta) {
+  double th = fixed_th ? init_th : 0.0;
+  if (!fixed_th && theta) {
     th = theta[0];
-    if (th > 30.0) th = 30.0;
-    if (th < -30.0) th = -30.0;
   }
+  if (th > 30.0) th = 30.0;
+  if (th < -30.0) th = -30.0;
 
   switch (cmd) {
   case INLA_CLOGLIKE_INITIAL:
-    ret = Malloc(2, double); ret[0] = 1; ret[1] = init_th;
+    if (fixed_th) {
+      ret = Malloc(1, double);
+      ret[0] = 0;
+    } else {
+      ret = Malloc(2, double);
+      ret[0] = 1;
+      ret[1] = init_th;
+    }
     break;
 
   case INLA_CLOGLIKE_LOG_PRIOR: {
@@ -169,7 +177,7 @@ double *inla_cloglike_lavm(inla_cloglike_cmd_tp cmd, double *theta, inla_cgeneri
     break;
   }
   case INLA_CLOGLIKE_LOGLIKE:
-    if (!theta || y[0] != y[0]) { for(int i=0; i<nx; i++) result[i] = 0.0; break; }
+    if ((!fixed_th && !theta) || y[0] != y[0]) { for(int i=0; i<nx; i++) result[i] = 0.0; break; }
     for (int i = 0; i < nx; i++) {
       double r[1];
       if (link == 0) lavm_inverse_tangent(r, y[0], x[i], th);

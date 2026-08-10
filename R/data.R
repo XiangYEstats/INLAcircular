@@ -1,0 +1,29 @@
+#' New York hourly wind climate normals
+#'
+#' A processed full-year dataset of hourly wind direction, wind speed, and
+#' temperature normals for JFK International Airport, New York. The calendar
+#' variables are derived from `DATE`, and wind direction is stored in radians
+#' as a [`circular::circular`] vector.
+#'
+#' @format A data frame with 8,759 rows and 8 variables:
+#' \describe{
+#'   \item{DATE}{Character timestamp in `MM-DDTHH:MM:SS` format.}
+#'   \item{HLY.WIND.VCTDIR}{Circular wind direction in radians.}
+#'   \item{HLY.WIND.VCTSPD}{Numeric vector wind speed.}
+#'   \item{HLY.TEMP.NORMAL}{Numeric vector normal temperature.}
+#'   \item{datetime}{`POSIXct` timestamp in UTC, using 2010 as the reference
+#'     year.}
+#'   \item{month}{Integer month.}
+#'   \item{day}{Integer day of the month.}
+#'   \item{hour}{Integer hour on the 0--23 scale.}
+#' }
+#' @source JFK International Airport station USW00094789; source data supplied
+#'   with the New York wind application.
+#' @examples
+#' data(wind_newyork)
+#' dim(wind_newyork)
+#' class(wind_newyork$HLY.WIND.VCTDIR)
+#' range(wind_newyork$month)
+#' @keywords datasets
+#' @name wind_newyork
+NULL

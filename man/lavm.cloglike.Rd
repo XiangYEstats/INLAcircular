@@ -7,7 +7,9 @@
 lavm.cloglike(family.setting = NULL)
 }
 \arguments{
-\item{family.setting}{A list of controls for the LAVM likelihood.}
+\item{family.setting}{A list of controls for the LAVM likelihood. Within
+`hyper$kappa`, `log.initial` specifies the initial log-concentration and
+`fixed = TRUE` fixes the log-concentration at that value.}
 }
 \value{
 An INLA cloglike object.

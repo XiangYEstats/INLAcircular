@@ -1,6 +1,6 @@
 Package: INLAcircular
 Type: Package
-Title: Bayesian Joint Circular Regression
+Title: Bayesian Joint Circular Regression using INLA
 Version: 0.1.0
 Authors@R: person(
     given = "Xiang",
@@ -8,9 +8,23 @@ Authors@R: person(
     email = "xiang.ye@kaust.edu.sa",
     role = c("aut", "cre", "cph")
   )
-Description: A Bayesian regression framework for models with circular responses and covariates.
-    Continuation lines should be indented.
+Description: Provides a Bayesian regression framework for joint models with
+    circular responses and covariates using integrated nested Laplace
+    approximations. The package supports link-adjusted von Mises likelihoods,
+    shared latent predictors, structured latent effects, and optional
+    LKJ-based multivariate covariance models.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3
+Imports:
+    dplyr,
+    stats,
+    utils
+Suggests:
+    circular,
+    graphpcor,
+    INLA,
+    INLAtools
+Additional_repositories:
+    https://inla.r-inla-download.org/R/testing

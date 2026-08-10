@@ -3,6 +3,7 @@
 S3method(print,inlacc_summary)
 S3method(print,inlacc_time)
 S3method(summary,inlacc)
+export(LKJcc)
 export(bessel_i)
 export(covariate)
 export(dlavm)

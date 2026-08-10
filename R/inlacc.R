@@ -2,7 +2,12 @@
 #'
 #' @param model A list of 'likelihood' objects, or a single 'likelihood' object.
 #' @param data A data.frame containing all covariates and responses.
-#' @param control.family Optional global list of control.family configurations. If provided, overrides individual likelihood controls.
+#' @param latent.index Optional list of index() mappings.
+#' @param LKJ.eta Positive scalar LKJ shape parameter used by every
+#'   `iidkd_LKJ` component. Defaults to `5`. Within each corresponding `f()`
+#'   term, `pc.prior.u` and `pc.prior.alpha` default to `1` and `0.5`,
+#'   respectively.
+#' @param control.family Optional global list of control.family configurations.
 #' @param control.fixed Optional list for fixed effects priors.
 #' @param control.inla Optional control list passed to inla().
 #' @param metrics Logical. Compute WAIC, DIC, CPO, etc.?
@@ -11,7 +16,7 @@
 #' @return A fitted INLA model.
 #' @author Xiang Ye \email{xiang.ye@kaust.edu.sa}
 #' @export
-inlacc <- function(model, data, latent.index = NULL,
+inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
                    control.family = NULL,
                    control.fixed = NULL,
                    control.inla = list(cmin = 0, compute.initial.values = TRUE),
@@ -34,37 +39,57 @@ inlacc <- function(model, data, latent.index = NULL,
   responses <- sapply(formulas, function(f) as.character(f)[2])
 
   # =========================================================================
-  # --- LATENT INDEX INJECTION (AST MODIFICATION) ---
+  # --- LKJ COVARIANCE PRE-PROCESSING ---
+  # =========================================================================
+  lkj_info <- LKJcc(
+    formulas = formulas,
+    LKJ.eta = LKJ.eta,
+    n.obs = n,
+    latent.index = latent.index
+  )
+  formulas <- lkj_info$formulas
+  latent.index <- lkj_info$latent.index
+
+  # =========================================================================
+  # --- LATENT INDEX INJECTION ---
   # =========================================================================
   hidden_values_list <- list()
+  likelihood_indices <- character()
 
   if (!is.null(latent.index)) {
     if (!is.null(latent.index$var)) latent.index <- list(latent.index)
+  }
 
-    all_f_vars <- character()
-    extract_f_vars <- function(expr) {
-      if (is.call(expr)) {
-        if (identical(expr[[1]], quote(f))) all_f_vars <<- c(all_f_vars, as.character(expr[[2]]))
-        else for (i in seq_along(expr)) extract_f_vars(expr[[i]])
+  all_f_vars <- character()
+  extract_f_vars <- function(expr) {
+    if (is.call(expr)) {
+      if (identical(expr[[1]], quote(f))) {
+        all_f_vars <<- c(all_f_vars, as.character(expr[[2]]))
+        if ("replicate" %in% names(expr)) all_f_vars <<- c(all_f_vars, as.character(expr[["replicate"]]))
+        if ("group" %in% names(expr)) all_f_vars <<- c(all_f_vars, as.character(expr[["group"]]))
+      } else {
+        for (j in seq_along(expr)) extract_f_vars(expr[[j]])
       }
     }
-    for (f_i in formulas) extract_f_vars(f_i)
-    all_f_vars <- unique(all_f_vars)
+  }
+  for (f_i in formulas) extract_f_vars(f_i)
+  all_f_vars <- unique(all_f_vars)
 
-    modify_f_values <- function(expr, var_name, val_name) {
-      if (is.atomic(expr) || is.name(expr)) return(expr)
-      if (is.call(expr)) {
-        if (identical(expr[[1]], quote(f)) && identical(expr[[2]], as.name(var_name))) {
-          expr$values <- as.name(val_name)
-          return(expr)
-        } else {
-          for (i in seq_along(expr)) expr[[i]] <- modify_f_values(expr[[i]], var_name, val_name)
-          return(expr)
-        }
+  modify_f_values <- function(expr, var_name, val_name) {
+    if (is.atomic(expr) || is.name(expr)) return(expr)
+    if (is.call(expr)) {
+      if (identical(expr[[1]], quote(f)) && identical(expr[[2]], as.name(var_name))) {
+        expr$values <- as.name(val_name)
+        return(expr)
+      } else {
+        for (i in seq_along(expr)) expr[[i]] <- modify_f_values(expr[[i]], var_name, val_name)
+        return(expr)
       }
-      return(expr)
     }
+    return(expr)
+  }
 
+  if (!is.null(latent.index)) {
     for (l_idx in latent.index) {
       v_name <- l_idx$var
       if (!(v_name %in% all_f_vars)) {
@@ -72,12 +97,15 @@ inlacc <- function(model, data, latent.index = NULL,
         next
       }
 
-      data[[v_name]] <- l_idx$data.id
+      if (is.character(l_idx$data.id) && length(l_idx$data.id) == 1 && l_idx$data.id == "likelihood") {
+        likelihood_indices <- c(likelihood_indices, v_name)
+      } else {
+        data[[v_name]] <- l_idx$data.id
+      }
 
       if (!is.null(l_idx$process.id)) {
         hidden_val_name <- paste0(".vals_", v_name)
         hidden_values_list[[hidden_val_name]] <- l_idx$process.id
-
         for (i in seq_along(formulas)) {
           formulas[[i]] <- modify_f_values(formulas[[i]], v_name, hidden_val_name)
           model[[i]]$formula <- formulas[[i]]
@@ -86,17 +114,10 @@ inlacc <- function(model, data, latent.index = NULL,
     }
   }
 
-  latent_indices <- character()
-  for (f_i in formulas) {
-    trms <- labels(terms(f_i))
-    f_trms <- grep("^f\\(", trms, value = TRUE)
-    for (ft in f_trms) {
-      idx_match <- sub("^f\\(\\s*([a-zA-Z0-9_.]+).*$", "\\1", ft)
-      latent_indices <- c(latent_indices, idx_match)
-    }
-  }
-  latent_indices <- unique(latent_indices)
-  missing_indices <- setdiff(latent_indices, names(data))
+  missing_indices <- setdiff(
+    all_f_vars,
+    c(names(data), likelihood_indices, lkj_info$data.vars)
+  )
   for (v in missing_indices) data[[v]] <- 1:n
 
   # =========================================================================
@@ -135,8 +156,6 @@ inlacc <- function(model, data, latent.index = NULL,
   # --- DATA BLOCK & LIST-BASED RESPONSE CONSTRUCTION ---
   # =========================================================================
   total_blocks <- num_models + length(copied_covariates)
-
-  # Y is now a list to allow mixing standard vectors with inla.mdata objects
   Y_list <- lapply(1:total_blocks, function(x) as.numeric(rep(NA, n * total_blocks)))
 
   data_blocks <- list()
@@ -161,6 +180,8 @@ inlacc <- function(model, data, latent.index = NULL,
     resp <- responses[i]
     block_df <- data.frame(.idx_internal = 1:n)
 
+    for (bv in likelihood_indices) block_df[[bv]] <- i
+
     trms <- labels(terms(formulas[[i]]))
     has_base_intercept <- attr(terms(formulas[[i]]), "intercept") == 1
     has_custom_intercept <- any(grepl("^intercept\\(", trms))
@@ -178,11 +199,28 @@ inlacc <- function(model, data, latent.index = NULL,
     valid_f_vars <- intersect(f_vars, names(data))
     for(v in valid_f_vars) block_df[[v]] <- data[[v]]
 
+    # LKJcc() owns the multivariate component and replicate indexing. Merge it
+    # after ordinary f() variables so the generic data copy cannot overwrite it.
+    if (length(lkj_info$block.data[[i]]) > 0L) {
+      for (nm in names(lkj_info$block.data[[i]])) {
+        block_df[[nm]] <- lkj_info$block.data[[i]][[nm]]
+      }
+    }
+
     for (term in trms) {
       if (grepl("^f\\(", term)) {
         model_terms <- c(model_terms, term)
         f_extractor <- function(var, model = "iid", copy = NULL, order = NULL, hyper = NULL, ...) {
-          list(var = deparse(substitute(var)), model = as.character(model), copy = copy, order = order, hyper = hyper)
+          model_expr <- substitute(model)
+          if (is.character(model_expr)) {
+            m_class <- model_expr[1]
+          } else if (is.name(model_expr) &&
+                     as.character(model_expr) %in% names(lkj_info$models)) {
+            m_class <- "iidkd_LKJ"
+          } else {
+            m_class <- "custom"
+          }
+          list(var = deparse(substitute(var)), model = m_class, copy = copy, order = order, hyper = hyper)
         }
         extracted_info <- tryCatch(eval(parse(text = term), envir = list(f = f_extractor)), error = function(e) NULL)
         if (!is.null(extracted_info) && is.list(extracted_info)) {
@@ -307,8 +345,16 @@ inlacc <- function(model, data, latent.index = NULL,
 
   data_stack <- dplyr::bind_rows(data_blocks)
 
+  # =========================================================================
+  # --- SAFE CGENERIC INJECTION (Fixes the subscript out of bounds crash) ---
+  # =========================================================================
+  formula_env <- new.env(parent = environment(formulas[[1]]))
+  for (nm in names(lkj_info$models)) {
+    assign(nm, lkj_info$models[[nm]], envir = formula_env)
+  }
+
   joint_formula_str <- paste("Y ~ -1 +", paste(unique(joint_terms), collapse = " + "))
-  joint_formula <- as.formula(joint_formula_str)
+  joint_formula <- as.formula(joint_formula_str, env = formula_env)
 
   ctrl_fixed <- if (is.null(control.fixed)) list() else control.fixed
   user_mean <- if (!is.null(ctrl_fixed$mean)) ctrl_fixed$mean else 0
@@ -331,7 +377,7 @@ inlacc <- function(model, data, latent.index = NULL,
   }
 
   # =========================================================================
-  # --- CLOGLIKE & FAMILY INJECTION ---
+  # --- ORIGINAL CLOGLIKE & FAMILY INJECTION ---
   # =========================================================================
   joint_families <- character()
   ctrl_fam <- list()
@@ -339,7 +385,6 @@ inlacc <- function(model, data, latent.index = NULL,
   for (i in seq_along(model)) {
     fam <- families[i]
 
-    # Determine the control list for this specific likelihood
     usr_ctrl <- NULL
     if (!is.null(control.family) && length(control.family) >= i) {
       usr_ctrl <- control.family[[i]]
@@ -350,10 +395,8 @@ inlacc <- function(model, data, latent.index = NULL,
     if (fam == "lavm") {
       joint_families <- c(joint_families, "cloglike")
 
-      # Just pass the entire usr_ctrl list down to the wrapper
-      clog_list <- list(cloglike = lavm.cloglike(usr_ctrl))
+      clog_list <- list(cloglike = INLAcircular:::lavm.cloglike(usr_ctrl))
 
-      # Strip out non-native controls so INLA doesn't warn
       if (!is.null(usr_ctrl)) {
         for (nn in names(usr_ctrl)) {
           if (!(nn %in% c("link", "hyper", "cloglike", "lambda", "u", "alpha"))) {
@@ -364,7 +407,6 @@ inlacc <- function(model, data, latent.index = NULL,
       ctrl_fam <- append(ctrl_fam, list(clog_list))
       Y_list[[i]] <- INLA::inla.mdata(Y_list[[i]])
 
-      # Naming logic for cc.summary.R
       usr_u <- 0.5
       usr_alpha <- 0.5
       if (!is.null(usr_ctrl$hyper$kappa$param)) {
@@ -375,7 +417,6 @@ inlacc <- function(model, data, latent.index = NULL,
       hyper_priors[[sprintf("Theta1 for INLA.Data%d", i)]] <- prior_label
       hyper_priors[["Theta1 for cloglike"]] <- prior_label
     } else {
-      # Standard INLA family handling
       joint_families <- c(joint_families, fam)
       if (!is.null(usr_ctrl)) {
         ctrl_fam <- append(ctrl_fam, list(usr_ctrl))
@@ -393,23 +434,41 @@ inlacc <- function(model, data, latent.index = NULL,
   }
 
   final_Y <- if (length(Y_list) == 1) Y_list[[1]] else Y_list
+
+  # Cgeneric models are safely isolated in formula_env, avoiding the crash.
   inla_data <- c(list(Y = final_Y), as.list(as.data.frame(data_stack)), hidden_values_list)
 
+  ctrl_compute <- list(cpo = FALSE, dic = FALSE, waic = FALSE, config = FALSE)
   if (isTRUE(metrics)) {
-    ctrl_compute <- list(cpo = TRUE, dic = TRUE, waic = TRUE, config = TRUE)
-  } else {
-    ctrl_compute <- list(cpo = FALSE, dic = FALSE, waic = FALSE, config = FALSE)
+    ctrl_compute$cpo <- TRUE
+    ctrl_compute$dic <- TRUE
+    ctrl_compute$waic <- TRUE
+    ctrl_compute$config <- TRUE
   }
 
-  result <- INLA::inla(joint_formula,
-                       family = joint_families,
-                       data = inla_data,
-                       control.fixed = ctrl_fixed,
-                       control.family = ctrl_fam,
-                       control.inla = control.inla,
-                       control.compute = ctrl_compute,
-                       verbose = verbose,
-                       ...)
+  inla_args <- list(
+    formula = joint_formula,
+    family = joint_families,
+    data = inla_data,
+    control.fixed = ctrl_fixed,
+    control.family = ctrl_fam,
+    control.inla = control.inla,
+    control.compute = ctrl_compute,
+    verbose = verbose
+  )
+
+  # Smoothly merge dots
+  for (nm in names(dots)) {
+    if (nm == "control.compute") {
+      for (sub_nm in names(dots$control.compute)) {
+        inla_args$control.compute[[sub_nm]] <- dots$control.compute[[sub_nm]]
+      }
+    } else {
+      inla_args[[nm]] <- dots[[nm]]
+    }
+  }
+
+  result <- do.call(INLA::inla, inla_args)
 
   result$inlacc_meta <- list(
     formula = joint_formula,
@@ -432,7 +491,23 @@ inlacc <- function(model, data, latent.index = NULL,
     )
   )
 
+  # =========================================================================
+  # --- EXTRACT LKJ HYPERPARAMETER MODES BY LATENT INDEX NAME ---
+  # =========================================================================
+  lkj_modes <- list()
+  if (!is.null(result$mode$theta) && !is.null(result$internal.summary.hyperpar)) {
+    hnames <- rownames(result$internal.summary.hyperpar)
+    for (vname in lkj_info$lkj_vars) {
+      idx <- which(endsWith(hnames, paste0(" for ", vname)))
+      if (length(idx) > 0) {
+        lkj_modes[[vname]] <- result$mode$theta[idx]
+      }
+    }
+  }
+  result$lkj_modes <- lkj_modes
+  result$inlacc_meta$LKJ <- lkj_info$processes
+
   class(result) <- c("inlacc", class(result))
-  result <- INLAcircular:::lavm.rename.inla.output(result, result$inlacc_meta)
+  result <- tryCatch(INLAcircular:::lavm.rename.inla.output(result, result$inlacc_meta), error = function(e) result)
   return(result)
 }

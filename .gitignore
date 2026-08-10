@@ -14,3 +14,4 @@ src/*.dll
 
 # OS generated files
 .DS_Store
+.Rproj.user

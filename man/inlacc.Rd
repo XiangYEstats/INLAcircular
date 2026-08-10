@@ -8,6 +8,7 @@ inlacc(
   model,
   data,
   latent.index = NULL,
+  LKJ.eta = 5,
   control.family = NULL,
   control.fixed = NULL,
   control.inla = list(cmin = 0, compute.initial.values = TRUE),
@@ -21,7 +22,14 @@ inlacc(
 
 \item{data}{A data.frame containing all covariates and responses.}
 
-\item{control.family}{Optional global list of control.family configurations. If provided, overrides individual likelihood controls.}
+\item{latent.index}{Optional list of index() mappings.}
+
+\item{LKJ.eta}{Positive scalar LKJ shape parameter used by every
+`iidkd_LKJ` component. Defaults to `5`. Within each corresponding `f()`
+term, `pc.prior.u` and `pc.prior.alpha` default to `1` and `0.5`,
+respectively.}
+
+\item{control.family}{Optional global list of control.family configurations.}
 
 \item{control.fixed}{Optional list for fixed effects priors.}
 

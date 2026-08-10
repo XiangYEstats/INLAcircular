@@ -1,6 +1,8 @@
 #' Define the custom LAVM likelihood for INLA
 #'
-#' @param family.setting A list of controls for the LAVM likelihood.
+#' @param family.setting A list of controls for the LAVM likelihood. Within
+#'   `hyper$kappa`, `log.initial` specifies the initial log-concentration and
+#'   `fixed = TRUE` fixes the log-concentration at that value.
 #' @return An INLA cloglike object.
 #' @export
 lavm.cloglike <- function(family.setting = NULL) {
@@ -18,6 +20,7 @@ lavm.cloglike <- function(family.setting = NULL) {
   prior.alpha <- 0.5
   initial.theta <- 6.0
   prior.name <- "pc.vm.inf"
+  fixed.theta <- FALSE
 
   if (!is.null(family.setting$hyper) && !is.null(family.setting$hyper$kappa)) {
     kappa_set <- family.setting$hyper$kappa
@@ -36,6 +39,21 @@ lavm.cloglike <- function(family.setting = NULL) {
       prior.u <- as.numeric(kappa_set$param[1])
       prior.alpha <- as.numeric(kappa_set$param[2])
     }
+
+    if (!is.null(kappa_set$fixed)) {
+      if (!is.logical(kappa_set$fixed) || length(kappa_set$fixed) != 1L ||
+          is.na(kappa_set$fixed)) {
+        stop("'family.setting$hyper$kappa$fixed' must be TRUE or FALSE.",
+             call. = FALSE)
+      }
+      fixed.theta <- isTRUE(kappa_set$fixed)
+    }
+  }
+
+  if (!is.numeric(initial.theta) || length(initial.theta) != 1L ||
+      is.na(initial.theta) || !is.finite(initial.theta)) {
+    stop("The initial log-concentration must be one finite numeric value.",
+         call. = FALSE)
   }
 
   prior.code <- if (prior.name == "pc.vm.0") 1L else 0L
@@ -52,7 +70,8 @@ lavm.cloglike <- function(family.setting = NULL) {
     lavm.prior = as.numeric(prior.code),
     lavm.u = as.numeric(prior.u),
     lavm.alpha = as.numeric(prior.alpha),
-    lavm.initial.theta = as.numeric(initial.theta)
+    lavm.initial.theta = as.numeric(initial.theta),
+    lavm.fixed.theta = as.numeric(fixed.theta)
   )
 }
 
