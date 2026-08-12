@@ -2,35 +2,35 @@
 % Please edit documentation in R/cc.LKJ.R
 \name{LKJcc}
 \alias{LKJcc}
-\title{Prepare LKJ covariance components for `inlacc()`}
+\title{Prepare LKJ covariance components for \code{inlacc()}}
 \usage{
 LKJcc(formulas, LKJ.eta = 5, n.obs = NULL, latent.index = NULL)
 }
 \arguments{
 \item{formulas}{A list of model formulas.}
 
-\item{LKJ.eta}{Positive scalar LKJ shape parameter. The default is `5`.}
+\item{LKJ.eta}{Positive scalar LKJ shape parameter. The default is \code{5}.}
 
 \item{n.obs}{Number of observations in each likelihood block.}
 
-\item{latent.index}{Optional `index()` specification(s). For an LKJ index,
-`process.id = "likelihood"` means that `data.id` supplies the replicate
+\item{latent.index}{Optional \code{index()} specification(s). For an LKJ index,
+\code{process.id = "likelihood"} means that \code{data.id} supplies the replicate
 index; the LKJ component index is generated from likelihood order.}
 }
 \value{
-A list containing rewritten formulas, cgeneric models, per-block
-  indices, LKJ metadata, and any unconsumed `latent.index` specifications.
+A list containing rewritten formulas, cgeneric models, per-block indices,
+LKJ metadata, and any unconsumed \code{latent.index} specifications.
 }
 \description{
-`LKJcc()` finds every `f(..., model = "iidkd_LKJ")` term, groups terms
-that use the same index name, constructs one `graphpcor` LKJ model per
-group, rewrites the formulas, and creates the component and replicate
-indices required by INLA.
+\code{LKJcc()} finds every \code{f(..., model = "iidkd_LKJ")} term, groups terms
+that use the same index name, constructs one \code{graphpcor} LKJ model per
+group, rewrites the formulas, and creates the component and replicate indices
+required by INLA.
 }
 \details{
-In every `f(index, model = "iidkd_LKJ")` term,
-  `pc.prior.u` defaults to `1` and `pc.prior.alpha` defaults to `0.5`.
-  These arguments may be supplied separately in each likelihood when
-  component-specific PC priors are required. The common `LKJ.eta` value
-  defaults to `5`.
+In every \code{f(index, model = "iidkd_LKJ")} term,
+\code{pc.prior.u} defaults to \code{1} and \code{pc.prior.alpha} defaults to
+\code{0.5}. These arguments may be supplied separately in each likelihood
+when component-specific PC priors are required. The common \code{LKJ.eta}
+value defaults to \code{5}.
 }

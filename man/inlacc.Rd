@@ -25,9 +25,9 @@ inlacc(
 \item{latent.index}{Optional list of index() mappings.}
 
 \item{LKJ.eta}{Positive scalar LKJ shape parameter used by every
-`iidkd_LKJ` component. Defaults to `5`. Within each corresponding `f()`
-term, `pc.prior.u` and `pc.prior.alpha` default to `1` and `0.5`,
-respectively.}
+\code{iidkd_LKJ} component. Defaults to \code{5}. Within each corresponding
+\code{f()} term, \code{pc.prior.u} and \code{pc.prior.alpha} default to
+\code{1} and \code{0.5}, respectively.}
 
 \item{control.family}{Optional global list of control.family configurations.}
 

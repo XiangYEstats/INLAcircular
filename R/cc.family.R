@@ -3,6 +3,9 @@
 #' @param family.setting A list of controls for the LAVM likelihood. Within
 #'   `hyper$kappa`, `log.initial` specifies the initial log-concentration and
 #'   `fixed = TRUE` fixes the log-concentration at that value.
+#' @details The native likelihood entry point is
+#'   `INLAcirc_cloglike_lavm`. Its implementation is kept in the R-independent
+#'   `src-cloglike` source tree.
 #' @return An INLA cloglike object.
 #' @export
 lavm.cloglike <- function(family.setting = NULL) {
@@ -64,7 +67,7 @@ lavm.cloglike <- function(family.setting = NULL) {
   }
 
   INLA::inla.cloglike.define(
-    model = "inla_cloglike_lavm",
+    model = "INLAcirc_cloglike_lavm",
     shlib = shlib.path,
     lavm.link = as.numeric(link.code),
     lavm.prior = as.numeric(prior.code),

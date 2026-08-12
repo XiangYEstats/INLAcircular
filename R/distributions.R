@@ -116,7 +116,7 @@ lavm.link <- function(type = "tan") {
 #' @export
 dvm <- function(x, mu, kappa, log = FALSE) {
   args <- data.frame(x = x, mu = mu, kappa = kappa)
-  .Call("C_dvm",
+  .Call("INLAcirc_C_dvm",
         as.numeric(args$x),
         as.numeric(args$mu),
         as.numeric(args$kappa),
@@ -135,7 +135,7 @@ pvm <- function(q, mu, kappa, strategy = "circular", log = FALSE, len = 2048L) {
     idx <- which(args$kappa == k)
     grid <- get_vm_grid(k, len)
 
-    res[idx] <-.Call("C_pvm",
+    res[idx] <-.Call("INLAcirc_C_pvm",
                      as.numeric(args$q[idx]),
                      as.numeric(args$mu[idx]),
                      as.integer(strat_int),
@@ -157,7 +157,7 @@ qvm <- function(p, mu, kappa, len = 2048L) {
     idx <- which(args$kappa == k)
     grid <- get_vm_grid(k, len)
 
-    res[idx] <-.Call("C_qvm", as.numeric(args$p[idx]), as.numeric(args$mu[idx]),
+    res[idx] <-.Call("INLAcirc_C_qvm", as.numeric(args$p[idx]), as.numeric(args$mu[idx]),
                      as.numeric(grid$x), as.numeric(grid$logit.Fx),
                      PACKAGE = "INLAcircular")
   }
@@ -176,7 +176,7 @@ rvm <- function(n, mu, kappa, len = 2048L) {
     n_idx <- length(idx)
     grid <- get_vm_grid(k, len)
 
-    res[idx] <-.Call("C_rvm", as.integer(n_idx), as.numeric(mu[idx]),
+    res[idx] <-.Call("INLAcirc_C_rvm", as.integer(n_idx), as.numeric(mu[idx]),
                      as.numeric(grid$x), as.numeric(grid$logit.Fx),
                      PACKAGE = "INLAcircular")
   }
@@ -248,7 +248,7 @@ rvm <- function(n, mu, kappa, len = 2048L) {
 #' @export
 dlavm <- function(x, eta, kappa, log = FALSE) {
   args <- data.frame(x = x, eta = eta, kappa = kappa)
-  .Call("C_dlavm",
+  .Call("INLAcirc_C_dlavm",
         as.numeric(args$x),
         as.numeric(args$eta),
         as.numeric(args$kappa),
@@ -266,7 +266,7 @@ plavm <- function(q, eta, kappa, link_obj = NULL, log = FALSE, len = 2048L) {
     idx <- which(args$kappa == k)
     grid <- get_vm_grid(k, len)
 
-    res[idx] <-.Call("C_plavm", as.numeric(args$q[idx]), as.numeric(args$eta[idx]),
+    res[idx] <-.Call("INLAcirc_C_plavm", as.numeric(args$q[idx]), as.numeric(args$eta[idx]),
                      as.logical(log), as.numeric(grid$x), as.numeric(grid$logit.Fx),
                      PACKAGE = "INLAcircular")
   }
@@ -283,7 +283,7 @@ qlavm <- function(p, eta, kappa, link_obj = NULL, len = 2048L) {
     idx <- which(args$kappa == k)
     grid <- get_vm_grid(k, len)
 
-    res[idx] <-.Call("C_qlavm", as.numeric(args$p[idx]), as.numeric(args$eta[idx]),
+    res[idx] <-.Call("INLAcirc_C_qlavm", as.numeric(args$p[idx]), as.numeric(args$eta[idx]),
                      as.numeric(grid$x), as.numeric(grid$logit.Fx),
                      PACKAGE = "INLAcircular")
   }
@@ -302,7 +302,7 @@ rlavm <- function(n, eta, kappa, link_obj = NULL, len = 2048L) {
     n_idx <- length(idx)
     grid <- get_vm_grid(k, len)
 
-    res[idx] <-.Call("C_rlavm", as.integer(n_idx), as.numeric(eta[idx]),
+    res[idx] <-.Call("INLAcirc_C_rlavm", as.integer(n_idx), as.numeric(eta[idx]),
                      as.numeric(grid$x), as.numeric(grid$logit.Fx),
                      PACKAGE = "INLAcircular")
   }

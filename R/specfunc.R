@@ -12,7 +12,7 @@
 bessel_i <- function(x, nu, expon.scaled = FALSE) {
   if (length(nu) != 1) stop("'nu' must be a scalar.")
 
-  .Call("C_bessel_i",
+  .Call("INLAcirc_C_bessel_i",
         as.numeric(x),
         as.numeric(nu),
         as.logical(expon.scaled),
