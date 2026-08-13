@@ -23,6 +23,11 @@ static void INLAcirc_test_close(double actual,
                                 double tolerance)
 {
     assert(isfinite(actual));
+    if (fabs(actual - expected) > tolerance) {
+        fprintf(stderr,
+                "actual=%.17g expected=%.17g tolerance=%.3g\n",
+                actual, expected, tolerance);
+    }
     assert(fabs(actual - expected) <= tolerance);
 }
 
@@ -64,6 +69,67 @@ int main(void)
     INLAcirc_test_close(
         INLAcirc_log_bessel_i0_scaled_from_log_kappa(log(100000.0)),
         -6.6754000156835369, 1e-10);
+    INLAcirc_test_close(
+        INLAcirc_bessel_i(1e-8, 1.0, 1),
+        4.999999949999996e-9, 1e-22);
+
+    INLAcirc_test_close(
+        INLAcirc_pc_vm0_log_density(0.0, 2.0),
+        0.0, 1e-14);
+    INLAcirc_test_close(
+        INLAcirc_pc_vm0_log_density(5.0, 2.0),
+        -4.3859096982731270, 1e-11);
+    INLAcirc_test_close(
+        INLAcirc_pc_vm0_log_density_from_log_kappa(log(5.0), 2.0),
+        -4.3859096982731270 + log(5.0), 1e-11);
+    INLAcirc_test_close(
+        INLAcirc_pc_vm0_log_cdf(5.0, 2.0),
+        -0.1230394775499801, 1e-11);
+    INLAcirc_test_close(
+        INLAcirc_pc_vm0_quantile(0.5, 2.0),
+        0.7266852927292959, 1e-9);
+    INLAcirc_test_close(
+        INLAcirc_pc_vm0_log_cdf(
+            INLAcirc_pc_vm0_quantile(0.9, 2.0), 2.0),
+        log(0.9), 1e-11);
+    INLAcirc_test_close(
+        INLAcirc_pc_vm0_log_density(1e-8, 2.0),
+        log(0.99999999), 1e-14);
+    INLAcirc_test_close(
+        INLAcirc_pc_vm0_log_density(1e6, 2.0),
+        -20.917992553975147, 1e-11);
+    INLAcirc_test_close(
+        INLAcirc_pc_vm0_log_cdf(1e6, 2.0),
+        -0.004465647058556248, 1e-10);
+
+    INLAcirc_test_close(
+        INLAcirc_pc_vminf_log_density(0.0, 2.0),
+        -2.6931471805599454, 1e-12);
+    INLAcirc_test_close(
+        INLAcirc_pc_vminf_log_density(5.0, 2.0),
+        -3.2978245436010080, 1e-11);
+    INLAcirc_test_close(
+        INLAcirc_pc_vminf_log_density_from_log_kappa(log(5.0), 2.0),
+        -3.2978245436010080 + log(5.0), 1e-11);
+    INLAcirc_test_close(
+        INLAcirc_pc_vminf_log_cdf(5.0, 2.0),
+        -0.6530447548397112, 1e-11);
+    INLAcirc_test_close(
+        INLAcirc_pc_vminf_quantile(0.5, 2.0),
+        4.4849301487377340, 1e-9);
+    INLAcirc_test_close(
+        INLAcirc_pc_vminf_log_cdf(
+            INLAcirc_pc_vminf_quantile(0.9, 2.0), 2.0),
+        log(0.9), 1e-11);
+    INLAcirc_test_close(
+        INLAcirc_pc_vminf_quantile(exp(-2.0), 2.0),
+        0.0, 0.0);
+    INLAcirc_test_close(
+        INLAcirc_pc_vminf_log_density(1e6, 2.0),
+        -21.071253265965016, 1e-11);
+    INLAcirc_test_close(
+        INLAcirc_pc_vminf_log_cdf(1e6, 2.0),
+        -0.0014142137392642844, 1e-10);
 
     allocated = INLAcirc_cloglike_lavm(
         INLA_CLOGLIKE_INITIAL, NULL, &data, 1, observation, 3,
@@ -77,8 +143,38 @@ int main(void)
         INLA_CLOGLIKE_LOG_PRIOR, theta, &data, 1, observation, 3,
         predictors, result);
     assert(allocated != NULL);
-    assert(isfinite(allocated[0]));
+    INLAcirc_test_close(
+        allocated[0],
+        INLAcirc_pc_vminf_log_density_from_log_kappa(
+            theta[0], -log(1.0 - prior_alpha) / sqrt(1.0 - prior_u)),
+        1e-12);
     free(allocated);
+
+    prior = 1.0;
+    allocated = INLAcirc_cloglike_lavm(
+        INLA_CLOGLIKE_LOG_PRIOR, theta, &data, 1, observation, 3,
+        predictors, result);
+    assert(allocated != NULL);
+    INLAcirc_test_close(
+        allocated[0],
+        INLAcirc_pc_vm0_log_density_from_log_kappa(
+            theta[0], 1.3382297153940257),
+        1e-10);
+    free(allocated);
+
+    prior_u = 1e-6;
+    allocated = INLAcirc_cloglike_lavm(
+        INLA_CLOGLIKE_LOG_PRIOR, theta, &data, 1, observation, 3,
+        predictors, result);
+    assert(allocated != NULL);
+    INLAcirc_test_close(
+        allocated[0],
+        INLAcirc_pc_vm0_log_density_from_log_kappa(
+            theta[0], -log(prior_alpha) / prior_u),
+        1e-8);
+    free(allocated);
+    prior_u = 0.5;
+    prior = 0.0;
 
     allocated = INLAcirc_cloglike_lavm(
         INLA_CLOGLIKE_LOGLIKE, theta, &data, 1, observation, 3,

@@ -4,7 +4,7 @@ The native sources are separated by their host runtime.
 
 ```text
 src/
-  INLAcirc_distributions.c       R-facing distribution functions
+  INLAcirc_distributions.c       R-facing VM, LAvM, and PC-prior functions
   INLAcirc_r_bessel.c            R-facing Bessel wrapper
   INLAcirc_init.c                R native-routine registration
   INLAcirc_cloglike_bridge.c     package-only compatibility bridge
@@ -19,8 +19,10 @@ src-cloglike/
 ## Dependency boundary
 
 Files in `src/` may include R headers. No file in `src-cloglike/` may include
-an R header or call the R/Rmath API. The reusable numerical code is defined as
-`static inline` functions in `INLAcirc_common.h`, which includes only `math.h`.
+an R header or call the R/Rmath API. The reusable numerical code, including
+the Bessel functions and both the uniform-base and point-mass-base PC priors
+for the von Mises concentration, is defined as `static inline` functions in
+`INLAcirc_common.h`, which includes only ISO C headers.
 Consequently, compiling the likelihood into inla-build requires `libm`, but
 does not require R.
 
@@ -43,7 +45,8 @@ INLAcirc_cloglike_lavm
 ```
 
 The R `.Call` symbols are similarly namespaced, for example
-`INLAcirc_C_dvm` and `INLAcirc_C_bessel_i`.
+`INLAcirc_C_dvm`, `INLAcirc_C_dpc_vm0`, `INLAcirc_C_dpc_vminf`, and
+`INLAcirc_C_bessel_i`.
 
 ## Numerical-interface correction
 

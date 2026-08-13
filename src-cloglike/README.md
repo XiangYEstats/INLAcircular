@@ -8,7 +8,8 @@ Files:
 
 - `INLAcirc_cloglike.c`: likelihood, PC-prior, and INLA command dispatcher.
 - `INLAcirc_cloglike.h`: public prototype for `INLAcirc_cloglike_lavm()`.
-- `INLAcirc_common.h`: shared numerical functions; ISO C and `libm` only.
+- `INLAcirc_common.h`: shared Bessel and PC-prior numerical functions; ISO C
+  and `libm` only.
 - `INLAcirc_cgeneric_compat.h`: minimal standalone declaration of the INLA ABI.
 - `tests/INLAcirc_cloglike_test.c`: R-free native regression tests.
 

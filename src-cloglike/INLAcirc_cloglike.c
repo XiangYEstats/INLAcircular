@@ -12,17 +12,18 @@ static double *INLAcirc_alloc_doubles(size_t count)
 }
 
 /* Analytical PC-prior rate calculations; no global cache, hence thread-safe. */
-static double INLAcirc_lavm_pc_inf_lambda(double u, double alpha)
+static double INLAcirc_lavm_pc_vminf_lambda(double u, double alpha)
 {
     return -log(1.0 - alpha) / sqrt(1.0 - u);
 }
 
-static double INLAcirc_lavm_pc_0_lambda(double u, double alpha)
+static double INLAcirc_lavm_pc_vm0_lambda(double u, double alpha)
 {
     double kappa;
 
     if (u <= 1e-5) {
-        return -log(alpha) / sqrt(u);
+        /* I1(kappa)/I0(kappa) = u implies d_0(kappa) = u + O(u^3). */
+        return -log(alpha) / u;
     }
     if (u < 0.53) {
         kappa = 2.0 * u + u * u * u + 5.0 * pow(u, 5.0) / 6.0;
@@ -121,96 +122,6 @@ static double INLAcirc_lavm_scaled_probit(double observation,
            0.5 * (transformed_x * transformed_x - shifted * shifted);
 }
 
-static double INLAcirc_lavm_pc_prior_inf(double log_kappa, double lambda)
-{
-    double distance;
-    double log_jacobian;
-
-    if (log_kappa <= 11.512925) {
-        const double kappa = exp(log_kappa);
-        const double i0 = INLAcirc_bessel_i(kappa, 0.0, 1);
-        const double i1 = INLAcirc_bessel_i(kappa, 1.0, 1);
-        const double i2 = INLAcirc_bessel_i(kappa, 2.0, 1);
-        const double ratio = i1 / i0;
-
-        distance = sqrt(fmax(1e-16, 1.0 - ratio));
-        log_jacobian = -INLACIRC_LOG_2 - log(distance) +
-                       log(fmax(1e-16,
-                                (i0 + i2) / (2.0 * i0) - ratio * ratio));
-    } else {
-        const double inverse_kappa = exp(-log_kappa);
-        const double inverse_kappa_squared = inverse_kappa * inverse_kappa;
-        const double log_distance =
-            -INLACIRC_LOG_2 / 2.0 - log_kappa / 2.0 +
-            0.125 * inverse_kappa +
-            (7.0 / 64.0) * inverse_kappa_squared;
-
-        distance = exp(log_distance);
-        log_jacobian =
-            -INLACIRC_LOG_2 - log_distance +
-            (-INLACIRC_LOG_2 - 2.0 * log_kappa +
-             0.5 * inverse_kappa + 0.625 * inverse_kappa_squared);
-    }
-
-    return log(lambda) - lambda * distance + log_jacobian + log_kappa;
-}
-
-static double INLAcirc_lavm_pc_prior_0(double log_kappa, double lambda)
-{
-    const double kappa = exp(log_kappa);
-    double distance;
-    double log_jacobian_partial;
-
-    if (kappa < 1e-4) {
-        double density =
-            lambda / 2.0 - (lambda * lambda * kappa) / 4.0 +
-            (-9.0 * lambda / 64.0 + lambda * lambda * lambda / 16.0) *
-                kappa * kappa;
-        if (density <= 1e-16) {
-            density = 1e-16;
-        }
-        return log(density) + log_kappa;
-    }
-
-    if (log_kappa <= 11.512925) {
-        const double i0 = INLAcirc_bessel_i(kappa, 0.0, 1);
-        const double i1 = INLAcirc_bessel_i(kappa, 1.0, 1);
-        const double i2 = INLAcirc_bessel_i(kappa, 2.0, 1);
-        const double ratio = i1 / i0;
-        const double distance_squared =
-            kappa * ratio - kappa - log(i0);
-
-        distance = sqrt(fmax(1e-16, distance_squared));
-        log_jacobian_partial =
-            log(kappa) +
-            log(fmax(1e-16,
-                     (i0 + i2) / (2.0 * i0) - ratio * ratio));
-    } else {
-        const double inverse_kappa = exp(-log_kappa);
-        const double inverse_kappa_squared = inverse_kappa * inverse_kappa;
-        const double distance_squared =
-            0.5 * INLACIRC_LOG_2PI - 0.5 + 0.5 * log_kappa -
-            0.25 * inverse_kappa - 0.1875 * inverse_kappa_squared -
-            (25.0 / 96.0) * inverse_kappa_squared * inverse_kappa -
-            (65.0 / 128.0) * inverse_kappa_squared * inverse_kappa_squared -
-            (3219.0 / 2560.0) * inverse_kappa_squared *
-                inverse_kappa_squared * inverse_kappa;
-
-        distance = sqrt(fmax(1e-16, distance_squared));
-        log_jacobian_partial =
-            -INLACIRC_LOG_2 - log_kappa + 0.5 * inverse_kappa +
-            0.625 * inverse_kappa_squared +
-            (59.0 / 48.0) * inverse_kappa_squared * inverse_kappa +
-            (203.0 / 64.0) * inverse_kappa_squared *
-                inverse_kappa_squared +
-            (12743.0 / 1280.0) * inverse_kappa_squared *
-                inverse_kappa_squared * inverse_kappa;
-    }
-
-    return log(lambda) - lambda * distance - INLACIRC_LOG_2 -
-           log(distance) + log_jacobian_partial + log_kappa;
-}
-
 double *INLAcirc_cloglike_lavm(inla_cloglike_cmd_tp cmd,
                                double *theta,
                                inla_cgeneric_data_tp *data,
@@ -289,12 +200,14 @@ double *INLAcirc_cloglike_lavm(inla_cloglike_cmd_tp cmd,
             } else {
                 const double lambda =
                     (prior_code == 1)
-                        ? INLAcirc_lavm_pc_0_lambda(prior_u, prior_alpha)
-                        : INLAcirc_lavm_pc_inf_lambda(prior_u, prior_alpha);
+                        ? INLAcirc_lavm_pc_vm0_lambda(prior_u, prior_alpha)
+                        : INLAcirc_lavm_pc_vminf_lambda(prior_u, prior_alpha);
                 return_value[0] =
                     (prior_code == 1)
-                        ? INLAcirc_lavm_pc_prior_0(log_kappa, lambda)
-                        : INLAcirc_lavm_pc_prior_inf(log_kappa, lambda);
+                        ? INLAcirc_pc_vm0_log_density_from_log_kappa(
+                              log_kappa, lambda)
+                        : INLAcirc_pc_vminf_log_density_from_log_kappa(
+                              log_kappa, lambda);
             }
         }
         break;

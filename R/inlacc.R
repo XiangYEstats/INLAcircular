@@ -413,7 +413,13 @@ inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
         usr_u <- as.numeric(usr_ctrl$hyper$kappa$param[1])
         usr_alpha <- as.numeric(usr_ctrl$hyper$kappa$param[2])
       }
-      prior_label <- sprintf("pc.vm.inf(%g, %g)", usr_u, usr_alpha)
+      usr_prior <- "pc.vminf"
+      if (!is.null(usr_ctrl$hyper$kappa$prior)) {
+        usr_prior <- .canonical_lavm_pc_prior(
+          usr_ctrl$hyper$kappa$prior
+        )
+      }
+      prior_label <- sprintf("%s(%g, %g)", usr_prior, usr_u, usr_alpha)
       hyper_priors[[sprintf("Theta1 for INLA.Data%d", i)]] <- prior_label
       hyper_priors[["Theta1 for cloglike"]] <- prior_label
     } else {

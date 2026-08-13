@@ -5,6 +5,14 @@
 
 extern SEXP INLAcirc_C_dvm(SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_dlavm(SEXP, SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_dpc_vm0(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_ppc_vm0(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_qpc_vm0(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_rpc_vm0(SEXP, SEXP);
+extern SEXP INLAcirc_C_dpc_vminf(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_ppc_vminf(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_qpc_vminf(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_rpc_vminf(SEXP, SEXP);
 extern SEXP INLAcirc_C_pvm(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_qvm(SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_rvm(SEXP, SEXP, SEXP, SEXP);
@@ -16,6 +24,14 @@ extern SEXP INLAcirc_C_bessel_i(SEXP, SEXP, SEXP);
 static const R_CallMethodDef INLAcirc_call_entries[] = {
     {"INLAcirc_C_dvm", (DL_FUNC)&INLAcirc_C_dvm, 4},
     {"INLAcirc_C_dlavm", (DL_FUNC)&INLAcirc_C_dlavm, 4},
+    {"INLAcirc_C_dpc_vm0", (DL_FUNC)&INLAcirc_C_dpc_vm0, 3},
+    {"INLAcirc_C_ppc_vm0", (DL_FUNC)&INLAcirc_C_ppc_vm0, 3},
+    {"INLAcirc_C_qpc_vm0", (DL_FUNC)&INLAcirc_C_qpc_vm0, 3},
+    {"INLAcirc_C_rpc_vm0", (DL_FUNC)&INLAcirc_C_rpc_vm0, 2},
+    {"INLAcirc_C_dpc_vminf", (DL_FUNC)&INLAcirc_C_dpc_vminf, 3},
+    {"INLAcirc_C_ppc_vminf", (DL_FUNC)&INLAcirc_C_ppc_vminf, 3},
+    {"INLAcirc_C_qpc_vminf", (DL_FUNC)&INLAcirc_C_qpc_vminf, 3},
+    {"INLAcirc_C_rpc_vminf", (DL_FUNC)&INLAcirc_C_rpc_vminf, 2},
     {"INLAcirc_C_pvm", (DL_FUNC)&INLAcirc_C_pvm, 6},
     {"INLAcirc_C_qvm", (DL_FUNC)&INLAcirc_C_qvm, 4},
     {"INLAcirc_C_rvm", (DL_FUNC)&INLAcirc_C_rvm, 4},

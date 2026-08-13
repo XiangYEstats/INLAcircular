@@ -88,7 +88,7 @@ wind_model <- list(
       hyper = list(
         kappa = list(
           log.initial = 6,
-          prior = "pc.vm.inf",
+          prior = "pc.vminf",
           param = c(0.5, 0.99),
           fixed = FALSE
         )

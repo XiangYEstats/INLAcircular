@@ -1,11 +1,25 @@
+.canonical_lavm_pc_prior <- function(prior) {
+  prior <- as.character(prior)
+  if (length(prior) != 1L || is.na(prior) ||
+      !(prior %in% c("pc.vm0", "pc.vminf"))) {
+    stop(
+      "The LAvM concentration prior must be 'pc.vm0' or 'pc.vminf'.",
+      call. = FALSE
+    )
+  }
+  prior
+}
+
 #' Define the custom LAVM likelihood for INLA
 #'
 #' @param family.setting A list of controls for the LAVM likelihood. Within
 #'   `hyper$kappa`, `log.initial` specifies the initial log-concentration and
-#'   `fixed = TRUE` fixes the log-concentration at that value.
+#'   `fixed = TRUE` fixes the log-concentration at that value. The two values
+#'   in `param = c(u, alpha)` must both lie strictly between 0 and 1.
 #' @details The native likelihood entry point is
 #'   `INLAcirc_cloglike_lavm`. Its implementation is kept in the R-independent
-#'   `src-cloglike` source tree.
+#'   `src-cloglike` source tree. Supported concentration priors are
+#'   `pc.vm0` and `pc.vminf`.
 #' @return An INLA cloglike object.
 #' @export
 lavm.cloglike <- function(family.setting = NULL) {
@@ -22,7 +36,7 @@ lavm.cloglike <- function(family.setting = NULL) {
   prior.u <- 0.5
   prior.alpha <- 0.5
   initial.theta <- 6.0
-  prior.name <- "pc.vm.inf"
+  prior.name <- "pc.vminf"
   fixed.theta <- FALSE
 
   if (!is.null(family.setting$hyper) && !is.null(family.setting$hyper$kappa)) {
@@ -58,8 +72,21 @@ lavm.cloglike <- function(family.setting = NULL) {
     stop("The initial log-concentration must be one finite numeric value.",
          call. = FALSE)
   }
+  if (length(prior.u) != 1L || is.na(prior.u) || !is.finite(prior.u) ||
+      prior.u <= 0 || prior.u >= 1) {
+    stop("The PC-prior parameter 'u' must lie strictly between 0 and 1.",
+         call. = FALSE)
+  }
+  if (length(prior.alpha) != 1L || is.na(prior.alpha) ||
+      !is.finite(prior.alpha) || prior.alpha <= 0 || prior.alpha >= 1) {
+    stop(
+      "The PC-prior parameter 'alpha' must lie strictly between 0 and 1.",
+      call. = FALSE
+    )
+  }
 
-  prior.code <- if (prior.name == "pc.vm.0") 1L else 0L
+  prior.name <- .canonical_lavm_pc_prior(prior.name)
+  prior.code <- if (prior.name == "pc.vm0") 1L else 0L
 
   shlib.path <- system.file("libs", paste0("INLAcircular", .Platform$dynlib.ext), package = "INLAcircular")
   if (shlib.path == "") {

@@ -9,7 +9,8 @@ lavm.cloglike(family.setting = NULL)
 \arguments{
 \item{family.setting}{A list of controls for the LAVM likelihood. Within
 \code{hyper$kappa}, \code{log.initial} specifies the initial log-concentration
-and \code{fixed = TRUE} fixes the log-concentration at that value.}
+and \code{fixed = TRUE} fixes the log-concentration at that value. The two
+values in \code{param = c(u, alpha)} must both lie strictly between 0 and 1.}
 }
 \value{
 An INLA cloglike object.
@@ -20,4 +21,5 @@ Define the custom LAVM likelihood for INLA
 \details{
 The native likelihood entry point is \code{INLAcirc_cloglike_lavm}. Its
 implementation is kept in the R-independent \code{src-cloglike} source tree.
+Supported concentration priors are \code{pc.vm0} and \code{pc.vminf}.
 }

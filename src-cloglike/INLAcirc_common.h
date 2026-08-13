@@ -11,12 +11,14 @@
  * prefix to avoid collisions in a large native executable.
  */
 
+#include <float.h>
 #include <math.h>
 
 #define INLACIRC_PI 3.141592653589793238462643383279502884
 #define INLACIRC_LOG_2 0.693147180559945309417232121458176568
 #define INLACIRC_LOG_2PI 1.837877066409345483560659472811235279
 #define INLACIRC_INV_SQRT_2 0.707106781186547524400844362104849039
+#define INLACIRC_LOG_1E5 11.512925464970228420089957273421821038
 
 static inline double INLAcirc_qlogis(double p)
 {
@@ -190,7 +192,7 @@ static inline double INLAcirc_bessel_i1_scaled(double x)
         return 0.0;
     }
     if (y < 2.828427 * 1.490116e-08) {
-        return 0.5 * x;
+        return 0.5 * x * exp(-y);
     }
     if (y <= 3.0) {
         return x * exp(-y) *
@@ -261,6 +263,455 @@ static inline double INLAcirc_bessel_i(double x, double nu, int scaled)
         scaled_result *= exp(absolute_x);
     }
     return scaled_result;
+}
+
+/*
+ * PC prior with the circular uniform distribution (kappa = 0) as base.
+ *
+ *     d_0(kappa)^2 = kappa I1(kappa) / I0(kappa) - log I0(kappa).
+ *
+ * The small-kappa density polynomial and the large-kappa expansions are the
+ * same approximations used in the original INLA reference implementation.
+ */
+static inline double INLAcirc_pc_vm0_small_density(double kappa,
+                                                    double lambda)
+{
+    const double lambda2 = lambda * lambda;
+    const double lambda3 = lambda2 * lambda;
+    const double lambda4 = lambda2 * lambda2;
+    const double lambda5 = lambda4 * lambda;
+    const double lambda6 = lambda3 * lambda3;
+    const double coefficient2 = -9.0 * lambda / 64.0 + lambda3 / 16.0;
+    const double coefficient3 = 3.0 * lambda2 / 32.0 - lambda4 / 96.0;
+    const double coefficient4 = 1195.0 * lambda / 36864.0 +
+                                3.0 * lambda3 / 512.0 +
+                                lambda5 / 768.0;
+    const double coefficient5 = -79.0 * lambda2 / 6144.0 -
+                                lambda6 / 7680.0;
+
+    return lambda / 2.0 + kappa *
+           (-lambda2 / 4.0 + kappa *
+            (coefficient2 + kappa *
+             (coefficient3 + kappa *
+              (coefficient4 + kappa * coefficient5))));
+}
+
+static inline void INLAcirc_pc_vm0_geometry_from_log_kappa(
+    double log_kappa,
+    double *distance,
+    double *log_abs_derivative)
+{
+    if (isnan(log_kappa)) {
+        *distance = NAN;
+        *log_abs_derivative = NAN;
+        return;
+    }
+    if (log_kappa == -INFINITY) {
+        *distance = 0.0;
+        *log_abs_derivative = -INLACIRC_LOG_2;
+        return;
+    }
+    if (log_kappa == INFINITY) {
+        *distance = INFINITY;
+        *log_abs_derivative = -INFINITY;
+        return;
+    }
+
+    if (log_kappa < -9.21034037197618273607) {
+        const double kappa = exp(log_kappa);
+        const double kappa_squared = kappa * kappa;
+        const double derivative =
+            0.5 - (9.0 / 64.0) * kappa_squared;
+
+        *distance =
+            kappa * (0.5 - (3.0 / 64.0) * kappa_squared);
+        *log_abs_derivative = log(derivative);
+        return;
+    }
+
+    if (log_kappa <= INLACIRC_LOG_1E5) {
+        const double kappa = exp(log_kappa);
+        const double i0 = INLAcirc_bessel_i(kappa, 0.0, 1);
+        const double i1 = INLAcirc_bessel_i(kappa, 1.0, 1);
+        const double ratio = i1 / i0;
+        const double ratio_derivative =
+            fmax(0.0, 1.0 - ratio * ratio - ratio / kappa);
+        const double distance_squared =
+            fmax(0.0, kappa * ratio - kappa - log(i0));
+
+        *distance = sqrt(distance_squared);
+        if (*distance == 0.0 || ratio_derivative == 0.0) {
+            *log_abs_derivative = -INFINITY;
+        } else {
+            *log_abs_derivative = log(kappa) +
+                                  log(ratio_derivative) -
+                                  INLACIRC_LOG_2 - log(*distance);
+        }
+        return;
+    }
+
+    {
+        const double inverse_kappa = exp(-log_kappa);
+        const double inverse_kappa_squared =
+            inverse_kappa * inverse_kappa;
+        const double inverse_kappa_cubed =
+            inverse_kappa_squared * inverse_kappa;
+        const double inverse_kappa_fourth =
+            inverse_kappa_squared * inverse_kappa_squared;
+        const double inverse_kappa_fifth =
+            inverse_kappa_fourth * inverse_kappa;
+        const double distance_squared =
+            0.5 * INLACIRC_LOG_2PI - 0.5 + 0.5 * log_kappa -
+            0.25 * inverse_kappa -
+            (3.0 / 16.0) * inverse_kappa_squared -
+            (25.0 / 96.0) * inverse_kappa_cubed -
+            (65.0 / 128.0) * inverse_kappa_fourth -
+            (3219.0 / 2560.0) * inverse_kappa_fifth;
+        const double log_derivative_partial =
+            -INLACIRC_LOG_2 - log_kappa +
+            0.5 * inverse_kappa +
+            (5.0 / 8.0) * inverse_kappa_squared +
+            (59.0 / 48.0) * inverse_kappa_cubed +
+            (203.0 / 64.0) * inverse_kappa_fourth +
+            (12743.0 / 1280.0) * inverse_kappa_fifth;
+
+        *distance = sqrt(fmax(0.0, distance_squared));
+        *log_abs_derivative = -INLACIRC_LOG_2 - log(*distance) +
+                              log_derivative_partial;
+    }
+}
+
+static inline void INLAcirc_pc_vm0_geometry(
+    double kappa,
+    double *distance,
+    double *log_abs_derivative)
+{
+    if (isnan(kappa) || kappa < 0.0) {
+        *distance = NAN;
+        *log_abs_derivative = NAN;
+        return;
+    }
+    INLAcirc_pc_vm0_geometry_from_log_kappa(
+        (kappa == 0.0) ? -INFINITY : log(kappa),
+        distance,
+        log_abs_derivative);
+}
+
+static inline double INLAcirc_pc_vm0_log_density(double kappa,
+                                                  double lambda)
+{
+    double distance;
+    double log_abs_derivative;
+
+    if (isnan(kappa) || isnan(lambda) || !isfinite(lambda) ||
+        lambda <= 0.0) {
+        return NAN;
+    }
+    if (kappa < 0.0 || kappa == INFINITY) {
+        return -INFINITY;
+    }
+    if (kappa < 1e-4) {
+        return log(INLAcirc_pc_vm0_small_density(kappa, lambda));
+    }
+
+    INLAcirc_pc_vm0_geometry(kappa, &distance, &log_abs_derivative);
+    return log(lambda) - lambda * distance + log_abs_derivative;
+}
+
+static inline double INLAcirc_pc_vm0_log_density_from_log_kappa(
+    double log_kappa,
+    double lambda)
+{
+    double distance;
+    double log_abs_derivative;
+
+    if (isnan(log_kappa) || isnan(lambda) || !isfinite(lambda) ||
+        lambda <= 0.0) {
+        return NAN;
+    }
+    if (log_kappa == INFINITY) {
+        return -INFINITY;
+    }
+    if (log_kappa < -9.21034037197618273607) {
+        const double kappa = exp(log_kappa);
+        return log(INLAcirc_pc_vm0_small_density(kappa, lambda)) +
+               log_kappa;
+    }
+
+    INLAcirc_pc_vm0_geometry_from_log_kappa(
+        log_kappa, &distance, &log_abs_derivative);
+    return log(lambda) - lambda * distance + log_abs_derivative +
+           log_kappa;
+}
+
+static inline double INLAcirc_pc_vm0_log_cdf(double kappa,
+                                              double lambda)
+{
+    double distance;
+    double unused_log_abs_derivative;
+
+    if (isnan(kappa) || isnan(lambda) || !isfinite(lambda) ||
+        lambda <= 0.0) {
+        return NAN;
+    }
+    if (kappa < 0.0) {
+        return -INFINITY;
+    }
+    if (kappa == INFINITY) {
+        return 0.0;
+    }
+
+    INLAcirc_pc_vm0_geometry(
+        kappa, &distance, &unused_log_abs_derivative);
+    return log(-expm1(-lambda * distance));
+}
+
+static inline double INLAcirc_pc_vm0_quantile(double probability,
+                                               double lambda)
+{
+    const double lower_log_kappa = log(DBL_MIN);
+    const double upper_log_kappa = log(DBL_MAX);
+    double target_log_distance;
+    double lower = lower_log_kappa;
+    double upper = upper_log_kappa;
+    double distance;
+    double unused_log_abs_derivative;
+
+    if (isnan(probability) || isnan(lambda) || !isfinite(lambda) ||
+        lambda <= 0.0 || probability < 0.0 || probability > 1.0) {
+        return NAN;
+    }
+    if (probability == 0.0) {
+        return 0.0;
+    }
+    if (probability == 1.0) {
+        return INFINITY;
+    }
+
+    target_log_distance =
+        log(-log1p(-probability)) - log(lambda);
+
+    INLAcirc_pc_vm0_geometry_from_log_kappa(
+        upper, &distance, &unused_log_abs_derivative);
+    if (log(distance) < target_log_distance) {
+        return INFINITY;
+    }
+
+    for (int iteration = 0; iteration < 100; ++iteration) {
+        const double middle = lower + 0.5 * (upper - lower);
+
+        INLAcirc_pc_vm0_geometry_from_log_kappa(
+            middle, &distance, &unused_log_abs_derivative);
+        if (log(distance) < target_log_distance) {
+            lower = middle;
+        } else {
+            upper = middle;
+        }
+    }
+
+    return exp(lower + 0.5 * (upper - lower));
+}
+
+/*
+ * PC prior with the point-mass limit (kappa -> infinity) as base.
+ *
+ *     d_inf(kappa) = sqrt(1 - I1(kappa) / I0(kappa)).
+ *
+ * The large-kappa expansions avoid cancellation in 1 - I1/I0.
+ */
+static inline void INLAcirc_pc_vminf_geometry_from_log_kappa(
+    double log_kappa,
+    double *distance,
+    double *log_abs_derivative)
+{
+    if (isnan(log_kappa)) {
+        *distance = NAN;
+        *log_abs_derivative = NAN;
+        return;
+    }
+    if (log_kappa == INFINITY) {
+        *distance = 0.0;
+        *log_abs_derivative = -INFINITY;
+        return;
+    }
+
+    if (log_kappa > INLACIRC_LOG_1E5) {
+        const double inverse_kappa = exp(-log_kappa);
+        const double inverse_kappa_squared =
+            inverse_kappa * inverse_kappa;
+        const double inverse_kappa_cubed =
+            inverse_kappa_squared * inverse_kappa;
+        const double inverse_kappa_fourth =
+            inverse_kappa_squared * inverse_kappa_squared;
+        const double inverse_kappa_fifth =
+            inverse_kappa_fourth * inverse_kappa;
+        const double log_distance =
+            -0.5 * INLACIRC_LOG_2 - 0.5 * log_kappa +
+            0.125 * inverse_kappa +
+            (7.0 / 64.0) * inverse_kappa_squared +
+            (1.0 / 6.0) * inverse_kappa_cubed +
+            (715.0 / 2048.0) * inverse_kappa_fourth +
+            (293.0 / 320.0) * inverse_kappa_fifth;
+        const double log_derivative_partial =
+            -INLACIRC_LOG_2 - 2.0 * log_kappa +
+            0.5 * inverse_kappa +
+            (5.0 / 8.0) * inverse_kappa_squared +
+            (59.0 / 48.0) * inverse_kappa_cubed +
+            (203.0 / 64.0) * inverse_kappa_fourth +
+            (12743.0 / 1280.0) * inverse_kappa_fifth;
+
+        *distance = exp(log_distance);
+        *log_abs_derivative =
+            -INLACIRC_LOG_2 - log_distance + log_derivative_partial;
+        return;
+    }
+
+    {
+        const double kappa = exp(log_kappa);
+        const double i0 = INLAcirc_bessel_i(kappa, 0.0, 1);
+        const double i1 = INLAcirc_bessel_i(kappa, 1.0, 1);
+        const double ratio = i1 / i0;
+        const double distance_squared = fmax(0.0, 1.0 - ratio);
+        const double ratio_derivative =
+            (kappa == 0.0)
+                ? 0.5
+                : fmax(0.0, 1.0 - ratio * ratio - ratio / kappa);
+
+        *distance = sqrt(distance_squared);
+        if (*distance == 0.0 || ratio_derivative == 0.0) {
+            *log_abs_derivative = -INFINITY;
+        } else {
+            *log_abs_derivative =
+                -INLACIRC_LOG_2 - log(*distance) +
+                log(ratio_derivative);
+        }
+    }
+}
+
+static inline void INLAcirc_pc_vminf_geometry(
+    double kappa,
+    double *distance,
+    double *log_abs_derivative)
+{
+    if (isnan(kappa) || kappa < 0.0) {
+        *distance = NAN;
+        *log_abs_derivative = NAN;
+        return;
+    }
+    INLAcirc_pc_vminf_geometry_from_log_kappa(
+        (kappa == 0.0) ? -INFINITY : log(kappa),
+        distance,
+        log_abs_derivative);
+}
+
+static inline double INLAcirc_pc_vminf_log_density(double kappa,
+                                                    double lambda)
+{
+    double distance;
+    double log_abs_derivative;
+
+    if (isnan(kappa) || isnan(lambda) || !isfinite(lambda) ||
+        lambda <= 0.0) {
+        return NAN;
+    }
+    if (kappa < 0.0 || kappa == INFINITY) {
+        return -INFINITY;
+    }
+
+    INLAcirc_pc_vminf_geometry(kappa, &distance, &log_abs_derivative);
+    return log(lambda) - lambda * distance + log_abs_derivative;
+}
+
+static inline double INLAcirc_pc_vminf_log_density_from_log_kappa(
+    double log_kappa,
+    double lambda)
+{
+    double distance;
+    double log_abs_derivative;
+
+    if (isnan(log_kappa) || isnan(lambda) || !isfinite(lambda) ||
+        lambda <= 0.0) {
+        return NAN;
+    }
+    if (log_kappa == INFINITY) {
+        return -INFINITY;
+    }
+
+    INLAcirc_pc_vminf_geometry_from_log_kappa(
+        log_kappa, &distance, &log_abs_derivative);
+    return log(lambda) - lambda * distance + log_abs_derivative +
+           log_kappa;
+}
+
+/* Includes the boundary mass exp(-lambda) at kappa = 0. */
+static inline double INLAcirc_pc_vminf_log_cdf(double kappa,
+                                               double lambda)
+{
+    double distance;
+    double unused_log_abs_derivative;
+
+    if (isnan(kappa) || isnan(lambda) || !isfinite(lambda) ||
+        lambda <= 0.0) {
+        return NAN;
+    }
+    if (kappa < 0.0) {
+        return -INFINITY;
+    }
+    if (kappa == INFINITY) {
+        return 0.0;
+    }
+
+    INLAcirc_pc_vminf_geometry(
+        kappa, &distance, &unused_log_abs_derivative);
+    return -lambda * distance;
+}
+
+static inline double INLAcirc_pc_vminf_quantile(double probability,
+                                                 double lambda)
+{
+    const double lower_log_kappa = log(DBL_MIN);
+    const double upper_log_kappa = log(DBL_MAX);
+    double target_log_distance;
+    double lower = lower_log_kappa;
+    double upper = upper_log_kappa;
+    double distance;
+    double unused_log_abs_derivative;
+
+    if (isnan(probability) || isnan(lambda) || !isfinite(lambda) ||
+        lambda <= 0.0 || probability < 0.0 || probability > 1.0) {
+        return NAN;
+    }
+    if (probability <= exp(-lambda)) {
+        return 0.0;
+    }
+    if (probability == 1.0) {
+        return INFINITY;
+    }
+
+    target_log_distance = log(-log(probability)) - log(lambda);
+    if (target_log_distance >= 0.0) {
+        return 0.0;
+    }
+
+    INLAcirc_pc_vminf_geometry_from_log_kappa(
+        upper, &distance, &unused_log_abs_derivative);
+    if (log(distance) > target_log_distance) {
+        return INFINITY;
+    }
+
+    for (int iteration = 0; iteration < 100; ++iteration) {
+        const double middle = lower + 0.5 * (upper - lower);
+
+        INLAcirc_pc_vminf_geometry_from_log_kappa(
+            middle, &distance, &unused_log_abs_derivative);
+        if (log(distance) > target_log_distance) {
+            lower = middle;
+        } else {
+            upper = middle;
+        }
+    }
+
+    return exp(lower + 0.5 * (upper - lower));
 }
 
 /* log{I0(kappa) exp(-kappa)} for kappa supplied on its natural scale. */
