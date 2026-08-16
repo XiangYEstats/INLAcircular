@@ -6,6 +6,16 @@
 \usage{
 \method{summary}{inlacc}(object, decimal = 3L, ...)
 }
+\arguments{
+\item{object}{A fitted \code{inlacc} model.}
+
+\item{decimal}{Number of decimal places retained for printing.}
+
+\item{...}{Additional arguments, currently unused.}
+}
+\value{
+An object of class \code{inlacc_summary}.
+}
 \description{
 Summary method for inlacc models
 }

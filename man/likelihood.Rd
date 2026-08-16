@@ -6,6 +6,16 @@
 \usage{
 likelihood(formula, family, family.setting = NULL)
 }
+\arguments{
+\item{formula}{A model formula defining one response block.}
+
+\item{family}{Character string naming the likelihood family.}
+
+\item{family.setting}{Optional list of INLA-style controls for the family.}
+}
+\value{
+An object of class \code{inlacc_model}.
+}
 \description{
 Define a Likelihood Block for INLAcc
 }

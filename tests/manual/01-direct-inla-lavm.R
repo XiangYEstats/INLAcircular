@@ -1,4 +1,4 @@
-# Direct use of the INLAcircular LAvM likelihood through inla().
+# Developer test: direct use of the LAvM likelihood through inla().
 # Load INLA first so INLAcircular::inla masks INLA::inla on the search path.
 library(INLA)
 library(INLAcircular)

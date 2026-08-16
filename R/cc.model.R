@@ -1,4 +1,9 @@
 #' Define a Likelihood Block for INLAcc
+#'
+#' @param formula A model formula defining one response block.
+#' @param family Character string naming the likelihood family.
+#' @param family.setting Optional list of INLA-style controls for the family.
+#' @return An object of class `inlacc_model`.
 #' @export
 likelihood <- function(formula, family, family.setting = NULL) {
   if (!inherits(formula, "formula")) stop("'formula' must be a valid R formula.")
@@ -11,12 +16,26 @@ likelihood <- function(formula, family, family.setting = NULL) {
 }
 
 #' Define Custom Intercept Settings
+#'
+#' @param name Optional name used for the intercept coefficient.
+#' @param mean Optional prior mean.
+#' @param sd Optional prior standard deviation.
+#' @return `NULL`; the call is interpreted while the model is assembled.
 #' @export
 intercept <- function(name = NULL, mean = NULL, sd = NULL) {
   invisible(NULL)
 }
 
 #' Define Custom Covariate Settings
+#'
+#' @param var Covariate vector used in the model formula.
+#' @param name Optional coefficient name.
+#' @param mean Optional prior mean.
+#' @param sd Optional prior standard deviation.
+#' @param initial Optional initial value on INLA's internal scale.
+#' @param fixed Logical; whether to fix the coefficient at `initial`.
+#' @param predictor Logical; whether the term is supplied as a predictor.
+#' @return `NULL`; the call is interpreted while the model is assembled.
 #' @export
 covariate <- function(var, name = NULL, mean = NULL, sd = NULL, initial = NULL, fixed = FALSE, predictor = FALSE) {
   invisible(NULL)

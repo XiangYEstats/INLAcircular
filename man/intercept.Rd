@@ -6,6 +6,16 @@
 \usage{
 intercept(name = NULL, mean = NULL, sd = NULL)
 }
+\arguments{
+\item{name}{Optional name used for the intercept coefficient.}
+
+\item{mean}{Optional prior mean.}
+
+\item{sd}{Optional prior standard deviation.}
+}
+\value{
+\code{NULL}; the call is interpreted while the model is assembled.
+}
 \description{
 Define Custom Intercept Settings
 }

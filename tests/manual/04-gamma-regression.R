@@ -1,4 +1,4 @@
-# Simulated Gamma regression
+# Developer test: Gamma regression through inlacc()
 
 if (!requireNamespace("INLA", quietly = TRUE)) {
   stop("This example requires the 'INLA' package.")

@@ -6,6 +6,14 @@
 \usage{
 \method{print}{inlacc_time}(x, ...)
 }
+\arguments{
+\item{x}{An \code{inlacc_time} object.}
+
+\item{...}{Additional arguments, currently unused.}
+}
+\value{
+\code{x}, invisibly.
+}
 \description{
 Print method for inlacc time summary
 }

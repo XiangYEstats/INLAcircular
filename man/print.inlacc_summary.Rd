@@ -6,6 +6,18 @@
 \usage{
 \method{print}{inlacc_summary}(x, decimal = NULL, metrics = TRUE, ...)
 }
+\arguments{
+\item{x}{An \code{inlacc_summary} object.}
+
+\item{decimal}{Optional number of decimal places to print.}
+
+\item{metrics}{Logical; whether to print available model metrics.}
+
+\item{...}{Additional arguments, currently unused.}
+}
+\value{
+\code{x}, invisibly.
+}
 \description{
 Print method for inlacc summaries
 }

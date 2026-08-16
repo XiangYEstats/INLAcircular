@@ -257,6 +257,10 @@ cc.summary <- function(result) {
 }
 
 #' Print method for inlacc time summary
+#'
+#' @param x An `inlacc_time` object.
+#' @param ... Additional arguments, currently unused.
+#' @return `x`, invisibly.
 #' @export
 print.inlacc_time <- function(x, ...) {
   cat(sprintf("Setup: %.2f  |  Computation: %.2f  |  Post-processing: %.2f  |  Total: %.2f\n",
@@ -265,6 +269,11 @@ print.inlacc_time <- function(x, ...) {
 }
 
 #' Summary method for inlacc models
+#'
+#' @param object A fitted `inlacc` model.
+#' @param decimal Number of decimal places retained for printing.
+#' @param ... Additional arguments, currently unused.
+#' @return An object of class `inlacc_summary`.
 #' @export
 summary.inlacc <- function(object, decimal = 3L, ...) {
   # Generate the base summary using your internal function
@@ -276,6 +285,12 @@ summary.inlacc <- function(object, decimal = 3L, ...) {
 }
 
 #' Print method for inlacc summaries
+#'
+#' @param x An `inlacc_summary` object.
+#' @param decimal Optional number of decimal places to print.
+#' @param metrics Logical; whether to print available model metrics.
+#' @param ... Additional arguments, currently unused.
+#' @return `x`, invisibly.
 #' @export
 print.inlacc_summary <- function(x, decimal = NULL, metrics = TRUE, ...) {
 

@@ -1,11 +1,11 @@
-CC ?= cc
-CFLAGS ?= -O2 -std=c11 -Wall -Wextra -Wpedantic
-CPPFLAGS ?=
-BUILD_DIR ?= build
+CC = cc
+CFLAGS = -O2 -std=c11 -Wall -Wextra -Wpedantic
+CPPFLAGS =
+BUILD_DIR = build
 
-CLOGLIKE_SOURCE := INLAcirc_cloglike.c
-CLOGLIKE_OBJECT := $(BUILD_DIR)/INLAcirc_cloglike.o
-TEST_BINARY := $(BUILD_DIR)/INLAcirc_cloglike_test
+CLOGLIKE_SOURCE = INLAcirc_cloglike.c
+CLOGLIKE_OBJECT = $(BUILD_DIR)/INLAcirc_cloglike.o
+TEST_BINARY = $(BUILD_DIR)/INLAcirc_cloglike_test
 
 .PHONY: all check clean
 
@@ -15,11 +15,11 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(CLOGLIKE_OBJECT): $(CLOGLIKE_SOURCE) INLAcirc_cloglike.h \
-	INLAcirc_common.h INLAcirc_cgeneric_compat.h | $(BUILD_DIR)
+	INLAcirc_common.h INLAcirc_cgeneric_compat.h $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I. -fPIC -c $(CLOGLIKE_SOURCE) -o $@
 
 $(TEST_BINARY): $(CLOGLIKE_SOURCE) tests/INLAcirc_cloglike_test.c \
-	INLAcirc_cloglike.h INLAcirc_common.h INLAcirc_cgeneric_compat.h | $(BUILD_DIR)
+	INLAcirc_cloglike.h INLAcirc_common.h INLAcirc_cgeneric_compat.h $(BUILD_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -I. $(CLOGLIKE_SOURCE) \
 		tests/INLAcirc_cloglike_test.c -lm -o $@
 

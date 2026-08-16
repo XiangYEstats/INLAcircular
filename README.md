@@ -43,49 +43,6 @@ For models using the LKJ multivariate random-effect model, install `graphpcor`:
 install.packages("graphpcor")
 ```
 
-## Included examples
-
-List all installed example scripts:
-
-```
-list.files(
-  system.file("examples", package = "INLAcircular"),
-  pattern = "\\.R$"
-)
-```
-
-View an example without running it:
-
-```
-file.show(system.file(
-  "examples",
-  "wind_new_york_joint_model.R",
-  package = "INLAcircular"
-))
-```
-
-Run the New York wind-data example:
-
-```
-source(system.file(
-  "examples",
-  "wind_new_york_joint_model.R",
-  package = "INLAcircular",
-  mustWork = TRUE
-))
-```
-
-Run a simulated joint circular–linear example:
-
-```
-source(system.file(
-  "examples",
-  "simulated_joint_circular_linear.R",
-  package = "INLAcircular",
-  mustWork = TRUE
-))
-```
-
 ## New York wind dataset
 
 The package includes the processed full-year New York wind dataset:

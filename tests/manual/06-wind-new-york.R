@@ -1,4 +1,4 @@
-# New York wind: joint circular-Gamma regression
+# Developer test: New York wind joint circular-Gamma regression
 
 if (!requireNamespace("INLA", quietly = TRUE)) {
   stop("This example requires the 'INLA' package.")
@@ -10,12 +10,40 @@ if (!requireNamespace("circular", quietly = TRUE)) {
 suppressPackageStartupMessages(library(INLA))
 suppressPackageStartupMessages(library(INLAcircular))
 
-# The package dataset contains the fully processed year. Wind direction is
-# already represented as a circular variable in radians.
-utils::data(
-  "wind_newyork",
-  package = "INLAcircular",
-  envir = environment()
+# Locate this file whether it is run with Rscript or the RStudio Source button.
+# No working-directory setup is required.
+.manual_test_directory <- function() {
+  for (frame in rev(sys.frames())) {
+    path <- frame$ofile
+    if (is.character(path) && length(path) == 1L && nzchar(path)) {
+      return(dirname(normalizePath(path, mustWork = TRUE)))
+    }
+  }
+  file_argument <- grep("^--file=", commandArgs(FALSE), value = TRUE)
+  if (length(file_argument)) {
+    path <- sub("^--file=", "", file_argument[[1L]])
+    return(dirname(normalizePath(path, mustWork = TRUE)))
+  }
+  stop("Run this file with Rscript or the RStudio Source button.", call. = FALSE)
+}
+
+manual_test_dir <- .manual_test_directory()
+wind_file <- file.path(
+  manual_test_dir,
+  "data",
+  "wind_newyork_2010.csv"
+)
+wind_newyork <- utils::read.csv(wind_file, check.names = FALSE)
+wind_newyork$datetime <- as.POSIXct(
+  wind_newyork$datetime,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+stopifnot(
+  nrow(wind_newyork) == 8759L,
+  identical(sort(unique(wind_newyork$month)), 1:12),
+  all(format(wind_newyork$datetime, "%Y") == "2010")
 )
 
 # Use the first quarter of the year, as in the original application.
@@ -27,7 +55,9 @@ hour_index <- dat$hour + 1L
 n <- nrow(dat)
 
 # Rotate the circular response around its sample mean and wrap to (-pi, pi].
-mean_direction <- as.numeric(circular::mean.circular(direction))
+mean_direction <- as.numeric(circular::mean.circular(
+  circular::circular(direction, units = "radians")
+))
 x <- atan2(
   sin(direction - mean_direction),
   cos(direction - mean_direction)

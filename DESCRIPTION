@@ -14,6 +14,8 @@ Description: Provides a Bayesian regression framework for joint models with
     shared latent predictors, structured latent effects, and optional
     LKJ-based multivariate covariance models.
 License: MIT + file LICENSE
+Depends:
+    R (>= 2.10)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3

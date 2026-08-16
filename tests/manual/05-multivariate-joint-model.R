@@ -1,4 +1,4 @@
-# Simulated multivariate joint model with mixed response families
+# Developer test: multivariate joint model with mixed response families
 
 if (!requireNamespace("INLA", quietly = TRUE)) {
   stop("This example requires the 'INLA' package.")

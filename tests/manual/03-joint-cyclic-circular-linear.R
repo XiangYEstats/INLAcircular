@@ -1,4 +1,4 @@
-# Simulated joint circular-linear regression with an RW2 effect
+# Developer test: joint circular-linear regression with a cyclic RW2 effect
 
 if (!requireNamespace("INLA", quietly = TRUE)) {
   stop("This example requires the 'INLA' package.")
@@ -9,9 +9,8 @@ suppressPackageStartupMessages(library(INLAcircular))
 
 set.seed(20260803)
 
-# Simulate a circular response x and a Gaussian response y that share the
-# latent predictor of x.
 n <- 300
+n_cycle <- 20
 a0 <- 1.0
 a1 <- 1.5
 kappa <- 300
@@ -24,20 +23,20 @@ beta <- 3
 z <- stats::rnorm(n, mean = 2, sd = 4)
 
 Q <- INLA:::inla.rw2(
-  n = n,
+  n = n_cycle,
   sparse = TRUE,
   scale.model = TRUE,
-  cyclic = FALSE
+  cyclic = TRUE
 )
 diag(Q) <- diag(Q) + 1e-5
-w <- as.numeric(INLA::inla.qsample(
+w_base <- as.numeric(INLA::inla.qsample(
   1,
   Q,
-  constr = list(
-    A = matrix(rbind(1, seq_len(n)), 2, n),
-    e = c(0, 0)
-  )
+  constr = list(A = matrix(1, 1, n_cycle), e = 0)
 ))
+
+w_index <- rep(seq_len(n_cycle), length.out = n)
+w <- w_base[w_index]
 
 eta_x <- a0 + a1 * w + alpha * z
 x <- rlavm(n, eta = eta_x, kappa = kappa)
@@ -47,15 +46,16 @@ y <- stats::rnorm(
   sd = 1 / sqrt(tau)
 )
 
-joint_data <- data.frame(x = x, y = y, z = z)
+cyclic_data <- data.frame(x = x, y = y, z = z)
 
-joint_model <- list(
+cyclic_model <- list(
   likelihood(
     x ~ intercept(name = "a0", mean = 0, sd = 10) +
       covariate(z, name = "alpha", mean = 0, sd = 10) +
       f(
         w,
         model = "rw2",
+        cyclic = TRUE,
         constr = TRUE,
         scale.model = TRUE,
         hyper = list(
@@ -104,11 +104,20 @@ joint_model <- list(
   )
 )
 
-joint_fit <- inlacc(
-  model = joint_model,
-  data = joint_data,
+cyclic_index <- list(
+  index(
+    var = "w",
+    data.id = w_index,
+    process.id = seq_len(n_cycle)
+  )
+)
+
+cyclic_fit <- inlacc(
+  model = cyclic_model,
+  data = cyclic_data,
+  latent.index = cyclic_index,
   metrics = TRUE,
   control.predictor = list(compute = TRUE)
 )
 
-summary(joint_fit, decimal = 3L)
+summary(cyclic_fit, decimal = 3L)

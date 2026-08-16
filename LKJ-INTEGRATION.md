@@ -85,16 +85,15 @@ computes CPO, DIC, and WAIC and is not a like-for-like timing comparison.
 
 ## Biomechanical example
 
-The biomechanical data and test script are intentionally kept outside the
-package. Put the standalone script in `INLAcc_test` and the six CSV files in
-`INLAcc_test/biomechanical`. Then run:
+The biomechanical regression test and its six CSV files are stored in the
+source package under `tests/manual`. Open
+`tests/manual/07-biomechanical-lkj.R` in RStudio and click **Source**, or run:
 
-```r
-setwd("~/INLAcc_test")
-source("testcode.LKJ.R")
+```sh
+Rscript tests/manual/07-biomechanical-lkj.R
 ```
 
-The script reads the files relative to the working directory. It reproduces
-the six likelihood blocks from the standalone `biomechanical.LKJ.R`: three
-LAvM responses, three Gaussian responses, one six-dimensional LKJ component
-named `i`, and one replicate per biomechanical observation.
+No working-directory setup is required: the script locates the data relative
+to its own file. It reproduces six likelihood blocks: three LAvM responses,
+three Gaussian responses, one six-dimensional LKJ component named `i`, and
+one replicate per biomechanical observation.

@@ -14,6 +14,24 @@ covariate(
   predictor = FALSE
 )
 }
+\arguments{
+\item{var}{Covariate vector used in the model formula.}
+
+\item{name}{Optional coefficient name.}
+
+\item{mean}{Optional prior mean.}
+
+\item{sd}{Optional prior standard deviation.}
+
+\item{initial}{Optional initial value on INLA's internal scale.}
+
+\item{fixed}{Logical; whether to fix the coefficient at \code{initial}.}
+
+\item{predictor}{Logical; whether the term is supplied as a predictor.}
+}
+\value{
+\code{NULL}; the call is interpreted while the model is assembled.
+}
 \description{
 Define Custom Covariate Settings
 }
