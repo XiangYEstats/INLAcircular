@@ -2,6 +2,8 @@
 
 The installed example scripts are:
 
+- `direct_inla_lavm.R`: direct single-response LAvM regression through
+  `inla()`, with both default and explicit `control.family` settings.
 - `simulated_joint_circular_linear.R`: a joint LAvM-Gaussian model with a
   shared latent predictor and an RW2 effect.
 - `simulated_cyclic_joint_circular_linear.R`: the same joint structure with a
@@ -13,12 +15,12 @@ The installed example scripts are:
   hourly wind normals. The script loads the processed full-year
   `wind_newyork` package dataset and selects the first quarter for fitting.
 
-For example, run the first script after installing the package with:
+For example, run the direct `inla()` script after installing the package with:
 
 ```r
 source(system.file(
   "examples",
-  "simulated_joint_circular_linear.R",
+  "direct_inla_lavm.R",
   package = "INLAcircular",
   mustWork = TRUE
 ))

@@ -8,6 +8,8 @@
 #'   term, `pc.prior.u` and `pc.prior.alpha` default to `1` and `0.5`,
 #'   respectively.
 #' @param control.family Optional global list of control.family configurations.
+#'   For an LAvM likelihood, use `hyper$kappa`; its `initial` value is
+#'   interpreted directly on the internal `log(kappa)` scale.
 #' @param control.fixed Optional list for fixed effects priors.
 #' @param control.inla Optional control list passed to inla().
 #' @param metrics Logical. Compute WAIC, DIC, CPO, etc.?
@@ -393,33 +395,12 @@ inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
     }
 
     if (fam == "lavm") {
-      joint_families <- c(joint_families, "cloglike")
-
-      clog_list <- list(cloglike = INLAcircular:::lavm.cloglike(usr_ctrl))
-
-      if (!is.null(usr_ctrl)) {
-        for (nn in names(usr_ctrl)) {
-          if (!(nn %in% c("link", "hyper", "cloglike", "lambda", "u", "alpha"))) {
-            clog_list[[nn]] <- usr_ctrl[[nn]]
-          }
-        }
-      }
-      ctrl_fam <- append(ctrl_fam, list(clog_list))
+      lavm_definition <- .make_lavm_inla_family(usr_ctrl)
+      joint_families <- c(joint_families, lavm_definition$family)
+      ctrl_fam <- append(ctrl_fam, list(lavm_definition$control))
       Y_list[[i]] <- INLA::inla.mdata(Y_list[[i]])
 
-      usr_u <- 0.5
-      usr_alpha <- 0.5
-      if (!is.null(usr_ctrl$hyper$kappa$param)) {
-        usr_u <- as.numeric(usr_ctrl$hyper$kappa$param[1])
-        usr_alpha <- as.numeric(usr_ctrl$hyper$kappa$param[2])
-      }
-      usr_prior <- "pc.vminf"
-      if (!is.null(usr_ctrl$hyper$kappa$prior)) {
-        usr_prior <- .canonical_lavm_pc_prior(
-          usr_ctrl$hyper$kappa$prior
-        )
-      }
-      prior_label <- sprintf("%s(%g, %g)", usr_prior, usr_u, usr_alpha)
+      prior_label <- lavm_definition$prior.label
       hyper_priors[[sprintf("Theta1 for INLA.Data%d", i)]] <- prior_label
       hyper_priors[["Theta1 for cloglike"]] <- prior_label
     } else {
@@ -514,6 +495,9 @@ inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
   result$inlacc_meta$LKJ <- lkj_info$processes
 
   class(result) <- c("inlacc", class(result))
-  result <- tryCatch(INLAcircular:::lavm.rename.inla.output(result, result$inlacc_meta), error = function(e) result)
+  result <- tryCatch(
+    lavm.rename.inla.output(result, result$inlacc_meta),
+    error = function(e) result
+  )
   return(result)
 }

@@ -31,6 +31,19 @@ that existing calls to `INLA::inla.cloglike.define()` continue to work with
 the package shared library. This dependency is one-way: the R package embeds
 the pure module, while the pure module never depends on the R package.
 
+## Direct `inla()` integration
+
+Loading `INLAcircular` after `INLA` exposes `INLAcircular::inla()` on the
+search path. It delegates ordinary likelihoods unchanged to `INLA::inla()`.
+For `family = "lavm"`, it translates the call to the package's compiled
+`cloglike`, converts the response with `INLA::inla.mdata()`, and passes the
+LAvM link, concentration, and PC-prior controls to the native module. This is
+also the same path used internally by `inlacc()`.
+
+The public control is `hyper$kappa`. Its `initial` value is already on INLA's
+internal `log(kappa)` scale; there is no separate `log.initial` argument.
+Supported prior names are `pc.vm0` and `pc.vminf`.
+
 ## Namespace policy
 
 All INLAcircular implementation symbols and helpers begin with `INLAcirc_`.

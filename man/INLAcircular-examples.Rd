@@ -8,6 +8,9 @@ Complete scripts illustrating simulated and applied models fitted with
 \details{
 The package installs the following scripts under \code{examples/}:
 \itemize{
+  \item \code{direct_inla_lavm.R}: direct single-response LAvM regression
+  through \code{inla()}, with default and explicit \code{control.family}
+  settings.
   \item \code{simulated_joint_circular_linear.R}: joint LAvM-Gaussian
   regression with an RW2 effect.
   \item \code{simulated_cyclic_joint_circular_linear.R}: joint regression
@@ -25,7 +28,7 @@ The package installs the following scripts under \code{examples/}:
 \dontrun{
 source(system.file(
   "examples",
-  "simulated_joint_circular_linear.R",
+  "direct_inla_lavm.R",
   package = "INLAcircular",
   mustWork = TRUE
 ))

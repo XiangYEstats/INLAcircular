@@ -2,21 +2,23 @@
 % Please edit documentation in R/cc.family.R
 \name{lavm.cloglike}
 \alias{lavm.cloglike}
-\title{Define the custom LAVM likelihood for INLA}
+\title{Define the custom LAvM likelihood for INLA}
 \usage{
 lavm.cloglike(family.setting = NULL)
 }
 \arguments{
-\item{family.setting}{A list of controls for the LAVM likelihood. Within
-\code{hyper$kappa}, \code{log.initial} specifies the initial log-concentration
-and \code{fixed = TRUE} fixes the log-concentration at that value. The two
-values in \code{param = c(u, alpha)} must both lie strictly between 0 and 1.}
+\item{family.setting}{A list of controls for the LAvM likelihood. Within
+\code{hyper$kappa}, \code{initial} is the initial value of \code{log(kappa)},
+and \code{fixed = TRUE} fixes \code{log(kappa)} at that value. The two values
+in \code{param = c(u, alpha)} must both lie strictly between 0 and 1. For a
+single likelihood, both \code{list(link = ..., hyper = ...)} and the nested
+INLA form \code{list(list(link = ..., hyper = ...))} are accepted.}
 }
 \value{
 An INLA cloglike object.
 }
 \description{
-Define the custom LAVM likelihood for INLA
+Define the custom LAvM likelihood for INLA
 }
 \details{
 The native likelihood entry point is \code{INLAcirc_cloglike_lavm}. Its

@@ -71,7 +71,7 @@ joint_model <- list(
       link = "inverse.tangent",
       hyper = list(
         kappa = list(
-          log.initial = 6,
+          initial = 6,
           prior = "pc.vminf",
           param = c(0.5, 0.99),
           fixed = FALSE

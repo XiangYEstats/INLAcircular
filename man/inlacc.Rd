@@ -29,7 +29,9 @@ inlacc(
 \code{f()} term, \code{pc.prior.u} and \code{pc.prior.alpha} default to
 \code{1} and \code{0.5}, respectively.}
 
-\item{control.family}{Optional global list of control.family configurations.}
+\item{control.family}{Optional global list of control.family configurations.
+For an LAvM likelihood, use \code{hyper$kappa}; its \code{initial} value is
+interpreted directly on the internal \code{log(kappa)} scale.}
 
 \item{control.fixed}{Optional list for fixed effects priors.}
 

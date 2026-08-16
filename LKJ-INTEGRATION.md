@@ -72,7 +72,7 @@ must also match. In particular,
 ```r
 family.setting = list(
   link = "inverse.tangent",
-  hyper = list(kappa = list(log.initial = 15, fixed = TRUE))
+  hyper = list(kappa = list(initial = 15, fixed = TRUE))
 )
 ```
 
