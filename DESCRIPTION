@@ -27,6 +27,7 @@ Suggests:
     circular,
     graphpcor,
     INLA,
-    INLAtools
+    INLAtools,
+    rstudioapi
 Additional_repositories:
     https://inla.r-inla-download.org/R/testing

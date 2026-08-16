@@ -10,45 +10,29 @@ if (!requireNamespace("circular", quietly = TRUE)) {
 suppressPackageStartupMessages(library(INLA))
 suppressPackageStartupMessages(library(INLAcircular))
 
-# Locate this file whether it is run with Rscript or the RStudio Source button.
-# No working-directory setup is required.
-.manual_test_directory <- function() {
-  for (frame in rev(sys.frames())) {
-    path <- frame$ofile
-    if (is.character(path) && length(path) == 1L && nzchar(path)) {
-      return(dirname(normalizePath(path, mustWork = TRUE)))
-    }
-  }
-  file_argument <- grep("^--file=", commandArgs(FALSE), value = TRUE)
-  if (length(file_argument)) {
-    path <- sub("^--file=", "", file_argument[[1L]])
-    return(dirname(normalizePath(path, mustWork = TRUE)))
-  }
-  stop("Run this file with Rscript or the RStudio Source button.", call. = FALSE)
+# Use the one-year dataset already installed with INLAcircular. This works when
+# the file is sourced, run with Rscript, or evaluated line by line in RStudio.
+wind_data_environment <- new.env(parent = emptyenv())
+utils::data(
+  "wind_newyork",
+  package = "INLAcircular",
+  envir = wind_data_environment
+)
+if (!exists("wind_newyork", envir = wind_data_environment, inherits = FALSE)) {
+  stop("The package dataset 'wind_newyork' could not be loaded.", call. = FALSE)
 }
-
-manual_test_dir <- .manual_test_directory()
-wind_file <- file.path(
-  manual_test_dir,
-  "data",
-  "wind_newyork_2010.csv"
-)
-wind_newyork <- utils::read.csv(wind_file, check.names = FALSE)
-wind_newyork$datetime <- as.POSIXct(
-  wind_newyork$datetime,
-  format = "%Y-%m-%d %H:%M:%S",
-  tz = "UTC"
-)
+wind_newyork <- wind_data_environment$wind_newyork
+rm(wind_data_environment)
 
 stopifnot(
   nrow(wind_newyork) == 8759L,
   identical(sort(unique(wind_newyork$month)), 1:12),
-  all(format(wind_newyork$datetime, "%Y") == "2010")
+  all(format(wind_newyork$datetime, "%Y", tz = "UTC") == "2010")
 )
 
 # Use the first quarter of the year, as in the original application.
 dat <- wind_newyork[wind_newyork$month %in% 1:3, , drop = FALSE]
-direction <- dat$HLY.WIND.VCTDIR
+direction <- as.numeric(dat$HLY.WIND.VCTDIR)
 speed <- dat$HLY.WIND.VCTSPD
 temperature <- dat$HLY.TEMP.NORMAL
 hour_index <- dat$hour + 1L

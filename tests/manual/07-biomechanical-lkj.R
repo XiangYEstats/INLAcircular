@@ -15,21 +15,84 @@ if (length(missing_packages)) {
 suppressPackageStartupMessages(library(INLA))
 suppressPackageStartupMessages(library(INLAcircular))
 
-# Locate this file whether it is run with Rscript or the RStudio Source button.
-# No working-directory setup is required.
+# Locate this file when it is sourced, run with Rscript, or evaluated line by
+# line in an open RStudio source editor. No working-directory setup is needed.
 .manual_test_directory <- function() {
+  is_manual_test_directory <- function(path) {
+    is.character(path) &&
+      length(path) == 1L &&
+      nzchar(path) &&
+      dir.exists(file.path(path, "data", "biomechanical"))
+  }
+
+  # source("07-biomechanical-lkj.R") or the RStudio Source button.
   for (frame in rev(sys.frames())) {
     path <- frame$ofile
-    if (is.character(path) && length(path) == 1L && nzchar(path)) {
-      return(dirname(normalizePath(path, mustWork = TRUE)))
+    if (is.character(path) && length(path) == 1L && nzchar(path) &&
+        file.exists(path)) {
+      candidate <- dirname(normalizePath(path, mustWork = TRUE))
+      if (is_manual_test_directory(candidate)) {
+        return(candidate)
+      }
     }
   }
+
+  # Rscript tests/manual/07-biomechanical-lkj.R.
   file_argument <- grep("^--file=", commandArgs(FALSE), value = TRUE)
   if (length(file_argument)) {
     path <- sub("^--file=", "", file_argument[[1L]])
-    return(dirname(normalizePath(path, mustWork = TRUE)))
+    if (file.exists(path)) {
+      candidate <- dirname(normalizePath(path, mustWork = TRUE))
+      if (is_manual_test_directory(candidate)) {
+        return(candidate)
+      }
+    }
   }
-  stop("Run this file with Rscript or the RStudio Source button.", call. = FALSE)
+
+  # Ctrl+Enter/Run while this file is open in RStudio.
+  if (requireNamespace("rstudioapi", quietly = TRUE) &&
+      rstudioapi::isAvailable()) {
+    context <- tryCatch(
+      rstudioapi::getSourceEditorContext(),
+      error = function(e) NULL
+    )
+    path <- if (is.null(context)) NULL else context$path
+    if (is.character(path) && length(path) == 1L && nzchar(path) &&
+        file.exists(path)) {
+      candidate <- dirname(normalizePath(path, mustWork = TRUE))
+      if (is_manual_test_directory(candidate)) {
+        return(candidate)
+      }
+    }
+  }
+
+  # Common RStudio Project locations, including the package root and its
+  # parent directory.
+  working_directory <- normalizePath(getwd(), mustWork = TRUE)
+  roots <- unique(c(
+    working_directory,
+    dirname(working_directory),
+    dirname(dirname(working_directory))
+  ))
+  candidates <- unique(c(
+    roots,
+    file.path(roots, "tests", "manual"),
+    file.path(roots, "INLAcircular", "tests", "manual")
+  ))
+  for (candidate in candidates) {
+    if (is_manual_test_directory(candidate)) {
+      return(normalizePath(candidate, mustWork = TRUE))
+    }
+  }
+
+  stop(
+    paste(
+      "Could not locate tests/manual/data/biomechanical.",
+      "Open 07-biomechanical-lkj.R in RStudio and run it from that editor,",
+      "click Source, or run it with Rscript."
+    ),
+    call. = FALSE
+  )
 }
 
 manual_test_dir <- .manual_test_directory()
@@ -67,7 +130,7 @@ trans_z <- read_biomechanical("translational_z_var.csv")
 
 to_radians <- function(x) {
   as.numeric(circular::conversion.circular(
-    circular::as.circular(x, units = "degrees"),
+    circular::circular(x, units = "degrees"),
     units = "radians"
   ))
 }
