@@ -16,3 +16,10 @@ src-cloglike/build/
 # OS generated files
 .DS_Store
 .Rproj.user
+
+# INLA
+src-cloglike/GPATH
+src-cloglike/GRTAGS
+src-cloglike/GTAGS
+src-cloglike/TAGS
+src-cloglike/cgeneric.h
