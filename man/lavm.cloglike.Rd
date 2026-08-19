@@ -21,7 +21,9 @@ An INLA cloglike object.
 Define the custom LAvM likelihood for INLA
 }
 \details{
-The native likelihood entry point is \code{INLAcirc_cloglike_lavm}. Its
-implementation is kept in the R-independent \code{src-cloglike} source tree.
-Supported concentration priors are \code{pc.vm0} and \code{pc.vminf}.
+The native likelihood entry point is \code{INLAcirc_cloglike_lavm}. The
+standalone implementation for inla-build is kept in \code{src-cloglike}; the
+package DLL uses a self-contained synchronized copy in \code{src}, so package
+installation never compiles \code{src-cloglike}. Supported concentration
+priors are \code{pc.vm0} and \code{pc.vminf}.
 }

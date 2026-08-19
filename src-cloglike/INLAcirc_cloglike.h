@@ -1,7 +1,11 @@
 #ifndef INLACIRC_CLOGLIKE_H
 #       define INLACIRC_CLOGLIKE_H
 
+#if defined(INLACIRC_TEST_CGENERIC_COMPAT)
+#include "tests/INLAcirc_cgeneric_test_compat.h"
+#else
 #include "cgeneric.h"
+#endif
 
 #       ifdef __cplusplus
 extern "C" {

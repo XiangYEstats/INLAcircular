@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-#include "../src-cloglike/INLAcirc_common.h"
+#include "INLAcirc_common.h"
 
 static double INLAcirc_approx_linear(double x,
                                      const double *grid_x,
@@ -310,10 +310,10 @@ SEXP INLAcirc_C_pvm(SEXP q,
         double standardized;
 
         if (strategy_code == 0) {
-            standardized = quantiles[i] - locations[i] + INLACIRC_PI;
-            standardized -= 2.0 * INLACIRC_PI *
-                            floor(standardized / (2.0 * INLACIRC_PI));
-            standardized -= INLACIRC_PI;
+            standardized = quantiles[i] - locations[i] + M_PI;
+            standardized -= 2.0 * M_PI *
+                            floor(standardized / (2.0 * M_PI));
+            standardized -= M_PI;
         } else {
             standardized = quantiles[i] - locations[i];
         }
@@ -348,11 +348,11 @@ SEXP INLAcirc_C_qvm(SEXP p, SEXP mu, SEXP grid_x, SEXP grid_y)
             continue;
         }
         if (probabilities[i] <= 0.0) {
-            result[i] = locations[i] - INLACIRC_PI;
+            result[i] = locations[i] - M_PI;
             continue;
         }
         if (probabilities[i] >= 1.0) {
-            result[i] = locations[i] + INLACIRC_PI;
+            result[i] = locations[i] + M_PI;
             continue;
         }
 

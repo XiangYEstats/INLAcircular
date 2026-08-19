@@ -237,9 +237,10 @@
 #'   likelihood, both `list(link = ..., hyper = ...)` and the nested INLA form
 #'   `list(list(link = ..., hyper = ...))` are accepted.
 #' @details The native likelihood entry point is
-#'   `INLAcirc_cloglike_lavm`. Its implementation is kept in the R-independent
-#'   `src-cloglike` source tree. Supported concentration priors are
-#'   `pc.vm0` and `pc.vminf`.
+#'   `INLAcirc_cloglike_lavm`. The standalone implementation for inla-build is
+#'   kept in `src-cloglike`; the package DLL uses a self-contained synchronized
+#'   copy in `src`, so package installation never compiles `src-cloglike`.
+#'   Supported concentration priors are `pc.vm0` and `pc.vminf`.
 #' @return An INLA cloglike object.
 #' @export
 lavm.cloglike <- function(family.setting = NULL) {

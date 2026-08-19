@@ -1,38 +1,59 @@
-# R-independent INLA cloglike source
+# Standalone INLA cloglike source
 
-This directory is the canonical implementation of the LAvM `cloglike` module.
-It is deliberately independent of the R C API and can be compiled without
-linking against R or Rmath.
+This directory contains the R-independent LAvM `cloglike` module that can be
+compiled directly into the INLA source tree. Nothing here includes the R C API
+or calls R/Rmath.
 
 Files:
 
 - `INLAcirc_cloglike.c`: likelihood, PC-prior, and INLA command dispatcher.
-- `INLAcirc_cloglike.h`: public prototype for `INLAcirc_cloglike_lavm()`.
-- `INLAcirc_common.h`: shared Bessel and PC-prior numerical functions; ISO C
-  and `libm` only.
-- `INLAcirc_cgeneric_compat.h`: minimal standalone declaration of the INLA ABI.
-- `tests/INLAcirc_cloglike_test.c`: R-free native regression tests.
+- `INLAcirc_cloglike.h`: public prototype for
+  `INLAcirc_cloglike_lavm()`; it uses the INLA source tree's `cgeneric.h`.
+- `INLAcirc_common.h`: Bessel and PC-prior numerical functions; ISO C and
+  `libm` only.
+- `FUNCTIONS`: exported function name used by the INLA build integration.
+- `tests/INLAcirc_cloglike_test.c`: R-free native regression test.
+- `tests/test-cloglike-inla.R`: end-to-end R test that calls INLA with this
+  source compiled as a temporary shared library.
 
-Run the standalone check with:
+## Adding the module to inla-build
+
+Place INLA's current `cgeneric.h` on the compiler include path (or add it to
+this directory during the external build), compile `INLAcirc_cloglike.c`, and
+register the symbol:
+
+```text
+INLAcirc_cloglike_lavm
+```
+
+`cgeneric.h` is intentionally absent from this package and is ignored by Git.
+The ordinary production target therefore works only after the external header
+has been supplied:
+
+```sh
+make all
+```
+
+The R package never compiles this directory. Its DLL is built solely from the
+self-contained sources under `../src/`.
+
+## Tests
+
+The native regression test uses a test-only ABI declaration and does not need
+R, INLA, or a copied `cgeneric.h`:
 
 ```sh
 make check
 make clean
 ```
 
-## Adding the module to inla-build
+With R and INLA installed, the integration test follows INLA's normal
+`cloglike` shared-library workflow:
 
-Compile `INLAcirc_cloglike.c` as an INLA translation unit and register the
-symbol:
-
-```text
-INLAcirc_cloglike_lavm
+```sh
+Rscript tests/test-cloglike-inla.R
 ```
 
-Use the INLA source tree's own `cgeneric.h` by adding
-`-DINLACIRC_USE_INLA_CGENERIC` and making that header available on the include
-path. The compatibility header is only for standalone/package compilation.
-
-Do not copy or compile `../src/INLAcirc_cloglike_bridge.c` in inla-build. That
-bridge exists solely because the current R package needs the symbol in its own
-shared library until the likelihood is available in the INLA executable.
+It compiles `INLAcirc_cloglike.c` in a temporary directory, creates the
+cloglike object with `INLA::inla.cloglike.define()`, and fits a small model
+with `INLA::inla()`. The temporary build is removed automatically.

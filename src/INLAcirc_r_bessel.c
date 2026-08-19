@@ -1,7 +1,7 @@
 #include <R.h>
 #include <Rinternals.h>
 
-#include "../src-cloglike/INLAcirc_common.h"
+#include "INLAcirc_common.h"
 
 SEXP INLAcirc_C_bessel_i(SEXP x, SEXP nu, SEXP expon_scaled)
 {
