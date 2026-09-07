@@ -2,20 +2,57 @@
 % Please edit documentation in R/cc.model.R
 \name{likelihood}
 \alias{likelihood}
-\title{Define a Likelihood Block for INLAcc}
+\title{Define one likelihood block for \code{inlacc()}}
 \usage{
 likelihood(formula, family, family.setting = NULL)
 }
 \arguments{
-\item{formula}{A model formula defining one response block.}
+\item{formula}{A two-sided model formula defining one response block. The
+left side should be a single column name in \code{data}; the right side may
+contain numeric fixed-effect expressions, \code{\link[=intercept]{intercept()}}, \code{\link[=covariate]{covariate()}},
+and bare INLA \code{f()} terms.}
 
-\item{family}{Character string naming the likelihood family.}
+\item{family}{One character string naming the likelihood family. Use
+\code{"lavm"} for the package's link-adjusted von Mises likelihood. Other
+family names are passed to \code{INLA::inla()}.}
 
-\item{family.setting}{Optional list of INLA-style controls for the family.}
+\item{family.setting}{Optional per-block INLA \code{control.family} list. For an
+LAvM block, use \code{link} and \code{hyper$kappa}; see \code{\link[=lavm.cloglike]{lavm.cloglike()}}.}
 }
 \value{
-An object of class \code{inlacc_model}.
+An object of class \code{inlacc_model} containing \code{formula}, \code{family},
+and \code{family.setting}.
 }
 \description{
-Define a Likelihood Block for INLAcc
+A likelihood block stores one response formula, its likelihood family, and
+the corresponding INLA family controls. Pass one block, or a list of blocks,
+to \code{\link[=inlacc]{inlacc()}}.
+}
+\details{
+All blocks supplied to one \code{\link[=inlacc]{inlacc()}} call share the rows of a
+single data frame. Their order determines the stacking order and, for an
+\code{iidkd_LKJ} group, the multivariate component order. This constructor stores
+the specification; validation that depends on the data occurs in
+\code{\link[=inlacc]{inlacc()}}.
+}
+\examples{
+block <- likelihood(
+  angle ~ intercept(name = "alpha0", mean = 0, sd = 2) +
+    covariate(z, name = "alpha_z", mean = 0, sd = 1),
+  family = "lavm",
+  family.setting = list(
+    link = "inverse.tangent",
+    hyper = list(
+      kappa = list(
+        initial = 6,
+        prior = "pc.vminf",
+        param = c(0.5, 0.5),
+        fixed = FALSE
+      )
+    )
+  )
+)
+}
+\seealso{
+\code{\link[=inlacc]{inlacc()}}, \code{\link[=intercept]{intercept()}}, \code{\link[=covariate]{covariate()}}, \code{\link[=index]{index()}}
 }

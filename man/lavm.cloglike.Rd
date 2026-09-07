@@ -2,28 +2,79 @@
 % Please edit documentation in R/cc.family.R
 \name{lavm.cloglike}
 \alias{lavm.cloglike}
-\title{Define the custom LAvM likelihood for INLA}
+\title{Define the compiled LAvM cloglike for direct R-INLA fitting}
 \usage{
 lavm.cloglike(family.setting = NULL)
 }
 \arguments{
-\item{family.setting}{A list of controls for the LAvM likelihood. Within
-\code{hyper$kappa}, \code{initial} is the initial value of \code{log(kappa)},
-and \code{fixed = TRUE} fixes \code{log(kappa)} at that value. The two values
-in \code{param = c(u, alpha)} must both lie strictly between 0 and 1. For a
-single likelihood, both \code{list(link = ..., hyper = ...)} and the nested
-INLA form \code{list(list(link = ..., hyper = ...))} are accepted.}
+\item{family.setting}{A list of controls for the LAvM likelihood. \code{link} is
+\code{"inverse.tangent"} (default), \code{"scaled.logit"}, or \code{"scaled.probit"}.
+Within \code{hyper$kappa}, \code{initial} is the initial value of \code{log(kappa)},
+\code{prior} is \code{"pc.vminf"} (default) or \code{"pc.vm0"},
+\code{param = c(u, alpha)} contains two values strictly between zero and one,
+and \code{fixed = TRUE} fixes \code{log(kappa)} at \code{initial}. For a single
+likelihood, both \code{list(link = ..., hyper = ...)} and the nested INLA form
+\code{list(list(link = ..., hyper = ...))} are accepted.}
 }
 \value{
 An INLA cloglike object.
 }
 \description{
-Define the custom LAvM likelihood for INLA
+Construct the custom likelihood object needed by a literal
+\code{INLA::inla(..., family = "cloglike")} call. The convenience \code{\link[=inla]{inla()}}
+function and \code{\link[=inlacc]{inlacc()}} call this constructor internally.
 }
 \details{
-The native likelihood entry point is \code{INLAcirc_cloglike_lavm}. The
-standalone implementation for inla-build is kept in \code{src-cloglike}; the
-package DLL uses a self-contained synchronized copy in \code{src}, so package
-installation never compiles \code{src-cloglike}. Supported concentration
-priors are \code{pc.vm0} and \code{pc.vminf}.
+The native likelihood entry point is
+\code{INLAcirc_cloglike_lavm}. The standalone implementation for inla-build is
+kept in \code{src-cloglike}; the package DLL uses a self-contained synchronized
+copy in \code{src}, so package installation never compiles \code{src-cloglike}.
+
+In \code{param = c(u, alpha)}, \code{u} is a threshold for the mean resultant
+length \code{I1(kappa) / I0(kappa)}, and both supported priors are calibrated
+so that the probability of exceeding \code{u} is \code{alpha}. This is distinct
+from the standalone PC-prior d/p/q/r functions, which accept \code{lambda}
+directly. The defaults are \code{initial = 6}, \code{prior = "pc.vminf"},
+\code{param = c(0.5, 0.5)}, and \code{fixed = FALSE}. \code{hyper$prec} and
+\code{log.initial} are rejected.
+
+The standalone \code{pc.vminf} law has a boundary atom at \code{kappa = 0}. INLA
+represents a finite \code{theta = log(kappa)}, so this cloglike evaluates the
+continuous component on the theta scale, including its Jacobian, and has
+no discrete state at \code{theta = -Inf}. Its \code{c(u, alpha)} input should
+therefore be read as a rate calibration. For numerical stability, the
+compiled likelihood and prior use a working theta restricted to
+\verb{[-30, 30]}.
+
+For a direct fit, convert the response with \code{INLA::inla.mdata()}, use
+\code{family = "cloglike"}, and pass the returned object as
+\code{control.family = list(cloglike = object)}. A literal
+\code{INLA::inla(..., family = "lavm")} does not select this package's custom
+likelihood or priors.
+}
+\examples{
+\dontrun{
+y_lavm <- INLA::inla.mdata(y)
+cloglike <- lavm.cloglike(list(
+  link = "inverse.tangent",
+  hyper = list(
+    kappa = list(
+      initial = log(50),
+      prior = "pc.vminf",
+      param = c(0.5, 0.5),
+      fixed = FALSE
+    )
+  )
+))
+fit <- INLA::inla(
+  y_lavm ~ z,
+  family = "cloglike",
+  data = list(y_lavm = y_lavm, z = z),
+  control.family = list(cloglike = cloglike),
+  control.inla = list(cmin = 0, compute.initial.values = TRUE)
+)
+}
+}
+\seealso{
+\code{\link[=inla]{inla()}}, \code{\link[=inlacc]{inlacc()}}
 }

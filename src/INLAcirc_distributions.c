@@ -102,114 +102,48 @@ SEXP INLAcirc_C_dlavm(SEXP x,
     return output;
 }
 
-SEXP INLAcirc_C_dpc_vm0(SEXP kappa,
-                        SEXP lambda,
-                        SEXP log_probability)
+SEXP INLAcirc_C_dcardioid(SEXP x,
+                          SEXP mu,
+                          SEXP kappa,
+                          SEXP log_probability)
 {
-    const int count = Rf_length(kappa);
+    const int count = Rf_length(x);
+    const double *observations = REAL(x);
+    const double *locations = REAL(mu);
     const double *concentrations = REAL(kappa);
-    const double *rates = REAL(lambda);
     const int return_log = Rf_asLogical(log_probability);
     SEXP output = PROTECT(Rf_allocVector(REALSXP, count));
     double *result = REAL(output);
 
     for (int i = 0; i < count; ++i) {
-        const double log_density =
-            INLAcirc_pc_vm0_log_density(concentrations[i], rates[i]);
-        result[i] = return_log ? log_density : exp(log_density);
-    }
+        const double observation = observations[i];
+        const double location = locations[i];
+        const double concentration = concentrations[i];
+        double difference;
+        double cosine_half;
+        double log_density;
 
-    UNPROTECT(1);
-    return output;
-}
-
-SEXP INLAcirc_C_ppc_vm0(SEXP q,
-                        SEXP lambda,
-                        SEXP log_probability)
-{
-    const int count = Rf_length(q);
-    const double *quantiles = REAL(q);
-    const double *rates = REAL(lambda);
-    const int return_log = Rf_asLogical(log_probability);
-    SEXP output = PROTECT(Rf_allocVector(REALSXP, count));
-    double *result = REAL(output);
-
-    for (int i = 0; i < count; ++i) {
-        const double log_cdf =
-            INLAcirc_pc_vm0_log_cdf(quantiles[i], rates[i]);
-        result[i] = return_log ? log_cdf : exp(log_cdf);
-    }
-
-    UNPROTECT(1);
-    return output;
-}
-
-SEXP INLAcirc_C_qpc_vm0(SEXP p,
-                        SEXP lambda,
-                        SEXP log_probability)
-{
-    const int count = Rf_length(p);
-    const double *probabilities = REAL(p);
-    const double *rates = REAL(lambda);
-    const int probabilities_are_log = Rf_asLogical(log_probability);
-    SEXP output = PROTECT(Rf_allocVector(REALSXP, count));
-    double *result = REAL(output);
-
-    for (int i = 0; i < count; ++i) {
-        const double supplied_probability = probabilities[i];
-        double probability;
-
-        if (isnan(supplied_probability) ||
-            (probabilities_are_log && supplied_probability > 0.0) ||
-            (!probabilities_are_log &&
-             (supplied_probability < 0.0 || supplied_probability > 1.0))) {
-            result[i] = NAN;
+        if (ISNA(observation) || ISNA(location) || ISNA(concentration)) {
+            result[i] = NA_REAL;
             continue;
         }
+        if (ISNAN(observation) || ISNAN(location) || ISNAN(concentration) ||
+            !R_FINITE(observation) || !R_FINITE(location) ||
+            !R_FINITE(concentration) || concentration < 0.0 ||
+            concentration > 0.5) {
+            result[i] = R_NaN;
+            continue;
+        }
+        difference = remainder(observation - location, 2.0 * M_PI);
+        cosine_half = cos(difference / 2.0);
 
-        if (probabilities_are_log) {
-            probability = exp(supplied_probability);
+        if (concentration == 0.5 && fabs(difference) == M_PI) {
+            log_density = -INFINITY;
         } else {
-            probability = supplied_probability;
+            const double numerator = 1.0 - 2.0 * concentration +
+                4.0 * concentration * cosine_half * cosine_half;
+            log_density = log(numerator) - INLACIRC_LOG_2PI;
         }
-        result[i] = INLAcirc_pc_vm0_quantile(probability, rates[i]);
-    }
-
-    UNPROTECT(1);
-    return output;
-}
-
-SEXP INLAcirc_C_rpc_vm0(SEXP n, SEXP lambda)
-{
-    const int count = Rf_asInteger(n);
-    const double *rates = REAL(lambda);
-    SEXP output = PROTECT(Rf_allocVector(REALSXP, count));
-    double *result = REAL(output);
-
-    GetRNGstate();
-    for (int i = 0; i < count; ++i) {
-        result[i] = INLAcirc_pc_vm0_quantile(unif_rand(), rates[i]);
-    }
-    PutRNGstate();
-
-    UNPROTECT(1);
-    return output;
-}
-
-SEXP INLAcirc_C_dpc_vminf(SEXP kappa,
-                          SEXP lambda,
-                          SEXP log_probability)
-{
-    const int count = Rf_length(kappa);
-    const double *concentrations = REAL(kappa);
-    const double *rates = REAL(lambda);
-    const int return_log = Rf_asLogical(log_probability);
-    SEXP output = PROTECT(Rf_allocVector(REALSXP, count));
-    double *result = REAL(output);
-
-    for (int i = 0; i < count; ++i) {
-        const double log_density =
-            INLAcirc_pc_vminf_log_density(concentrations[i], rates[i]);
         result[i] = return_log ? log_density : exp(log_density);
     }
 
@@ -217,72 +151,54 @@ SEXP INLAcirc_C_dpc_vminf(SEXP kappa,
     return output;
 }
 
-SEXP INLAcirc_C_ppc_vminf(SEXP q,
-                          SEXP lambda,
-                          SEXP log_probability)
+SEXP INLAcirc_C_dwrappedcauchy(SEXP x,
+                               SEXP mu,
+                               SEXP kappa,
+                               SEXP log_probability)
 {
-    const int count = Rf_length(q);
-    const double *quantiles = REAL(q);
-    const double *rates = REAL(lambda);
+    const int count = Rf_length(x);
+    const double *observations = REAL(x);
+    const double *locations = REAL(mu);
+    const double *concentrations = REAL(kappa);
     const int return_log = Rf_asLogical(log_probability);
     SEXP output = PROTECT(Rf_allocVector(REALSXP, count));
     double *result = REAL(output);
 
     for (int i = 0; i < count; ++i) {
-        const double log_cdf =
-            INLAcirc_pc_vminf_log_cdf(quantiles[i], rates[i]);
-        result[i] = return_log ? log_cdf : exp(log_cdf);
-    }
+        const double observation = observations[i];
+        const double location = locations[i];
+        const double concentration = concentrations[i];
+        double difference;
+        double sine;
+        double log_density;
 
-    UNPROTECT(1);
-    return output;
-}
-
-SEXP INLAcirc_C_qpc_vminf(SEXP p,
-                          SEXP lambda,
-                          SEXP log_probability)
-{
-    const int count = Rf_length(p);
-    const double *probabilities = REAL(p);
-    const double *rates = REAL(lambda);
-    const int probabilities_are_log = Rf_asLogical(log_probability);
-    SEXP output = PROTECT(Rf_allocVector(REALSXP, count));
-    double *result = REAL(output);
-
-    for (int i = 0; i < count; ++i) {
-        const double supplied_probability = probabilities[i];
-        double probability;
-
-        if (isnan(supplied_probability) ||
-            (probabilities_are_log && supplied_probability > 0.0) ||
-            (!probabilities_are_log &&
-             (supplied_probability < 0.0 || supplied_probability > 1.0))) {
-            result[i] = NAN;
+        if (ISNA(observation) || ISNA(location) || ISNA(concentration)) {
+            result[i] = NA_REAL;
             continue;
         }
+        if (ISNAN(observation) || ISNAN(location) || ISNAN(concentration) ||
+            !R_FINITE(observation) || !R_FINITE(location) ||
+            !R_FINITE(concentration) || concentration < 0.0 ||
+            concentration > 1.0) {
+            result[i] = R_NaN;
+            continue;
+        }
+        difference = remainder(observation - location, 2.0 * M_PI);
+        sine = sin(difference / 2.0);
+        if (concentration == 1.0) {
+            log_density = (sine == 0.0) ? INFINITY : -INFINITY;
+        } else {
+            const double one_minus_concentration = 1.0 - concentration;
+            const double denominator =
+                one_minus_concentration * one_minus_concentration +
+                4.0 * concentration * sine * sine;
 
-        probability = probabilities_are_log
-                          ? exp(supplied_probability)
-                          : supplied_probability;
-        result[i] = INLAcirc_pc_vminf_quantile(probability, rates[i]);
+            log_density = log1p(-concentration) +
+                log1p(concentration) - INLACIRC_LOG_2PI -
+                log(denominator);
+        }
+        result[i] = return_log ? log_density : exp(log_density);
     }
-
-    UNPROTECT(1);
-    return output;
-}
-
-SEXP INLAcirc_C_rpc_vminf(SEXP n, SEXP lambda)
-{
-    const int count = Rf_asInteger(n);
-    const double *rates = REAL(lambda);
-    SEXP output = PROTECT(Rf_allocVector(REALSXP, count));
-    double *result = REAL(output);
-
-    GetRNGstate();
-    for (int i = 0; i < count; ++i) {
-        result[i] = INLAcirc_pc_vminf_quantile(unif_rand(), rates[i]);
-    }
-    PutRNGstate();
 
     UNPROTECT(1);
     return output;

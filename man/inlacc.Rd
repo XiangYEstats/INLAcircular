@@ -2,7 +2,7 @@
 % Please edit documentation in R/inlacc.R
 \name{inlacc}
 \alias{inlacc}
-\title{Joint Circular Regression with INLA}
+\title{Fit single or joint circular models with INLA}
 \usage{
 inlacc(
   model,
@@ -18,36 +18,115 @@ inlacc(
 )
 }
 \arguments{
-\item{model}{A list of 'likelihood' objects, or a single 'likelihood' object.}
+\item{model}{One \code{\link[=likelihood]{likelihood()}} object or a non-empty list of them.}
 
-\item{data}{A data.frame containing all covariates and responses.}
+\item{data}{A data frame containing every simple response column,
+fixed-effect variable, and ordinary latent index. All likelihood blocks
+use the same number and ordering of rows.}
 
-\item{latent.index}{Optional list of index() mappings.}
+\item{latent.index}{Optional \code{\link[=index]{index()}} object or list of such objects.}
 
-\item{LKJ.eta}{Positive scalar LKJ shape parameter used by every
-\code{iidkd_LKJ} component. Defaults to \code{5}. Within each corresponding
-\code{f()} term, \code{pc.prior.u} and \code{pc.prior.alpha} default to
-\code{1} and \code{0.5}, respectively.}
+\item{LKJ.eta}{One positive finite LKJ shape shared by every
+\code{iidkd_LKJ} group. The default is \code{5}. This argument is unused if no such
+term is present.}
 
-\item{control.family}{Optional global list of control.family configurations.
-For an LAvM likelihood, use \code{hyper$kappa}; its \code{initial} value is
-interpreted directly on the internal \code{log(kappa)} scale.}
+\item{control.family}{Optional outer list containing one INLA
+\code{control.family} list per likelihood block. An available outer element
+overrides that block's \code{family.setting}; later blocks without an override
+use their block-level setting. Use the nested outer list even for one
+block. For LAvM, configure \code{link} and \code{hyper$kappa}; see
+\code{\link[=lavm.cloglike]{lavm.cloglike()}}.}
 
-\item{control.fixed}{Optional list for fixed effects priors.}
+\item{control.fixed}{Optional INLA fixed-effect control list. The package
+defaults are mean \code{0} and precision \code{0.001}. Named priors from
+\code{\link[=intercept]{intercept()}} and \code{\link[=covariate]{covariate()}} override matching coefficients. Scalar
+\code{mean}/\code{prec} values and INLA named lists with a \code{default} entry are both
+supported; existing named entries are preserved.}
 
-\item{control.inla}{Optional control list passed to inla().}
+\item{control.inla}{INLA approximation controls. The package default is
+\code{list(cmin = 0, compute.initial.values = TRUE)}. A user-supplied value
+replaces that complete list rather than being merged with it.}
 
-\item{metrics}{Logical. Compute WAIC, DIC, CPO, etc.?}
+\item{metrics}{Logical; if \code{TRUE}, request CPO, DIC, WAIC, and INLA
+configuration output. The default is \code{FALSE}.}
 
-\item{verbose}{Logical. Run INLA in verbose mode?}
+\item{verbose}{Logical passed to \code{INLA::inla()}.}
 
-\item{...}{Additional arguments passed to inla().}
+\item{...}{Further arguments for \code{INLA::inla()}. Common choices include
+\code{control.predictor}, \code{control.compute}, \code{control.mode}, \code{num.threads}, and
+\code{blas.num.threads}. A \code{control.compute} list is merged field by field with
+the settings implied by \code{metrics}; other named arguments replace or add
+call entries.}
 }
 \value{
-A fitted INLA model.
+The fitted \code{INLA::inla()} object with class \code{"inlacc"} prepended.
+Raw INLA summaries, marginals, fitted values, criteria, and timing fields
+are retained. The result also contains \code{inlacc_meta}, \code{lkj_modes}, and
+\code{inlacc_meta$LKJ}; the latter two are empty lists when no graphpcor-backed
+effect is used. LAvM concentration marginals are normally transformed
+from \code{log(kappa)} to natural-scale \code{kappa} and renamed.
 }
 \description{
-Joint Circular Regression with INLA
+\code{inlacc()} assembles one or more \code{\link[=likelihood]{likelihood()}} blocks into a stacked INLA
+model. It supports ordinary INLA likelihoods and latent effects, the
+package's compiled LAvM likelihood, copied response predictors, explicit
+latent-process index mappings, and optional graphpcor-backed LKJ covariance
+components.
+}
+\details{
+Each formula response must be a single named column of \code{data}. Ordinary
+numeric right-hand-side terms become block-specific fixed effects. Use
+\code{\link[=intercept]{intercept()}} and \code{\link[=covariate]{covariate()}} for stable names or local priors. A bare
+\code{f()} call uses the standard R-INLA latent-model syntax and its options are
+retained in the assembled formula. INLAcircular does not export its own
+\code{f()}; write \code{f(...)}, not \code{INLA::f(...)}, because the assembler recognizes
+the bare call while preprocessing indices.
+
+A discovered \code{f()} index is read from \code{data}, supplied through
+\code{latent.index}, or generated as \code{seq_len(nrow(data))}. A non-\code{NULL}
+\code{process.id} is injected as the term's \code{values} vector when \code{var} matches
+the first \code{f()} argument, replacing an existing \code{values} argument. See
+\code{\link[=index]{index()}} for first-, group-, replicate-, and likelihood-index mappings.
+
+A response used directly as a bare term, or as
+\code{covariate(response, predictor = NULL)}, on another block's right-hand side
+is represented by its latent predictor through an INLA copy term. \code{NULL} is
+the default. Set \code{predictor = TRUE} to request copying explicitly, or
+\code{predictor = FALSE} to use the observed response values as an ordinary fixed
+covariate. A transformed response expression remains an ordinary observed
+fixed effect; explicitly requesting a copy of one is an error. In models
+with copied responses, request fitted predictors with
+\code{control.predictor = list(compute = TRUE)} when needed.
+
+\code{model = "iidkd_LKJ"} is a special graphpcor-backed extension. Terms with
+the same bare first index are grouped in likelihood order. The group must
+occur in at least two blocks and at most once per block. Per-component
+\code{pc.prior.u} and \code{pc.prior.alpha} default to \code{1} and \code{0.5}; see \code{\link[=LKJcc]{LKJcc()}}.
+
+Do not pass \code{formula} or \code{family} through \code{...}, because those names replace
+the internally assembled entries. Configure family and fixed-effect priors
+through the formal \code{control.family} and \code{control.fixed} arguments; the
+stacked formula and data are owned by \code{inlacc()}.
+}
+\examples{
+\dontrun{
+angle_model <- likelihood(
+  angle ~ intercept(name = "alpha0", mean = 0, sd = 2) +
+    covariate(z, name = "alpha_z", mean = 0, sd = 1),
+  family = "lavm"
+)
+
+fit <- inlacc(
+  model = angle_model,
+  data = data.frame(angle = angle, z = z),
+  control.predictor = list(compute = TRUE),
+  metrics = TRUE
+)
+}
+}
+\seealso{
+\code{\link[=likelihood]{likelihood()}}, \code{\link[=intercept]{intercept()}}, \code{\link[=covariate]{covariate()}}, \code{\link[=index]{index()}},
+\code{\link[=LKJcc]{LKJcc()}}, \code{\link[=lavm.cloglike]{lavm.cloglike()}}, \code{\link[=summary.inlacc]{summary.inlacc()}}
 }
 \author{
 Xiang Ye \email{xiang.ye@kaust.edu.sa}

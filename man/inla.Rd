@@ -7,33 +7,52 @@
 inla(...)
 }
 \arguments{
-\item{...}{Arguments accepted by \code{INLA::inla()}. For
+\item{...}{Arguments accepted by \code{INLA::inla()}. For one
 \code{family = "lavm"}, use
-\code{control.family = list(link = ..., hyper = list(kappa = ...))}.
-The single-family nested form \code{list(list(...))} is also accepted.}
+\code{control.family = list(link = ..., hyper = list(kappa = ...))}; the nested
+form \code{list(list(...))} is also accepted. With multiple families,
+\code{control.family} must contain exactly one list per family.}
 }
 \value{
-The fitted object returned by \code{INLA::inla()}.
+The fitted object returned by \code{INLA::inla()}, augmented as described
+in Details when LAvM is requested.
 }
 \description{
-\code{INLAcircular::inla()} is a transparent compatibility layer over
-\code{INLA::inla()}. Calls without \code{family = "lavm"} are forwarded
-unchanged. For LAvM calls, it installs the package's C \code{cloglike},
-converts the response to an INLA matrix-valued response, and evaluates the
-\code{pc.vm0} or \code{pc.vminf} concentration prior in the same C module used
-by \code{inlacc()}.
+\code{inla()} is a compatibility layer over
+\code{INLA::inla()}. Calls without \code{family = "lavm"} are forwarded unchanged.
+For LAvM calls, it installs the package's C \code{cloglike}, converts the response
+to an INLA matrix-valued response, and evaluates the \code{pc.vm0} or \code{pc.vminf}
+concentration prior in the same C module used by \code{\link[=inlacc]{inlacc()}}.
 }
 \details{
-Loading \code{INLAcircular} after \code{INLA} makes this function available as
-\code{inla()}. The underlying likelihood sent to INLA is \code{"cloglike"},
-which is necessary because external packages cannot add a new compiled family
-or prior keyword to an already-built INLA executable. All non-LAvM arguments
+Loading \code{INLAcircular} after \code{INLA} makes this function available
+as \code{inla()}. The underlying likelihood sent to INLA is \code{"cloglike"}, which
+is necessary because external packages cannot add a new compiled family or
+prior keyword to an already-built INLA executable. All non-LAvM arguments
 retain INLA's own matching and evaluation rules.
 
-Within \code{hyper$kappa}, \code{initial} is on the internal
-\code{log(kappa)} scale. The defaults are \code{initial = 6},
-\code{prior = "pc.vminf"}, \code{param = c(0.5, 0.5)}, and
-\code{fixed = FALSE}.
+Within \code{hyper$kappa}, \code{initial} is on the internal \code{log(kappa)} scale.
+The defaults are \code{initial = 6}, \code{prior = "pc.vminf"},
+\code{param = c(0.5, 0.5)}, and \code{fixed = FALSE}.
+
+When multiple families are requested and at least one is \code{"lavm"}, the
+formula response must evaluate to a matrix, data frame, or list with one
+component per family. LAvM components are converted with
+\code{INLA::inla.mdata()}; other families and controls are retained.
+
+For any call containing LAvM, missing \code{control.inla$cmin} and
+\code{control.inla$compute.initial.values} fields are filled with \code{0} and
+\code{TRUE}, respectively. User-supplied fields and values take precedence.
+
+The returned object gains an \code{INLAcircular} list recording the requested
+families, effective internal families, and LAvM prior labels. LAvM
+concentration summaries and marginals are normally transformed from
+internal \code{log(kappa)} to natural-scale \code{kappa} and renamed.
+
+For a literal namespaced \code{INLA::inla()} call, construct the external
+likelihood explicitly with \code{\link[=lavm.cloglike]{lavm.cloglike()}}, convert the response with
+\code{INLA::inla.mdata()}, and use \code{family = "cloglike"}. A namespaced call
+with \code{family = "lavm"} bypasses this compatibility layer.
 }
 \examples{
 \dontrun{
@@ -62,4 +81,7 @@ fit <- inla(
   )
 )
 }
+}
+\seealso{
+\code{\link[=lavm.cloglike]{lavm.cloglike()}}, \code{\link[=inlacc]{inlacc()}}
 }

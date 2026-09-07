@@ -21,7 +21,7 @@ rvm(n, mu, kappa, len = 2048L)
 
 \item{mu}{mean direction of the distribution (in radians).}
 
-\item{kappa}{concentration parameter (must be strictly positive).}
+\item{kappa}{non-negative concentration parameter.}
 
 \item{log}{logical; if TRUE, probabilities/densities are given as log.}
 
@@ -49,7 +49,7 @@ where \eqn{I_0\left(\kappa\right)} is the modified Bessel function of the first 
 }
 \examples{
 # Generate 10 random deviates from a von Mises distribution
-# with mean direction \eqd{\pi/2} and concentration 5
+# with mean direction \eqn{\pi/2} and concentration 5
 rvm(10, mu = pi/2, kappa = 5)
 
 # Calculate the density at specific points

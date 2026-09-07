@@ -1,0 +1,209 @@
+name: R CMD check
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions: read-all
+
+env:
+  GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+  R_KEEP_PKG_SOURCE: yes
+  INLA_REPOSITORY: https://inla.r-inla-download.org/R/stable
+
+jobs:
+  cross-platform:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    timeout-minutes: 90
+    env:
+      _R_CHECK_FORCE_SUGGESTS_: "true"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {name: "Ubuntu (R-devel)", os: ubuntu-latest, r: devel, cc: gcc, http-user-agent: release}
+          - {name: "Ubuntu (R-release)", os: ubuntu-latest, r: release, cc: gcc}
+          - {name: "Windows (R-release)", os: windows-latest, r: release, cc: gcc}
+          - {name: "macOS ARM64 (R-release)", os: macos-latest, r: release, cc: clang}
+          - {name: "macOS Intel (R-release)", os: macos-15-intel, r: release, cc: clang}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+          extra-repositories: ${{ env.INLA_REPOSITORY }}
+
+      - name: Test native constants and likelihood code under strict C17
+        shell: bash
+        run: >-
+          make -C src-cloglike
+          CC=${{ matrix.config.cc }}
+          CFLAGS="-O2 -std=c17 -Wall -Wextra -Wpedantic -pedantic-errors"
+          check
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - name: Confirm optional integrations
+        shell: Rscript {0}
+        run: |
+          stopifnot(
+            packageVersion("INLA") >= "25.08.21",
+            "inla.cloglike.define" %in% getNamespaceExports("INLA"),
+            requireNamespace("graphpcor", quietly = TRUE),
+            requireNamespace("INLAtools", quietly = TRUE)
+          )
+          message("INLA version: ", packageVersion("INLA"))
+
+      - name: Test the standalone INLA likelihood source
+        shell: bash
+        run: Rscript src-cloglike/tests/test-cloglike-inla.R
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          args: 'c("--no-manual", "--as-cran")'
+          build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'
+          error-on: '"warning"'
+          upload-results: always
+          artifact-name: ${{ matrix.config.name }}-check
+
+  minimum-r:
+    name: Ubuntu (minimum R 4.1, hard dependencies only)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    env:
+      _R_CHECK_FORCE_SUGGESTS_: "false"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.1"
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: 'c("Depends", "Imports", "LinkingTo")'
+
+      - name: Install with no suggested packages
+        shell: bash
+        run: R CMD INSTALL --clean .
+
+      - name: Run regular tests with no INLA
+        shell: bash
+        run: |
+          for test_file in tests/*.R; do
+            Rscript "${test_file}"
+          done
+
+  fedora:
+    name: Fedora gcc16 (R-devel)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    container:
+      image: ghcr.io/r-hub/containers/gcc16:latest
+    env:
+      _R_CHECK_FORCE_SUGGESTS_: "true"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - name: Test native constants and likelihood code under strict C17
+        shell: bash
+        run: >-
+          make -C src-cloglike
+          CC=gcc
+          CFLAGS="-O2 -std=c17 -Wall -Wextra -Wpedantic -pedantic-errors"
+          check
+
+      - name: Install package dependencies
+        shell: Rscript {0}
+        run: |
+          pak::repo_add(INLA = Sys.getenv("INLA_REPOSITORY"))
+          pak::pkg_install(
+            c("deps::.", "any::rcmdcheck"),
+            dependencies = TRUE
+          )
+
+      - name: Confirm optional integrations
+        shell: Rscript {0}
+        run: |
+          stopifnot(
+            packageVersion("INLA") >= "25.08.21",
+            "inla.cloglike.define" %in% getNamespaceExports("INLA"),
+            requireNamespace("graphpcor", quietly = TRUE),
+            requireNamespace("INLAtools", quietly = TRUE)
+          )
+          message("INLA version: ", packageVersion("INLA"))
+
+      - name: Test the standalone INLA likelihood source
+        shell: bash
+        run: Rscript src-cloglike/tests/test-cloglike-inla.R
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          args: 'c("--no-manual", "--as-cran")'
+          build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'
+          error-on: '"warning"'
+          upload-results: always
+          artifact-name: fedora-gcc16-R-devel-check
+
+  manual-models:
+    name: Manual INLA model suite
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      _R_CHECK_FORCE_SUGGESTS_: "true"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          extra-repositories: ${{ env.INLA_REPOSITORY }}
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+
+      - name: Install package
+        shell: bash
+        run: R CMD INSTALL --clean .
+
+      - name: Run every tests/manual model
+        shell: bash
+        run: |
+          mkdir -p manual-test-logs
+          status=0
+          set +e
+          for test_file in tests/manual/[0-9][0-9]-*.R; do
+            test_name="$(basename "${test_file}" .R)"
+            log_file="manual-test-logs/${test_name}.log"
+            Rscript "${test_file}" >"${log_file}" 2>&1
+            test_status=$?
+            tail -n 80 "${log_file}"
+            if [[ ${test_status} -ne 0 ]]; then
+              status=${test_status}
+            fi
+          done
+          exit ${status}
+
+      - name: Upload manual-test logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: manual-INLA-model-logs
+          path: manual-test-logs

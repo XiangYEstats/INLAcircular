@@ -28,28 +28,68 @@
   )
 }
 
-#' Prepare LKJ covariance components for `inlacc()`
+#' Prepare graphpcor LKJ covariance components for `inlacc()`
 #'
 #' `LKJcc()` finds every `f(..., model = "iidkd_LKJ")` term, groups terms
 #' that use the same index name, constructs one `graphpcor` LKJ model per
 #' group, rewrites the formulas, and creates the component and replicate
 #' indices required by INLA.
 #'
-#' @param formulas A list of model formulas.
-#' @param LKJ.eta Positive scalar LKJ shape parameter. The default is `5`.
-#' @param n.obs Number of observations in each likelihood block.
-#' @param latent.index Optional `index()` specification(s). For an LKJ index,
+#' @param formulas One formula or a non-empty list of formulas, in likelihood
+#'   order.
+#' @param LKJ.eta One positive finite LKJ shape shared by all detected groups.
+#'   The default is `5`.
+#' @param n.obs Positive integer number of observations in each likelihood
+#'   block. It is required when an LKJ term is present.
+#' @param latent.index Optional [index()] specification or list. For an LKJ
+#'   index,
 #'   `process.id = "likelihood"` means that `data.id` supplies the replicate
-#'   index; the LKJ component index is generated from likelihood order.
+#'   IDs and the LKJ component index is generated from likelihood order.
 #'
-#' @return A list containing rewritten formulas, cgeneric models, per-block
-#'   indices, LKJ metadata, and any unconsumed `latent.index` specifications.
+#' @return A list with components `formulas`, `models`, `block.data`,
+#'   `lkj_vars`, `replicate_vars`, `likelihoods`, `processes`, `data.vars`, and
+#'   `latent.index`. The last component contains mappings not consumed by the
+#'   LKJ preprocessor.
 #'
 #' @details In every `f(index, model = "iidkd_LKJ")` term,
 #'   `pc.prior.u` defaults to `1` and `pc.prior.alpha` defaults to `0.5`.
-#'   These arguments may be supplied separately in each likelihood when
-#'   component-specific PC priors are required. The common `LKJ.eta` value
-#'   defaults to `5`.
+#'   They are forwarded to graphpcor as `sigma.prior.reference` and
+#'   `sigma.prior.probability`. The reference must be positive; the
+#'   probability may be in `[0, 1]` or `NA`. Values may differ by likelihood
+#'   component. For an estimated scale, the implementation calibrates the PC
+#'   prior by `P(sigma > pc.prior.u) = pc.prior.alpha`, equivalently with rate
+#'   `-log(pc.prior.alpha) / pc.prior.u`. A probability of `0`, `1`, or `NA`
+#'   fixes that component's standard deviation at `pc.prior.u`. Supply the
+#'   common `LKJ.eta` through [inlacc()], not as `eta` inside `f()`;
+#'   `prior.param` is not supported.
+#'
+#'   A group is identified by the bare first argument of `f()` and component
+#'   order follows formula order. It must occur in at least two formulas, at
+#'   most once per formula, and its index name cannot also identify another
+#'   `f()` model. The exact character value `model = "iidkd_LKJ"` is required.
+#'
+#'   Replicate IDs default to `seq_len(n.obs)`. To supply them, use
+#'   `index(var = "i", data.id = replicate_ids,
+#'   process.id = "likelihood")`, where every replicate ID is a positive
+#'   integer. An explicit `replicate = name` inside the special `f()` controls
+#'   the generated column name, not its values. It must be a bare name, and all
+#'   explicit replicate names within one group must agree; a name supplied in
+#'   one component is propagated to the whole group.
+#'
+#'   Actual construction requires both the suggested `graphpcor` and
+#'   `INLAtools` packages. This function supports the dense LKJ-correlated IID
+#'   model only; it is not a general interface to graphpcor's graph or tree
+#'   model families. It is normally called by [inlacc()] rather than directly.
+#'
+#' @seealso [inlacc()], [index()]
+#' @examples
+#' formulas <- list(
+#'   y1 ~ f(i, model = "iidkd_LKJ"),
+#'   y2 ~ f(i, model = "iidkd_LKJ")
+#' )
+#' \dontrun{
+#' prepared <- LKJcc(formulas, LKJ.eta = 5, n.obs = 100)
+#' }
 #' @export
 LKJcc <- function(formulas, LKJ.eta = 5, n.obs = NULL, latent.index = NULL) {
   if (inherits(formulas, "formula")) formulas <- list(formulas)
@@ -59,11 +99,6 @@ LKJcc <- function(formulas, LKJ.eta = 5, n.obs = NULL, latent.index = NULL) {
     stop("'formulas' must be a formula or a non-empty list of formulas.",
          call. = FALSE)
   }
-  if (!is.numeric(LKJ.eta) || length(LKJ.eta) != 1L ||
-      is.na(LKJ.eta) || !is.finite(LKJ.eta) || LKJ.eta <= 0) {
-    stop("'LKJ.eta' must be one positive finite number.", call. = FALSE)
-  }
-
   is_lkj_term <- function(expr) {
     is.call(expr) &&
       identical(expr[[1L]], quote(f)) &&
@@ -192,6 +227,11 @@ LKJcc <- function(formulas, LKJ.eta = 5, n.obs = NULL, latent.index = NULL) {
       data.vars = character(),
       latent.index = latent.index
     ))
+  }
+
+  if (!is.numeric(LKJ.eta) || length(LKJ.eta) != 1L ||
+      is.na(LKJ.eta) || !is.finite(LKJ.eta) || LKJ.eta <= 0) {
+    stop("'LKJ.eta' must be one positive finite number.", call. = FALSE)
   }
 
   if (!is.numeric(n.obs) || length(n.obs) != 1L ||
@@ -341,8 +381,12 @@ LKJcc <- function(formulas, LKJ.eta = 5, n.obs = NULL, latent.index = NULL) {
       var_name <- as.character(expr[[2L]])
       info <- registry[[var_name]]
       expr[["model"]] <- as.name(info$model.var)
-      expr[["pc.prior.u"]] <- NULL
-      expr[["pc.prior.alpha"]] <- NULL
+      if ("pc.prior.u" %in% names(expr)) {
+        expr[["pc.prior.u"]] <- NULL
+      }
+      if ("pc.prior.alpha" %in% names(expr)) {
+        expr[["pc.prior.alpha"]] <- NULL
+      }
       expr[["replicate"]] <- as.name(info$replicate.var)
       return(expr)
     }

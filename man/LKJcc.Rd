@@ -2,35 +2,76 @@
 % Please edit documentation in R/cc.LKJ.R
 \name{LKJcc}
 \alias{LKJcc}
-\title{Prepare LKJ covariance components for \code{inlacc()}}
+\title{Prepare graphpcor LKJ covariance components for \code{inlacc()}}
 \usage{
 LKJcc(formulas, LKJ.eta = 5, n.obs = NULL, latent.index = NULL)
 }
 \arguments{
-\item{formulas}{A list of model formulas.}
+\item{formulas}{One formula or a non-empty list of formulas, in likelihood
+order.}
 
-\item{LKJ.eta}{Positive scalar LKJ shape parameter. The default is \code{5}.}
+\item{LKJ.eta}{One positive finite LKJ shape shared by all detected groups.
+The default is \code{5}.}
 
-\item{n.obs}{Number of observations in each likelihood block.}
+\item{n.obs}{Positive integer number of observations in each likelihood
+block. It is required when an LKJ term is present.}
 
-\item{latent.index}{Optional \code{index()} specification(s). For an LKJ index,
+\item{latent.index}{Optional \code{\link[=index]{index()}} specification or list. For an LKJ
+index,
 \code{process.id = "likelihood"} means that \code{data.id} supplies the replicate
-index; the LKJ component index is generated from likelihood order.}
+IDs and the LKJ component index is generated from likelihood order.}
 }
 \value{
-A list containing rewritten formulas, cgeneric models, per-block indices,
-LKJ metadata, and any unconsumed \code{latent.index} specifications.
+A list with components \code{formulas}, \code{models}, \code{block.data},
+\code{lkj_vars}, \code{replicate_vars}, \code{likelihoods}, \code{processes}, \code{data.vars}, and
+\code{latent.index}. The last component contains mappings not consumed by the
+LKJ preprocessor.
 }
 \description{
 \code{LKJcc()} finds every \code{f(..., model = "iidkd_LKJ")} term, groups terms
 that use the same index name, constructs one \code{graphpcor} LKJ model per
-group, rewrites the formulas, and creates the component and replicate indices
-required by INLA.
+group, rewrites the formulas, and creates the component and replicate
+indices required by INLA.
 }
 \details{
 In every \code{f(index, model = "iidkd_LKJ")} term,
-\code{pc.prior.u} defaults to \code{1} and \code{pc.prior.alpha} defaults to
-\code{0.5}. These arguments may be supplied separately in each likelihood
-when component-specific PC priors are required. The common \code{LKJ.eta}
-value defaults to \code{5}.
+\code{pc.prior.u} defaults to \code{1} and \code{pc.prior.alpha} defaults to \code{0.5}.
+They are forwarded to graphpcor as \code{sigma.prior.reference} and
+\code{sigma.prior.probability}. The reference must be positive; the
+probability may be in \verb{[0, 1]} or \code{NA}. Values may differ by likelihood
+component. For an estimated scale, the implementation calibrates the PC
+prior by \code{P(sigma > pc.prior.u) = pc.prior.alpha}, equivalently with rate
+\code{-log(pc.prior.alpha) / pc.prior.u}. A probability of \code{0}, \code{1}, or \code{NA}
+fixes that component's standard deviation at \code{pc.prior.u}. Supply the
+common \code{LKJ.eta} through \code{\link[=inlacc]{inlacc()}}, not as \code{eta} inside \code{f()};
+\code{prior.param} is not supported.
+
+A group is identified by the bare first argument of \code{f()} and component
+order follows formula order. It must occur in at least two formulas, at
+most once per formula, and its index name cannot also identify another
+\code{f()} model. The exact character value \code{model = "iidkd_LKJ"} is required.
+
+Replicate IDs default to \code{seq_len(n.obs)}. To supply them, use
+\code{index(var = "i", data.id = replicate_ids, process.id = "likelihood")}, where every replicate ID is a positive
+integer. An explicit \code{replicate = name} inside the special \code{f()} controls
+the generated column name, not its values. It must be a bare name, and all
+explicit replicate names within one group must agree; a name supplied in
+one component is propagated to the whole group.
+
+Actual construction requires both the suggested \code{graphpcor} and
+\code{INLAtools} packages. This function supports the dense LKJ-correlated IID
+model only; it is not a general interface to graphpcor's graph or tree
+model families. It is normally called by \code{\link[=inlacc]{inlacc()}} rather than directly.
+}
+\examples{
+formulas <- list(
+  y1 ~ f(i, model = "iidkd_LKJ"),
+  y2 ~ f(i, model = "iidkd_LKJ")
+)
+\dontrun{
+prepared <- LKJcc(formulas, LKJ.eta = 5, n.obs = 100)
+}
+}
+\seealso{
+\code{\link[=inlacc]{inlacc()}}, \code{\link[=index]{index()}}
 }

@@ -20,6 +20,20 @@ extern SEXP INLAcirc_C_plavm(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_qlavm(SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_rlavm(SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_bessel_i(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_dcardioid(SEXP, SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_dwrappedcauchy(SEXP, SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_dpc_card0(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_ppc_card0(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_qpc_card0(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_rpc_card0(SEXP, SEXP);
+extern SEXP INLAcirc_C_dpc_card(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_ppc_card(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_qpc_card(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_rpc_card(SEXP, SEXP);
+extern SEXP INLAcirc_C_dpc_wc(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_ppc_wc(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_qpc_wc(SEXP, SEXP, SEXP);
+extern SEXP INLAcirc_C_rpc_wc(SEXP, SEXP);
 
 static const R_CallMethodDef INLAcirc_call_entries[] = {
     {"INLAcirc_C_dvm", (DL_FUNC)&INLAcirc_C_dvm, 4},
@@ -39,6 +53,20 @@ static const R_CallMethodDef INLAcirc_call_entries[] = {
     {"INLAcirc_C_qlavm", (DL_FUNC)&INLAcirc_C_qlavm, 4},
     {"INLAcirc_C_rlavm", (DL_FUNC)&INLAcirc_C_rlavm, 4},
     {"INLAcirc_C_bessel_i", (DL_FUNC)&INLAcirc_C_bessel_i, 3},
+    {"INLAcirc_C_dcardioid", (DL_FUNC)&INLAcirc_C_dcardioid, 4},
+    {"INLAcirc_C_dwrappedcauchy", (DL_FUNC)&INLAcirc_C_dwrappedcauchy, 4},
+    {"INLAcirc_C_dpc_card0", (DL_FUNC)&INLAcirc_C_dpc_card0, 3},
+    {"INLAcirc_C_ppc_card0", (DL_FUNC)&INLAcirc_C_ppc_card0, 3},
+    {"INLAcirc_C_qpc_card0", (DL_FUNC)&INLAcirc_C_qpc_card0, 3},
+    {"INLAcirc_C_rpc_card0", (DL_FUNC)&INLAcirc_C_rpc_card0, 2},
+    {"INLAcirc_C_dpc_card", (DL_FUNC)&INLAcirc_C_dpc_card, 3},
+    {"INLAcirc_C_ppc_card", (DL_FUNC)&INLAcirc_C_ppc_card, 3},
+    {"INLAcirc_C_qpc_card", (DL_FUNC)&INLAcirc_C_qpc_card, 3},
+    {"INLAcirc_C_rpc_card", (DL_FUNC)&INLAcirc_C_rpc_card, 2},
+    {"INLAcirc_C_dpc_wc", (DL_FUNC)&INLAcirc_C_dpc_wc, 3},
+    {"INLAcirc_C_ppc_wc", (DL_FUNC)&INLAcirc_C_ppc_wc, 3},
+    {"INLAcirc_C_qpc_wc", (DL_FUNC)&INLAcirc_C_qpc_wc, 3},
+    {"INLAcirc_C_rpc_wc", (DL_FUNC)&INLAcirc_C_rpc_wc, 2},
     {NULL, NULL, 0}
 };
 

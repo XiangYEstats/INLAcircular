@@ -1,21 +1,130 @@
-#' Joint Circular Regression with INLA
+.inlacc_is_response_term <- function(term, other_responses) {
+  is.character(term) &&
+    length(term) == 1L &&
+    !is.na(term) &&
+    term %in% other_responses
+}
+
+.inlacc_covariate_copy_decision <- function(var, predictor, other_responses) {
+  if (!is.null(predictor)) {
+    if (!is.logical(predictor) || length(predictor) != 1L || is.na(predictor)) {
+      stop("'predictor' must be NULL or one non-missing logical value.",
+           call. = FALSE)
+    }
+    if (!predictor) return(FALSE)
+    if (!.inlacc_is_response_term(var, other_responses)) {
+      stop(
+        paste0(
+          "'predictor = TRUE' requires 'var' to be an untransformed response ",
+          "from another likelihood block."
+        ),
+        call. = FALSE
+      )
+    }
+    return(TRUE)
+  }
+
+  .inlacc_is_response_term(var, other_responses)
+}
+
+#' Fit single or joint circular models with INLA
 #'
-#' @param model A list of 'likelihood' objects, or a single 'likelihood' object.
-#' @param data A data.frame containing all covariates and responses.
-#' @param latent.index Optional list of index() mappings.
-#' @param LKJ.eta Positive scalar LKJ shape parameter used by every
-#'   `iidkd_LKJ` component. Defaults to `5`. Within each corresponding `f()`
-#'   term, `pc.prior.u` and `pc.prior.alpha` default to `1` and `0.5`,
-#'   respectively.
-#' @param control.family Optional global list of control.family configurations.
-#'   For an LAvM likelihood, use `hyper$kappa`; its `initial` value is
-#'   interpreted directly on the internal `log(kappa)` scale.
-#' @param control.fixed Optional list for fixed effects priors.
-#' @param control.inla Optional control list passed to inla().
-#' @param metrics Logical. Compute WAIC, DIC, CPO, etc.?
-#' @param verbose Logical. Run INLA in verbose mode?
-#' @param ... Additional arguments passed to inla().
-#' @return A fitted INLA model.
+#' `inlacc()` assembles one or more [likelihood()] blocks into a stacked INLA
+#' model. It supports ordinary INLA likelihoods and latent effects, the
+#' package's compiled LAvM likelihood, copied response predictors, explicit
+#' latent-process index mappings, and optional graphpcor-backed LKJ covariance
+#' components.
+#'
+#' @param model One [likelihood()] object or a non-empty list of them.
+#' @param data A data frame containing every simple response column,
+#'   fixed-effect variable, and ordinary latent index. All likelihood blocks
+#'   use the same number and ordering of rows.
+#' @param latent.index Optional [index()] object or list of such objects.
+#' @param LKJ.eta One positive finite LKJ shape shared by every
+#'   `iidkd_LKJ` group. The default is `5`. This argument is unused if no such
+#'   term is present.
+#' @param control.family Optional outer list containing one INLA
+#'   `control.family` list per likelihood block. An available outer element
+#'   overrides that block's `family.setting`; later blocks without an override
+#'   use their block-level setting. Use the nested outer list even for one
+#'   block. For LAvM, configure `link` and `hyper$kappa`; see
+#'   [lavm.cloglike()].
+#' @param control.fixed Optional INLA fixed-effect control list. The package
+#'   defaults are mean `0` and precision `0.001`. Named priors from
+#'   [intercept()] and [covariate()] override matching coefficients. Scalar
+#'   `mean`/`prec` values and INLA named lists with a `default` entry are both
+#'   supported; existing named entries are preserved.
+#' @param control.inla INLA approximation controls. The package default is
+#'   `list(cmin = 0, compute.initial.values = TRUE)`. A user-supplied value
+#'   replaces that complete list rather than being merged with it.
+#' @param metrics Logical; if `TRUE`, request CPO, DIC, WAIC, and INLA
+#'   configuration output. The default is `FALSE`.
+#' @param verbose Logical passed to `INLA::inla()`.
+#' @param ... Further arguments for `INLA::inla()`. Common choices include
+#'   `control.predictor`, `control.compute`, `control.mode`, `num.threads`, and
+#'   `blas.num.threads`. A `control.compute` list is merged field by field with
+#'   the settings implied by `metrics`; other named arguments replace or add
+#'   call entries.
+#'
+#' @details
+#' Each formula response must be a single named column of `data`. Ordinary
+#' numeric right-hand-side terms become block-specific fixed effects. Use
+#' [intercept()] and [covariate()] for stable names or local priors. A bare
+#' `f()` call uses the standard R-INLA latent-model syntax and its options are
+#' retained in the assembled formula. INLAcircular does not export its own
+#' `f()`; write `f(...)`, not `INLA::f(...)`, because the assembler recognizes
+#' the bare call while preprocessing indices.
+#'
+#' A discovered `f()` index is read from `data`, supplied through
+#' `latent.index`, or generated as `seq_len(nrow(data))`. A non-`NULL`
+#' `process.id` is injected as the term's `values` vector when `var` matches
+#' the first `f()` argument, replacing an existing `values` argument. See
+#' [index()] for first-, group-, replicate-, and likelihood-index mappings.
+#'
+#' A response used directly as a bare term, or as
+#' `covariate(response, predictor = NULL)`, on another block's right-hand side
+#' is represented by its latent predictor through an INLA copy term. `NULL` is
+#' the default. Set `predictor = TRUE` to request copying explicitly, or
+#' `predictor = FALSE` to use the observed response values as an ordinary fixed
+#' covariate. A transformed response expression remains an ordinary observed
+#' fixed effect; explicitly requesting a copy of one is an error. In models
+#' with copied responses, request fitted predictors with
+#' `control.predictor = list(compute = TRUE)` when needed.
+#'
+#' `model = "iidkd_LKJ"` is a special graphpcor-backed extension. Terms with
+#' the same bare first index are grouped in likelihood order. The group must
+#' occur in at least two blocks and at most once per block. Per-component
+#' `pc.prior.u` and `pc.prior.alpha` default to `1` and `0.5`; see [LKJcc()].
+#'
+#' Do not pass `formula` or `family` through `...`, because those names replace
+#' the internally assembled entries. Configure family and fixed-effect priors
+#' through the formal `control.family` and `control.fixed` arguments; the
+#' stacked formula and data are owned by `inlacc()`.
+#'
+#' @return The fitted `INLA::inla()` object with class `"inlacc"` prepended.
+#'   Raw INLA summaries, marginals, fitted values, criteria, and timing fields
+#'   are retained. The result also contains `inlacc_meta`, `lkj_modes`, and
+#'   `inlacc_meta$LKJ`; the latter two are empty lists when no graphpcor-backed
+#'   effect is used. LAvM concentration marginals are normally transformed
+#'   from `log(kappa)` to natural-scale `kappa` and renamed.
+#'
+#' @seealso [likelihood()], [intercept()], [covariate()], [index()],
+#'   [LKJcc()], [lavm.cloglike()], [summary.inlacc()]
+#' @examples
+#' \dontrun{
+#' angle_model <- likelihood(
+#'   angle ~ intercept(name = "alpha0", mean = 0, sd = 2) +
+#'     covariate(z, name = "alpha_z", mean = 0, sd = 1),
+#'   family = "lavm"
+#' )
+#'
+#' fit <- inlacc(
+#'   model = angle_model,
+#'   data = data.frame(angle = angle, z = z),
+#'   control.predictor = list(compute = TRUE),
+#'   metrics = TRUE
+#' )
+#' }
 #' @author Xiang Ye \email{xiang.ye@kaust.edu.sa}
 #' @export
 inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
@@ -24,6 +133,8 @@ inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
                    control.inla = list(cmin = 0, compute.initial.values = TRUE),
                    metrics = FALSE,
                    verbose = FALSE, ...) {
+
+  .INLAcircular_require_inla()
 
   if (inherits(model, "inlacc_model")) model <- list(model)
   if (!is.list(model) || is.null(model[[1]]$formula) || is.null(model[[1]]$family)) {
@@ -129,30 +240,56 @@ inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
     intercept = function(name = NULL, mean = NULL, sd = NULL) {
       list(name = name, mean = mean, sd = sd)
     },
-    covariate = function(var, name = NULL, mean = NULL, sd = NULL, initial = NULL, fixed = FALSE, predictor = FALSE) {
+    covariate = function(var, name = NULL, mean = NULL, sd = NULL, initial = NULL, fixed = FALSE, predictor = NULL) {
       mc <- match.call()
-      list(var = deparse(mc[[2]]), name = name, mean = mean, sd = sd, initial = initial, fixed = fixed, predictor = predictor)
+      list(
+        var = paste(deparse(mc[[2L]]), collapse = " "),
+        name = name,
+        mean = mean,
+        sd = sd,
+        initial = initial,
+        fixed = fixed,
+        predictor = predictor
+      )
     }
   )
 
-  circ_vars <- responses[families == "lavm"]
-  all_rhs_vars <- unique(unlist(lapply(formulas, function(f) all.vars(f[[3]]))))
-  circ_covariates <- intersect(circ_vars, all_rhs_vars)
+  covariate_term_info <- vector("list", num_models)
+  bare_copy_terms <- vector("list", num_models)
+  copied_covariates <- character()
 
-  explicit_pred_vars <- character()
-  for (f_i in formulas) {
-    trms <- labels(terms(f_i))
-    cov_trms <- grep("^covariate\\(", trms, value = TRUE)
-    for (ct in cov_trms) {
-      parsed <- tryCatch(eval(parse(text = ct), envir = eval_env), error = function(e) NULL)
-      if (!is.null(parsed) && isTRUE(parsed$predictor)) {
-        explicit_pred_vars <- c(explicit_pred_vars, parsed$var)
+  for (i in seq_along(formulas)) {
+    trms <- labels(terms(formulas[[i]]))
+    other_responses <- unique(responses[-i])
+    block_covariates <- list()
+
+    for (term in grep("^covariate\\(", trms, value = TRUE)) {
+      parsed <- eval(parse(text = term), envir = eval_env)
+      copy_predictor <- .inlacc_covariate_copy_decision(
+        parsed$var,
+        parsed$predictor,
+        other_responses
+      )
+      block_covariates[[term]] <- list(
+        parsed = parsed,
+        copy_predictor = copy_predictor
+      )
+      if (copy_predictor) {
+        copied_covariates <- c(copied_covariates, parsed$var)
       }
     }
+
+    bare_copy_terms[[i]] <- trms[vapply(
+      trms,
+      .inlacc_is_response_term,
+      logical(1),
+      other_responses = other_responses
+    )]
+    copied_covariates <- c(copied_covariates, bare_copy_terms[[i]])
+    covariate_term_info[[i]] <- block_covariates
   }
 
-  explicit_pred_responses <- intersect(explicit_pred_vars, responses)
-  copied_covariates <- unique(c(circ_covariates, explicit_pred_responses))
+  copied_covariates <- unique(copied_covariates)
 
   # =========================================================================
   # --- DATA BLOCK & LIST-BASED RESPONSE CONSTRUCTION ---
@@ -265,9 +402,10 @@ inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
           local_sds[[iname]] <- parsed$sd
         }
       } else if (grepl("^covariate\\(", term)) {
-        parsed <- eval(parse(text = term), envir = eval_env)
+        term_info <- covariate_term_info[[i]][[term]]
+        parsed <- term_info$parsed
         cvar <- parsed$var
-        if (cvar %in% copied_covariates) {
+        if (isTRUE(term_info$copy_predictor)) {
           e_name <- paste0("e_", cvar)
           copy_name <- if (is.null(parsed$name)) paste0("beta_", resp, "_", cvar) else parsed$name
           init_val <- if (!is.null(parsed$initial)) parsed$initial else 0
@@ -276,7 +414,11 @@ inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
             param_str <- sprintf('prior="normal", param=c(%f, %f), ', parsed$mean, 1 / (parsed$sd^2))
             hyper_priors[[paste0("Beta for ", copy_name)]] <- sprintf("N(%g, %g)", parsed$mean, parsed$sd)
           } else {
-            param_str <- ""
+            # Do not inherit INLA's copy-model default N(1, precision = 10).
+            # A copied predictor is a regression coefficient in this API, so
+            # use the same diffuse centered default advertised in the package
+            # documentation and summaries.
+            param_str <- 'prior="normal", param=c(0, 0.001), '
             hyper_priors[[paste0("Beta for ", copy_name)]] <- "N(0, 31.62)"
           }
           copy_formula <- sprintf(
@@ -306,10 +448,17 @@ inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
             local_sds[[cname]] <- parsed$sd
           }
         }
-      } else if (term %in% copied_covariates) {
+      } else if (term %in% bare_copy_terms[[i]]) {
         e_name <- paste0("e_", term)
         copy_name <- paste0("beta_", resp, "_", term)
-        copy_formula <- sprintf('f(%s, copy="%s", hyper=list(beta=list(fixed=FALSE)))', copy_name, e_name)
+        copy_formula <- sprintf(
+          paste0(
+            'f(%s, copy="%s", hyper=list(beta=list(',
+            'initial=0, prior="normal", param=c(0, 0.001), fixed=FALSE)))'
+          ),
+          copy_name,
+          e_name
+        )
         model_terms <- c(model_terms, copy_formula)
         block_df[[copy_name]] <- 1:n
         hyper_map[[paste0("Beta for ", copy_name)]] <- paste0(resp, " ~ \u03B7_", term)
@@ -359,23 +508,54 @@ inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
   joint_formula <- as.formula(joint_formula_str, env = formula_env)
 
   ctrl_fixed <- if (is.null(control.fixed)) list() else control.fixed
-  user_mean <- if (!is.null(ctrl_fixed$mean)) ctrl_fixed$mean else 0
-  user_prec <- if (!is.null(ctrl_fixed$prec)) ctrl_fixed$prec else 0.001
 
-  if (length(local_means) > 0) {
-    mean_list <- list(default = user_mean)
-    for (nm in names(local_means)) mean_list[[nm]] <- local_means[[nm]]
-    ctrl_fixed$mean <- mean_list
-  } else {
-    ctrl_fixed$mean <- user_mean
+  merge_fixed_prior <- function(current, local, fallback, label) {
+    if (is.null(current)) current <- fallback
+
+    if (is.list(current)) {
+      default <- if (!is.null(current$default)) current$default else fallback
+      merged <- current
+      if (is.null(merged$default)) merged$default <- default
+    } else {
+      if (length(current) != 1L) {
+        stop(sprintf(
+          "'control.fixed$%s' must be a scalar or a named list.",
+          label
+        ), call. = FALSE)
+      }
+      default <- current
+      merged <- list(default = current)
+    }
+
+    if (length(local) > 0L) {
+      for (nm in names(local)) merged[[nm]] <- local[[nm]]
+      control <- merged
+    } else {
+      control <- current
+    }
+
+    list(control = control, default = default)
   }
 
-  if (length(local_precs) > 0) {
-    prec_list <- list(default = user_prec)
-    for (nm in names(local_precs)) prec_list[[nm]] <- local_precs[[nm]]
-    ctrl_fixed$prec <- prec_list
+  mean_control <- merge_fixed_prior(ctrl_fixed$mean, local_means, 0, "mean")
+  prec_control <- merge_fixed_prior(ctrl_fixed$prec, local_precs, 0.001, "prec")
+  ctrl_fixed$mean <- mean_control$control
+  ctrl_fixed$prec <- prec_control$control
+  user_mean <- mean_control$default
+  user_prec <- prec_control$default
+
+  effective_fixed_means <- if (is.list(ctrl_fixed$mean)) {
+    ctrl_fixed$mean[setdiff(names(ctrl_fixed$mean), "default")]
   } else {
-    ctrl_fixed$prec <- user_prec
+    list()
+  }
+  effective_fixed_sds <- if (is.list(ctrl_fixed$prec)) {
+    lapply(
+      ctrl_fixed$prec[setdiff(names(ctrl_fixed$prec), "default")],
+      function(value) 1 / sqrt(value)
+    )
+  } else {
+    list()
   }
 
   # =========================================================================
@@ -471,8 +651,8 @@ inlacc <- function(model, data, latent.index = NULL, LKJ.eta = 5,
     copied_covariates = copied_covariates,
     compute_predictor = compute_pred,
     priors = list(
-      fixed_means = local_means,
-      fixed_sds = local_sds,
+      fixed_means = effective_fixed_means,
+      fixed_sds = effective_fixed_sds,
       default_mean = user_mean,
       default_sd = 1 / sqrt(user_prec)
     )

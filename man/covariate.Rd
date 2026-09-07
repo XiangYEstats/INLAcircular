@@ -2,7 +2,7 @@
 % Please edit documentation in R/cc.model.R
 \name{covariate}
 \alias{covariate}
-\title{Define Custom Covariate Settings}
+\title{Define a covariate or copied predictor in an \code{inlacc()} formula}
 \usage{
 covariate(
   var,
@@ -11,27 +11,75 @@ covariate(
   sd = NULL,
   initial = NULL,
   fixed = FALSE,
-  predictor = FALSE
+  predictor = NULL
 )
 }
 \arguments{
-\item{var}{Covariate vector used in the model formula.}
+\item{var}{An unquoted data-column name or numeric expression. This is an
+argument name, not a separate \code{var()} function.}
 
-\item{name}{Optional coefficient name.}
+\item{name}{Optional coefficient and display name.}
 
-\item{mean}{Optional prior mean.}
+\item{mean}{Optional Gaussian prior mean.}
 
-\item{sd}{Optional prior standard deviation.}
+\item{sd}{Optional Gaussian prior standard deviation.}
 
-\item{initial}{Optional initial value on INLA's internal scale.}
+\item{initial}{Optional initial value for a copied predictor's INLA scaling
+coefficient. It is ignored for an ordinary fixed covariate. The copied
+coefficient default is \code{0}.}
 
-\item{fixed}{Logical; whether to fix the coefficient at \code{initial}.}
+\item{fixed}{Logical; for a copied predictor, whether to fix the scaling
+coefficient at \code{initial}. It is ignored for an ordinary fixed covariate.}
 
-\item{predictor}{Logical; whether the term is supplied as a predictor.}
+\item{predictor}{\code{NULL} or one logical value. The default \code{NULL}
+automatically uses an INLA copy term when \code{var} is an untransformed
+response from another likelihood block. \code{TRUE} explicitly requests that
+behavior and errors unless \code{var} is such a response. \code{FALSE} always uses
+the observed value as an ordinary fixed covariate.}
 }
 \value{
-\code{NULL}; the call is interpreted while the model is assembled.
+\code{NULL}, invisibly; \code{\link[=inlacc]{inlacc()}} interprets the unevaluated call.
 }
 \description{
-Define Custom Covariate Settings
+\code{covariate()} is a formula marker with two modes. For an ordinary data
+variable it defines a fixed effect. When \code{var} is also a response in another
+block, it can define an INLA copy-scaling coefficient for that response's
+latent predictor.
+}
+\details{
+For an ordinary fixed effect, \code{mean} and \code{sd} independently
+override \code{control.fixed}; omitted values inherit the global settings. For a
+copied predictor, both must be supplied to customize the scaling prior. If
+either is missing, the current implementation uses its default
+\code{N(0, 31.62^2)} prior. Set
+\code{control.predictor = list(compute = TRUE)} in \code{\link[=inlacc]{inlacc()}} when fitted latent
+predictors are required. A response used as a bare formula term is also
+copied automatically; write \code{covariate(response, predictor = FALSE)} to use
+its observed values instead. Transformed response expressions are ordinary
+observed fixed effects unless \code{predictor = TRUE}, which is invalid because
+a transformed latent predictor cannot be copied by this interface.
+}
+\examples{
+likelihood(
+  y ~ covariate(z, name = "beta_z", mean = 0, sd = 2),
+  family = "gaussian"
+)
+
+# In a joint model, `angle` is copied automatically because it is another
+# likelihood block's response. Use predictor = TRUE to make that explicit.
+likelihood(
+  y ~ covariate(
+    angle,
+    name = "beta_angle_predictor",
+    mean = 0,
+    sd = 1,
+    initial = 0,
+    fixed = FALSE,
+    predictor = TRUE
+  ),
+  family = "gaussian"
+)
+}
+\seealso{
+\code{\link[=likelihood]{likelihood()}}, \code{\link[=intercept]{intercept()}}, \code{\link[=inlacc]{inlacc()}}
 }

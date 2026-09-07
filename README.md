@@ -4,38 +4,63 @@
 
 ## Installation
 
-`INLAcircular` uses the **INLA testing version**. Install it first:
+After the package is published on CRAN, install its core functionality with:
 
+```r
+install.packages("INLAcircular")
 ```
+
+For a development installation from GitHub, install `remotes` if necessary:
+
+```r
+install.packages("remotes")
+remotes::install_github(
+  "XiangYEstats/INLAcircular"
+)
+```
+
+The circular distributions and PC-prior functions do not require INLA. Model
+fitting uses optional INLA >= 25.08.21 from the current **stable INLA
+repository**, which is not installed automatically. Install it separately when
+needed:
+
+```r
 install.packages(
   "INLA",
   repos = c(
     getOption("repos"),
-    INLA = "https://inla.r-inla-download.org/R/testing"
+    INLA = "https://inla.r-inla-download.org/R/stable"
   )
 )
 ```
 
-Install `remotes` if necessary:
+Attaching INLA is optional because `INLAcircular` uses its namespace directly.
+If both packages are attached and you want the compatibility `inla()` function
+on the search path, load them in this order:
 
-```
-install.packages("remotes")
-```
-
-Then install `INLAcircular` from GitHub:
-
-```
-remotes::install_github(
-  "XiangYEstats/INLAcircular",
-  dependencies = TRUE
-)
-```
-
-Load the package:
-
-```
+```r
+library(INLA)
 library(INLAcircular)
 ```
+
+## Documentation
+
+[Read the full user guide (PDF)](output/pdf/INLAcircular-guide.pdf)
+
+[Download the HTML guide](output/html/INLAcircular-guide.html?raw=true)
+(open the downloaded file in your browser).
+
+The comprehensive guide covers the circular distributions, all PC-prior
+densities and d/p/q/r functions, direct fitting with `INLA::inla()`, model
+specification, `inlacc()`, and `graphpcor` integration. After installation,
+open it with:
+
+```
+vignette("INLAcircular-guide", package = "INLAcircular")
+```
+
+Function-level documentation is available through
+`help(package = "INLAcircular")` and `?function_name`.
 
 For models using the LKJ multivariate random-effect model, install `graphpcor`:
 

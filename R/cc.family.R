@@ -182,12 +182,7 @@
 }
 
 .define_lavm_cloglike <- function(info) {
-  if (!requireNamespace("INLA", quietly = TRUE)) {
-    stop(
-      "Package 'INLA' is required. Install the INLA testing version first.",
-      call. = FALSE
-    )
-  }
+  .INLAcircular_require_inla()
 
   INLA::inla.cloglike.define(
     model = "INLAcirc_cloglike_lavm",
@@ -228,20 +223,70 @@
   )
 }
 
-#' Define the custom LAVM likelihood for INLA
+#' Define the compiled LAvM cloglike for direct R-INLA fitting
 #'
-#' @param family.setting A list of controls for the LAvM likelihood. Within
-#'   `hyper$kappa`, `initial` is the initial value of `log(kappa)`, and
-#'   `fixed = TRUE` fixes `log(kappa)` at that value. The two values in
-#'   `param = c(u, alpha)` must both lie strictly between 0 and 1. For a single
+#' Construct the custom likelihood object needed by a literal
+#' `INLA::inla(..., family = "cloglike")` call. The convenience [inla()]
+#' function and [inlacc()] call this constructor internally.
+#'
+#' @param family.setting A list of controls for the LAvM likelihood. `link` is
+#'   `"inverse.tangent"` (default), `"scaled.logit"`, or `"scaled.probit"`.
+#'   Within `hyper$kappa`, `initial` is the initial value of `log(kappa)`,
+#'   `prior` is `"pc.vminf"` (default) or `"pc.vm0"`,
+#'   `param = c(u, alpha)` contains two values strictly between zero and one,
+#'   and `fixed = TRUE` fixes `log(kappa)` at `initial`. For a single
 #'   likelihood, both `list(link = ..., hyper = ...)` and the nested INLA form
 #'   `list(list(link = ..., hyper = ...))` are accepted.
 #' @details The native likelihood entry point is
 #'   `INLAcirc_cloglike_lavm`. The standalone implementation for inla-build is
 #'   kept in `src-cloglike`; the package DLL uses a self-contained synchronized
 #'   copy in `src`, so package installation never compiles `src-cloglike`.
-#'   Supported concentration priors are `pc.vm0` and `pc.vminf`.
+#'
+#'   In `param = c(u, alpha)`, `u` is a threshold for the mean resultant
+#'   length `I1(kappa) / I0(kappa)`, and both supported priors are calibrated
+#'   so that the probability of exceeding `u` is `alpha`. This is distinct
+#'   from the standalone PC-prior d/p/q/r functions, which accept `lambda`
+#'   directly. The defaults are `initial = 6`, `prior = "pc.vminf"`,
+#'   `param = c(0.5, 0.5)`, and `fixed = FALSE`. `hyper$prec` and
+#'   `log.initial` are rejected.
+#'
+#'   The standalone `pc.vminf` law has a boundary atom at `kappa = 0`. INLA
+#'   represents a finite `theta = log(kappa)`, so this cloglike evaluates the
+#'   continuous component on the theta scale, including its Jacobian, and has
+#'   no discrete state at `theta = -Inf`. Its `c(u, alpha)` input should
+#'   therefore be read as a rate calibration. For numerical stability, the
+#'   compiled likelihood and prior use a working theta restricted to
+#'   `[-30, 30]`.
+#'
+#'   For a direct fit, convert the response with `INLA::inla.mdata()`, use
+#'   `family = "cloglike"`, and pass the returned object as
+#'   `control.family = list(cloglike = object)`. A literal
+#'   `INLA::inla(..., family = "lavm")` does not select this package's custom
+#'   likelihood or priors.
 #' @return An INLA cloglike object.
+#' @seealso [inla()], [inlacc()]
+#' @examples
+#' \dontrun{
+#' y_lavm <- INLA::inla.mdata(y)
+#' cloglike <- lavm.cloglike(list(
+#'   link = "inverse.tangent",
+#'   hyper = list(
+#'     kappa = list(
+#'       initial = log(50),
+#'       prior = "pc.vminf",
+#'       param = c(0.5, 0.5),
+#'       fixed = FALSE
+#'     )
+#'   )
+#' ))
+#' fit <- INLA::inla(
+#'   y_lavm ~ z,
+#'   family = "cloglike",
+#'   data = list(y_lavm = y_lavm, z = z),
+#'   control.family = list(cloglike = cloglike),
+#'   control.inla = list(cmin = 0, compute.initial.values = TRUE)
+#' )
+#' }
 #' @export
 lavm.cloglike <- function(family.setting = NULL) {
   .define_lavm_cloglike(.parse_lavm_family_setting(family.setting))

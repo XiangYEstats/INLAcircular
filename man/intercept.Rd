@@ -2,20 +2,41 @@
 % Please edit documentation in R/cc.model.R
 \name{intercept}
 \alias{intercept}
-\title{Define Custom Intercept Settings}
+\title{Define a custom intercept in an \code{inlacc()} formula}
 \usage{
 intercept(name = NULL, mean = NULL, sd = NULL)
 }
 \arguments{
-\item{name}{Optional name used for the intercept coefficient.}
+\item{name}{Optional coefficient name. The default is
+\verb{Intercept_<response>}. Use unique, syntactically valid names unless a
+shared fixed coefficient is intentional.}
 
-\item{mean}{Optional prior mean.}
+\item{mean}{Optional Gaussian prior mean. If omitted, the corresponding
+\code{control.fixed} mean is inherited.}
 
-\item{sd}{Optional prior standard deviation.}
+\item{sd}{Optional positive Gaussian prior standard deviation. If omitted,
+the corresponding \code{control.fixed} precision is inherited.}
 }
 \value{
-\code{NULL}; the call is interpreted while the model is assembled.
+\code{NULL}, invisibly; \code{\link[=inlacc]{inlacc()}} interprets the unevaluated call.
 }
 \description{
-Define Custom Intercept Settings
+\code{intercept()} is a formula marker interpreted by \code{\link[=inlacc]{inlacc()}}. It replaces
+the automatically named intercept for that likelihood block.
+}
+\details{
+A normal formula intercept (\code{1}) creates a block-specific
+automatic intercept. \code{0} or \code{-1} removes it. An explicit \code{intercept()} term
+suppresses the automatic intercept and adds the custom term, even in a
+no-intercept formula. The marker is not intended to be evaluated outside a
+\code{\link[=likelihood]{likelihood()}} formula.
+}
+\examples{
+likelihood(
+  y ~ intercept(name = "beta0", mean = 0, sd = 5),
+  family = "gaussian"
+)
+}
+\seealso{
+\code{\link[=likelihood]{likelihood()}}, \code{\link[=covariate]{covariate()}}, \code{\link[=inlacc]{inlacc()}}
 }

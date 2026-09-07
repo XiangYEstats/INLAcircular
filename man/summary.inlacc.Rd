@@ -2,20 +2,48 @@
 % Please edit documentation in R/cc.summary.R
 \name{summary.inlacc}
 \alias{summary.inlacc}
-\title{Summary method for inlacc models}
+\title{Summarize an \code{inlacc()} fit}
 \usage{
 \method{summary}{inlacc}(object, decimal = 3L, ...)
 }
 \arguments{
 \item{object}{A fitted \code{inlacc} model.}
 
-\item{decimal}{Number of decimal places retained for printing.}
+\item{decimal}{Number of decimal places used later by the print method. It
+does not round values stored in the returned object.}
 
 \item{...}{Additional arguments, currently unused.}
 }
 \value{
-An object of class \code{inlacc_summary}.
+An object of class \code{inlacc_summary}, which is a list containing:
+\itemize{
+\item \code{fixed_par}: fixed-effect posterior summaries and displayed Gaussian
+priors;
+\item \code{likelihood_par}: transformed likelihood-parameter summaries, or \code{NULL};
+\item \code{random_par}: transformed latent-process hyperparameter summaries, or
+\code{NULL};
+\item \code{time.summary}: a named \code{inlacc_time} vector in seconds;
+\item \code{metrics}: available marginal log-likelihood, DIC, and WAIC entries;
+\item \code{needs_pred_warning}: whether predictor computation is recommended; and
+\item \code{decimal}: the requested printing precision.
+}
+
+Posterior summary tables use columns \code{mean}, \code{SD}, \verb{2.5\%}, \verb{50\%}, \verb{97.5\%},
+\code{mode}, and \code{prior}; likelihood and random-effect tables also carry family
+or process-type information when available.
 }
 \description{
-Summary method for inlacc models
+Transform and organize the fixed effects, likelihood parameters, latent
+hyperparameters, timing, and requested model criteria from an
+\code{\link[=inlacc]{inlacc()}} result.
+}
+\examples{
+\dontrun{
+fit_summary <- summary(fit, decimal = 4)
+fit_summary$fixed_par
+print(fit_summary, metrics = FALSE)
+}
+}
+\seealso{
+\code{\link[=inlacc]{inlacc()}}, \code{\link[=print.inlacc_summary]{print.inlacc_summary()}}, \code{\link[=print.inlacc_time]{print.inlacc_time()}}
 }

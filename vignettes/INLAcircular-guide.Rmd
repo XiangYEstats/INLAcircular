@@ -1,0 +1,1294 @@
+---
+title: "INLAcircular: User Guide and Function Reference"
+author: "Xiang Ye"
+# VS Code Ctrl+Shift+K and the RStudio Knit button run this function.
+knit: >
+  (function(inputFile, encoding = "UTF-8") {
+    inputFile <- normalizePath(inputFile, mustWork = TRUE);
+    projectDir <- normalizePath(file.path(dirname(inputFile), ".."), mustWork = TRUE);
+    stem <- tools::file_path_sans_ext(basename(inputFile));
+    auxiliaryFiles <- file.path(
+      dirname(inputFile),
+      paste0(stem, c(".aux", ".log", ".out", ".toc", ".tex"))
+    );
+    on.exit(unlink(auxiliaryFiles, force = TRUE), add = TRUE);
+    if (!requireNamespace("pkgload", quietly = TRUE)) {
+      stop(
+        "Knitting from the source tree requires the suggested pkgload package. ",
+        "Install the CRAN package named pkgload first."
+      );
+    };
+    pkgload::load_all(
+      projectDir,
+      helpers = FALSE,
+      export_all = FALSE,
+      quiet = TRUE
+    );
+    htmlDir <- file.path(projectDir, "output", "html");
+    pdfDir <- file.path(projectDir, "output", "pdf");
+    dir.create(htmlDir, recursive = TRUE, showWarnings = FALSE);
+    dir.create(pdfDir, recursive = TRUE, showWarnings = FALSE);
+    htmlOutput <- rmarkdown::render(
+      inputFile,
+      output_format = rmarkdown::html_vignette(toc = TRUE, number_sections = TRUE),
+      output_file = paste0(stem, ".html"),
+      output_dir = htmlDir,
+      encoding = encoding,
+      clean = TRUE,
+      envir = new.env(parent = globalenv())
+    );
+    rmarkdown::render(
+      inputFile,
+      output_format = rmarkdown::pdf_document(
+        toc = TRUE,
+        number_sections = TRUE,
+        latex_engine = "pdflatex"
+      ),
+      output_file = paste0(stem, ".pdf"),
+      output_dir = pdfDir,
+      encoding = encoding,
+      clean = TRUE,
+      envir = new.env(parent = globalenv())
+    );
+    htmlOutput
+  })
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{INLAcircular: User Guide and Function Reference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4.5
+)
+Sys.setenv(TZ = "UTC")
+```
+
+# Scope and conventions
+
+INLAcircular provides probability functions and a model-building interface
+for Bayesian circular and joint circular regression with Integrated
+Nested Laplace Approximation (INLA). Its core numerical routines are written in
+C and exposed through ordinary R functions.
+
+The package follows these conventions:
+
+- Angles are measured in radians.
+- Location parameters are named <code>mu</code>.
+- Concentration parameters are named <code>kappa</code>, including for
+  cardioid and wrapped Cauchy distributions.
+- Density functions use <code>log = TRUE</code> for log-densities.
+- PC-prior distribution and quantile functions use
+  <code>log.p = TRUE</code> for probabilities on the log scale.
+- The d/p/q/r prefix has its usual R meaning: density, distribution function,
+  quantile function, and random generation.
+
+The core distribution and PC-prior functions can be used without `INLA`.
+Model fitting requires the optional `INLA` package, and LKJ multivariate random
+effects also require `graphpcor`.
+
+# Installation
+
+After the package is published on CRAN, install it with:
+
+```{r install-cran, eval=FALSE}
+install.packages("INLAcircular")
+```
+
+The installation above provides the circular distributions and PC-prior
+functions without installing INLA. For model fitting, install optional
+INLA >= 25.08.21 from the current stable repository separately:
+
+```{r install-inla, eval=FALSE}
+install.packages(
+  "INLA",
+  repos = c(
+    getOption("repos"),
+    INLA = "https://inla.r-inla-download.org/R/stable"
+  )
+)
+```
+
+For a development installation from GitHub:
+
+```{r install-package, eval=FALSE}
+install.packages("remotes")
+remotes::install_github(
+  "XiangYEstats/INLAcircular"
+)
+```
+
+```{r load}
+library(INLAcircular)
+```
+
+Attaching INLA is optional because `INLAcircular` loads its namespace when a
+model-fitting function needs it. If both packages are attached and you want
+the compatibility `inla()` function on the search path, load `INLA` first and
+then `INLAcircular`.
+
+# Circular distributions
+
+## Quick comparison
+
+The package supplies the full d/p/q/r interface for the von Mises and
+link-adjusted von Mises distributions. It supplies compiled densities for the
+cardioid and wrapped Cauchy distributions.
+
+```{r density-comparison, fig.cap="Three circular density families with mean direction zero."}
+theta <- seq(-pi, pi, length.out = 361)
+densities <- cbind(
+  "von Mises" = dvm(theta, mu = 0, kappa = 2),
+  "cardioid" = dcardioid(theta, mu = 0, kappa = 0.4),
+  "wrapped Cauchy" =
+    dwrappedcauchy(theta, mu = 0, kappa = 0.7)
+)
+
+matplot(
+  theta,
+  densities,
+  type = "l",
+  lty = 1,
+  xlab = "Angle (radians)",
+  ylab = "Density"
+)
+legend(
+  "topright",
+  legend = colnames(densities),
+  col = seq_len(ncol(densities)),
+  lty = 1,
+  bty = "n"
+)
+```
+
+## Von Mises
+
+<code>dvm()</code>, <code>pvm()</code>, <code>qvm()</code>, and
+<code>rvm()</code> evaluate the von Mises distribution with density
+
+\[
+f(x\mid\mu,\kappa)
+=\frac{\exp\{\kappa\cos(x-\mu)\}}{2\pi I_0(\kappa)}.
+\]
+
+<code>kappa = 0</code> gives the circular uniform limit. The CDF and quantile
+functions use a cached spline grid; <code>len</code> controls its resolution.
+With <code>strategy = "circular"</code>, the CDF origin follows the mean
+direction. The alternative <code>strategy = "linear"</code> retains a fixed
+linear representation.
+
+```{r von-mises-api}
+set.seed(1)
+rvm(5, mu = 0, kappa = 3)
+pvm(pi / 2, mu = 0, kappa = 2)
+qvm(0.95, mu = 0, kappa = 2)
+```
+
+## Link-adjusted von Mises
+
+<code>dlavm()</code>, <code>plavm()</code>, <code>qlavm()</code>, and
+<code>rlavm()</code> use a linear predictor <code>eta</code> and concentration
+<code>kappa</code>. The current direct distribution interface uses the
+inverse-tangent transformation
+
+\[
+z=2\arctan\{\tan(x/2)-\eta\}.
+\]
+
+<code>lavm.link("tan")</code> returns the corresponding transformation and
+inverse functions. The <code>link_obj</code> argument in the p/q/r functions
+is reserved for interface compatibility; the current compiled implementation
+uses the inverse-tangent link.
+
+```{r lavm-api}
+set.seed(2)
+rlavm(5, eta = 1.5, kappa = 3)
+dlavm(c(-1, 0, 1), eta = 1.5, kappa = 3)
+plavm(pi / 2, eta = 1.5, kappa = 3)
+qlavm(0.5, eta = 1.5, kappa = 3)
+```
+
+## Cardioid and wrapped Cauchy densities
+
+The cardioid density is
+
+\[
+f_{\mathrm{card}}(x\mid\mu,\kappa)
+=\frac{1+2\kappa\cos(x-\mu)}{2\pi},
+\qquad 0\leq\kappa\leq\frac12.
+\]
+
+Use <code>dcardioid()</code>, or its short alias <code>dcard()</code>.
+
+The wrapped Cauchy density is
+
+\[
+f_{\mathrm{wc}}(x\mid\mu,\kappa)
+=\frac{1-\kappa^2}
+ {2\pi\{1+\kappa^2-2\kappa\cos(x-\mu)\}},
+\qquad 0\leq\kappa<1.
+\]
+
+Use <code>dwrappedcauchy()</code>, or its short alias <code>dwc()</code>.
+The endpoint <code>kappa = 1</code> is a point-mass limit: the compiled
+density reports <code>Inf</code> at the mean direction and zero elsewhere.
+Finite-parameter likelihoods should use <code>kappa < 1</code>.
+
+Both functions recycle <code>x</code>, <code>mu</code>, and
+<code>kappa</code> to a common length.
+
+```{r other-densities}
+x <- c(-pi / 2, 0, pi / 2)
+dcardioid(x, mu = 0, kappa = c(0, 0.25, 0.5))
+dwrappedcauchy(x, mu = 0, kappa = 0.7, log = TRUE)
+```
+
+# Penalized-complexity priors
+
+A PC prior assigns an exponential distribution with rate
+<code>lambda</code> to a distance from a simpler base model. Larger
+<code>lambda</code> puts more prior mass near the base. All five prior
+families expose matching density, CDF, quantile, and random-generation
+functions.
+
+| Help topic | Base model | Support for kappa | Special behavior |
+|:--|:--|:--|:--|
+| pc.vm0 | von Mises uniform limit, kappa = 0 | [0, Inf) | Continuous |
+| pc.vminf | von Mises point-mass limit | [0, Inf) | Atom exp(-lambda) at zero |
+| pc.card0 | cardioid uniform model, kappa = 0 | [0, 1/2] | Normalized truncated exponential distance |
+| pc.card | cardioid base, kappa = 1/2 | [0, 1/2] | Atom at zero; integrable singularity at 1/2 |
+| pc.wc | wrapped Cauchy uniform model, kappa = 0 | [0, 1) | Continuous; open upper endpoint |
+
+For a monotone distance \(d(\kappa)\), an untruncated continuous PC prior has
+density
+
+\[
+\pi(\kappa)=\lambda\exp\{-\lambda d(\kappa)\}
+              \left|d'(\kappa)\right|.
+\]
+
+When the attainable distance range is bounded, the remaining exponential
+tail must be handled explicitly. <code>pc.card0</code> truncates and normalizes
+the exponential distance law; <code>pc.vminf</code> and <code>pc.card</code>
+collapse the remaining tail to a boundary atom. The density functions below
+return densities with respect to Lebesgue measure. A boundary atom is therefore
+represented by the CDF and RNG, not added to the value returned by a density
+function.
+
+## Von Mises prior with uniform base: pc.vm0
+
+Write
+
+\[
+A(\kappa)=\frac{I_1(\kappa)}{I_0(\kappa)},\qquad
+A'(\kappa)=1-A(\kappa)^2-\frac{A(\kappa)}{\kappa},
+\]
+
+where the continuous limit is \(A'(0)=1/2\). The distance from the circular
+uniform model is
+
+\[
+d_0(\kappa)=
+\sqrt{\kappa A(\kappa)-\log I_0(\kappa)}.
+\]
+
+For \(\kappa>0\), the density and CDF are
+
+\[
+\boxed{
+\pi_0(\kappa)=
+\lambda e^{-\lambda d_0(\kappa)}
+\frac{\kappa A'(\kappa)}{2d_0(\kappa)}
+},\qquad
+F_0(\kappa)=1-e^{-\lambda d_0(\kappa)}.
+\]
+
+The density has the finite endpoint limit
+\(\pi_0(0)=\lambda/2\). This is a continuous distribution with no atom at
+zero. Use <code>dpc.vm0()</code>, <code>ppc.vm0()</code>,
+<code>qpc.vm0()</code>, and <code>rpc.vm0()</code>.
+
+```{r pc-vm}
+probability <- c(0.1, 0.5, 0.9)
+q0 <- qpc.vm0(probability, lambda = 2)
+cbind(
+  probability = probability,
+  quantile = q0,
+  recovered = ppc.vm0(q0, lambda = 2)
+)
+
+dpc.vm0(c(0, 0.5, 2), lambda = 2)
+```
+
+## Von Mises prior with point-mass base: pc.vminf
+
+The distance from the point-mass limit \(\kappa\rightarrow\infty\) is
+
+\[
+d_\infty(\kappa)=\sqrt{1-A(\kappa)}.
+\]
+
+The continuous density for \(\kappa>0\) and the full CDF are
+
+\[
+\boxed{
+\pi_\infty^{\mathrm{cont}}(\kappa)=
+\lambda e^{-\lambda d_\infty(\kappa)}
+\frac{A'(\kappa)}{2d_\infty(\kappa)}
+},\qquad
+F_\infty(\kappa)=e^{-\lambda d_\infty(\kappa)}.
+\]
+
+Because \(d_\infty(0)=1\), the full law has boundary mass
+\(\Pr(\kappa=0)=e^{-\lambda}\). <code>dpc.vminf()</code> returns only the
+continuous component, whose right-hand endpoint limit is
+\(\lambda e^{-\lambda}/4\). <code>ppc.vminf()</code>,
+<code>qpc.vminf()</code>, and <code>rpc.vminf()</code> include the atom.
+
+```{r pc-vminf}
+lambda <- 2
+atom_vm <- exp(-lambda)
+c(computed = ppc.vminf(0, lambda), expected = atom_vm)
+dpc.vminf(c(0, 0.5, 2), lambda)
+qpc.vminf(c(atom_vm / 2, (1 + atom_vm) / 2), lambda)
+```
+
+## Cardioid prior with uniform base: pc.card0
+
+Let
+
+\[
+s(\kappa)=\sqrt{1-4\kappa^2},\qquad
+d_0(\kappa)=
+\sqrt{1-s(\kappa)+\log\{(1+s(\kappa))/2\}}.
+\]
+
+The distance is bounded above by
+\(D_0=\sqrt{1-\log 2}\). Therefore pc.card0 uses the normalized,
+truncated exponential density
+
+\[
+\boxed{
+\pi_0(\kappa)=
+\frac{\lambda e^{-\lambda d_0(\kappa)}}
+     {1-e^{-\lambda D_0}}
+\frac{2\kappa}{\{1+s(\kappa)\}d_0(\kappa)}
+}.
+\]
+
+Its CDF is
+
+\[
+F_0(\kappa)=
+\frac{1-\exp\{-\lambda d_0(\kappa)\}}
+ {1-\exp(-\lambda D_0)}.
+\]
+
+Use <code>dpc.card0()</code>, <code>ppc.card0()</code>,
+<code>qpc.card0()</code>, and <code>rpc.card0()</code>.
+The density at zero is evaluated by continuity and equals
+\(\lambda/\{1-e^{-\lambda D_0}\}\). At \(\kappa=1/2\), it equals
+\(\lambda e^{-\lambda D_0}/[D_0\{1-e^{-\lambda D_0}\}]\).
+
+```{r pc-card0}
+probability <- c(0.1, 0.5, 0.9)
+quantile <- qpc.card0(probability, lambda = 2)
+cbind(
+  probability = probability,
+  quantile = quantile,
+  recovered = ppc.card0(quantile, lambda = 2)
+)
+dpc.card0(c(0, 0.25, 0.5), lambda = 2)
+```
+
+## Cardioid prior with base kappa = 1/2: pc.card
+
+The distance to the concentrated cardioid base is
+
+\[
+d_{1/2}(\kappa)=
+\sqrt{1-2\kappa-s(\kappa)+\log\{1+s(\kappa)\}}.
+\]
+
+It decreases from \(\sqrt{\log 2}\) at zero to zero at the base. Its
+continuous density is
+
+\[
+\boxed{
+\pi_{1/2}^{\mathrm{cont}}(\kappa)=
+\lambda e^{-\lambda d_{1/2}(\kappa)}
+\frac{1+s(\kappa)-2\kappa}
+     {\{1+s(\kappa)\}d_{1/2}(\kappa)}
+}.
+\]
+
+The full CDF is
+
+\[
+F_{1/2}(\kappa)=\exp\{-\lambda d_{1/2}(\kappa)\}.
+\]
+
+Consequently, the distribution has boundary mass
+\(\exp\{-\lambda\sqrt{\log 2}\}\) at <code>kappa = 0</code>.
+<code>dpc.card()</code> returns the continuous density component.
+<code>ppc.card()</code>, <code>qpc.card()</code>, and
+<code>rpc.card()</code> include the atom. The continuous density tends to
+<code>Inf</code> at <code>kappa = 0.5</code>, but the singularity is
+integrable. At zero, its continuous component is
+\(\lambda e^{-\lambda\sqrt{\log 2}}/\sqrt{\log 2}\); this value is distinct
+from the atom probability.
+
+```{r pc-card}
+lambda <- 2
+atom_card <- exp(-lambda * sqrt(log(2)))
+c(computed = ppc.card(0, lambda), expected = atom_card)
+qpc.card(c(atom_card / 2, (1 + atom_card) / 2), lambda)
+dpc.card(c(0, 0.25, 0.49), lambda)
+```
+
+## Wrapped Cauchy prior: pc.wc
+
+For the wrapped Cauchy family,
+
+\[
+d_{\mathrm{wc}}(\kappa)=\sqrt{-\log(1-\kappa^2)}
+\]
+
+maps [0, 1) to the full nonnegative distance axis. Its density is
+
+\[
+\boxed{
+\pi_{\mathrm{wc}}(\kappa)=
+\lambda e^{-\lambda d_{\mathrm{wc}}(\kappa)}
+\frac{\kappa}{(1-\kappa^2)d_{\mathrm{wc}}(\kappa)}
+}.
+\]
+
+The CDF is
+
+\[
+F_{\mathrm{wc}}(\kappa)
+=1-\exp\{-\lambda d_{\mathrm{wc}}(\kappa)\}.
+\]
+
+Use <code>dpc.wc()</code>, <code>ppc.wc()</code>,
+<code>qpc.wc()</code>, and <code>rpc.wc()</code>. The density limit at zero
+is <code>lambda</code>; the density diverges as <code>kappa</code>
+approaches one. Interior-probability quantiles (`0 < p < 1`) and RNG output
+remain strictly below one. There is no atom at one; the value
+<code>dpc.wc(1, lambda)</code> is the limiting density convention.
+
+```{r pc-wc}
+q_wc <- qpc.wc(c(0.1, 0.5, 0.9), lambda = 2)
+cbind(quantile = q_wc, recovered = ppc.wc(q_wc, lambda = 2))
+
+set.seed(3)
+rpc.wc(5, lambda = 2)
+dpc.wc(c(0, 0.5, 0.9), lambda = 2)
+```
+
+## Density, probability, and vectorization rules
+
+Every family follows the same call pattern:
+
+```r
+dpc.NAME(kappa, lambda, log = FALSE)
+ppc.NAME(q, lambda, log.p = FALSE)
+qpc.NAME(p, lambda, log.p = FALSE)
+rpc.NAME(n, lambda)
+```
+
+The PC-prior functions recycle concentrations or probabilities against
+<code>lambda</code>. The rate must always contain positive, finite values.
+With <code>log.p = TRUE</code>, CDFs return log-probabilities and quantiles
+accept log-probabilities. The density flag is <code>log</code>, and both flags
+must be one non-missing logical value. There is no <code>lower.tail</code>
+argument; all probabilities are lower-tail.
+
+Values and <code>lambda</code> recycle to their common maximum length, with a
+warning for non-multiple lengths. For random generation, a vector
+<code>n</code> requests <code>length(n)</code> draws; otherwise its scalar value
+is converted to an integer. The generators use R's RNG stream. Apart from the
+documented limiting-endpoint conventions, densities are zero outside their
+mathematical support, while invalid probabilities produce <code>NaN</code>.
+
+Names such as <code>pc.card0</code> are help topics and prior labels, not
+callable R functions. Use the corresponding d/p/q/r functions.
+
+```{r pc-log-vector}
+dpc.card0(c(0.1, 0.2, 0.3), lambda = c(1, 2, 3), log = TRUE)
+qpc.wc(log(c(0.1, 0.5, 0.9)), lambda = 2, log.p = TRUE)
+```
+
+# Direct fitting with R-INLA
+
+This section uses <code>INLA::inla()</code> literally. The LAvM likelihood in
+this package is an external compiled <code>cloglike</code>, so a direct call
+has three explicit preparation steps:
+
+1. convert the circular response with <code>INLA::inla.mdata()</code>;
+2. construct the compiled likelihood with <code>lavm.cloglike()</code>; and
+3. call <code>INLA::inla()</code> with <code>family = "cloglike"</code>.
+
+```{r direct-inla, eval=FALSE}
+lavm_setting <- list(
+  link = "inverse.tangent",
+  hyper = list(
+    kappa = list(
+      initial = log(50),
+      prior = "pc.vminf",
+      param = c(0.5, 0.5),
+      fixed = FALSE
+    )
+  )
+)
+
+direct_data <- list(
+  angle_lavm = INLA::inla.mdata(angle),
+  z = z
+)
+
+fit_direct <- INLA::inla(
+  angle_lavm ~ z,
+  family = "cloglike",
+  data = direct_data,
+  control.family = list(
+    cloglike = lavm.cloglike(lavm_setting)
+  ),
+  control.inla = list(
+    cmin = 0,
+    compute.initial.values = TRUE
+  ),
+  control.compute = list(cpo = TRUE, dic = TRUE, waic = TRUE),
+  verbose = FALSE
+)
+```
+
+Do not replace <code>family = "cloglike"</code> by
+<code>family = "lavm"</code> in this namespaced call. Some INLA
+versions have an experimental native family with that name, but its links,
+hyperparameter names, and priors are different from the INLAcircular LAvM
+interface. The custom prior names <code>pc.vm0</code> and
+<code>pc.vminf</code> are implemented inside this package's cloglike.
+
+## LAvM likelihood controls
+
+<code>lavm.cloglike(family.setting)</code> accepts the following controls:
+
+- <code>link</code> is <code>"inverse.tangent"</code> (the default),
+  <code>"scaled.logit"</code>, or <code>"scaled.probit"</code>.
+- <code>hyper$kappa$initial</code> is one finite initial value for
+  \(\theta=\log(\kappa)\). The default is 6; it is not a natural-scale
+  concentration.
+- <code>hyper$kappa$prior</code> is <code>"pc.vminf"</code> (the default) or
+  <code>"pc.vm0"</code>.
+- <code>hyper$kappa$param = c(u, alpha)</code> contains two values strictly
+  between zero and one. Here \(u\) is a threshold for the mean resultant
+  length \(A(\kappa)=I_1(\kappa)/I_0(\kappa)\), and the calibration is
+  \(\Pr\{A(\kappa)>u\}=\alpha\).
+- <code>hyper$kappa$fixed = TRUE</code> fixes
+  \(\log(\kappa)\) at <code>initial</code>; the default is
+  <code>FALSE</code>.
+
+If \(\kappa_u\) solves \(A(\kappa_u)=u\), <code>pc.vm0</code> uses
+
+\[
+\lambda=-\frac{\log(\alpha)}{d_0(\kappa_u)},
+\]
+
+whereas <code>pc.vminf</code> uses
+
+\[
+\lambda=-\frac{\log(1-\alpha)}{\sqrt{1-u}}.
+\]
+
+This <code>c(u, alpha)</code> interface differs from the standalone d/p/q/r
+functions, which take <code>lambda</code> directly. The obsolete names
+<code>hyper$prec</code> and <code>log.initial</code> are rejected.
+
+For <code>pc.vminf</code>, this calibration comes from the full PC law,
+including its atom at <code>kappa = 0</code>. A fitted INLA hyperparameter is
+finite \(\theta=\log(\kappa)\), so the cloglike evaluates only the continuous
+component transformed to the \(\theta\) scale, including its Jacobian. It has
+no separate discrete state at \(\theta=-\infty\). Treat
+<code>c(u, alpha)</code> as the rate calibration for the fitted continuous
+prior, not as a claim that the fitted hyperparameter retains the boundary
+atom.
+
+For numerical stability, the compiled cloglike evaluates its likelihood and
+prior after restricting the working value of \(\theta\) to \([-30,30]\). This
+matters only at extreme concentrations, but is relevant when selecting initial
+values or diagnosing an optimizer at a boundary.
+
+The literal lower-level fit retains ordinary INLA cloglike names and the
+internal \(\log(\kappa)\) marginal. Transform it when needed:
+
+```{r direct-inla-transform, eval=FALSE}
+theta_name <- grep(
+  "^Theta1 for",
+  names(fit_direct$marginals.hyperpar),
+  value = TRUE
+)[1]
+kappa_marginal <- INLA::inla.tmarginal(
+  exp,
+  fit_direct$marginals.hyperpar[[theta_name]]
+)
+INLA::inla.zmarginal(kappa_marginal)
+```
+
+## Convenience call for a single LAvM model
+
+Loading INLA first and INLAcircular second makes the package's compatibility
+function available as the unqualified <code>inla()</code>. It accepts
+<code>family = "lavm"</code>, performs the three preparation steps above, and
+renames the concentration output onto the natural kappa scale.
+
+```{r convenient-inla, eval=FALSE}
+library(INLA)
+library(INLAcircular)
+
+fit_short <- inla(
+  angle ~ z,
+  family = "lavm",
+  data = data.frame(angle = angle, z = z),
+  control.family = lavm_setting
+)
+```
+
+Use <code>INLA::inla()</code> for the explicit low-level interface and for
+ordinary INLA families. Use the unqualified <code>inla()</code> form above
+only when you intentionally want the package's LAvM compatibility layer.
+
+# Building model specifications
+
+<code>inlacc()</code> uses a formula-building layer to assemble one or more
+likelihood blocks into a stacked INLA model. Create one response block with
+
+```r
+likelihood(formula, family, family.setting = NULL)
+```
+
+Its arguments are:
+
+- <code>formula</code>: a two-sided formula for one response. The left side
+  should be a single column name in <code>data</code>.
+- <code>family</code>: one INLA likelihood name. Use <code>"lavm"</code> for
+  the package's link-adjusted von Mises likelihood; other names are passed to
+  INLA.
+- <code>family.setting</code>: the <code>control.family</code> list for this
+  block. For LAvM it has the structure documented in the preceding section.
+
+A single likelihood object can be passed directly to <code>inlacc()</code>.
+A joint model is a list. Likelihood order determines response-block order and,
+where relevant, multivariate component order.
+
+```{r model-specification, eval=FALSE}
+angle_model <- likelihood(
+  angle ~
+    intercept(name = "alpha0", mean = 0, sd = 2) +
+    covariate(z, name = "alpha_z", mean = 0, sd = 1) +
+    f(
+      hour_effect,
+      model = "rw1",
+      cyclic = TRUE,
+      constr = TRUE,
+      scale.model = TRUE,
+      hyper = list(
+        prec = list(
+          prior = "pc.prec",
+          param = c(1, 0.01)
+        )
+      )
+    ),
+  family = "lavm",
+  family.setting = lavm_setting
+)
+```
+
+## Formula terms and their interpretation
+
+The right side may contain ordinary numeric fixed-effect expressions and the
+following markers:
+
+| Term | Meaning inside `inlacc()` |
+|:--|:--|
+| `1` | Automatic block-specific intercept named `Intercept_<response>` |
+| `0` or `-1` | Remove the automatic intercept |
+| `intercept(...)` | Named intercept with an optional Gaussian prior |
+| ordinary term such as `z` or `log(z)` | Block-specific fixed effect evaluated in `data` |
+| `covariate(...)` | Fixed effect or automatically/explicitly copied response predictor |
+| `f(...)` | Standard INLA latent-effect term, passed into the assembled formula |
+
+Use numeric columns and expressions for ordinary terms. The assembler does
+not reproduce every <code>model.matrix()</code> feature for factors, offsets,
+or special response expressions. Use unique custom coefficient names across
+likelihoods unless a shared fixed coefficient is intentional.
+
+### `intercept()`
+
+```r
+intercept(name = NULL, mean = NULL, sd = NULL)
+```
+
+- <code>name</code> changes the coefficient label; its default is
+  <code>Intercept_&lt;response&gt;</code>.
+- <code>mean</code> and <code>sd</code> set the Gaussian prior. A missing value
+  inherits the corresponding global fixed-effect setting.
+- A formula <code>0</code> or <code>-1</code> removes the automatic intercept,
+  while an explicit <code>intercept()</code> adds the custom one.
+
+This is a formula marker. It returns <code>NULL</code> when called by itself
+because <code>inlacc()</code> interprets its unevaluated call.
+
+### `covariate()`
+
+```r
+covariate(
+  var,
+  name = NULL,
+  mean = NULL,
+  sd = NULL,
+  initial = NULL,
+  fixed = FALSE,
+  predictor = NULL
+)
+```
+
+- <code>var</code> is an unquoted variable or expression evaluated in
+  <code>data</code>. It is an argument, not a separate function named
+  <code>var()</code>.
+- <code>name</code> supplies a stable coefficient and display name.
+- <code>mean</code> and <code>sd</code> independently override the Gaussian
+  prior for an ordinary fixed effect.
+- <code>predictor = NULL</code>, the default, copies the latent predictor when
+  <code>var</code> is an untransformed response in another likelihood block;
+  otherwise it creates an ordinary observed fixed effect.
+- <code>predictor = TRUE</code> explicitly requests copying. It is an error if
+  <code>var</code> is not an untransformed response from another block.
+- <code>predictor = FALSE</code> always creates an ordinary fixed effect from
+  the observed values, including when <code>var</code> is another response.
+- <code>initial</code> and <code>fixed</code> control the INLA copy-scaling
+  coefficient. They apply to copied predictors and are not used for ordinary
+  fixed effects.
+
+For a copied predictor, provide both <code>mean</code> and <code>sd</code> to
+customize its scaling prior. If either is absent, the current implementation
+uses its default \(N(0,31.62^2)\) scaling prior. Any response used directly as
+a bare term on another block's right side is also copied automatically. To use
+that response's observed values instead, write
+<code>covariate(response, predictor = FALSE)</code>. A transformed expression
+such as <code>log(response)</code> is an ordinary observed fixed effect under
+<code>predictor = NULL</code> or <code>FALSE</code>; requesting
+<code>predictor = TRUE</code> for a transformed expression is an error because
+this interface can copy only a named source predictor.
+
+### `f()` and standard INLA options
+
+INLAcircular does not export a separate <code>f()</code>. Write a bare
+<code>f(...)</code> in an <code>inlacc()</code> formula. Its syntax is the
+R-INLA latent-effect syntax, including <code>model</code>, <code>hyper</code>,
+<code>constr</code>, <code>scale.model</code>, <code>cyclic</code>,
+<code>group</code>, <code>control.group</code>, <code>replicate</code>,
+<code>values</code>, and <code>copy</code>. Use
+<code>INLA::inla.doc()</code> for details of the selected latent model.
+
+The term is preserved in the assembled INLA formula. INLAcircular additionally
+does the following:
+
+- supplies an index column from <code>data</code> or <code>index()</code>;
+- creates <code>1:nrow(data)</code> when an index is otherwise absent;
+- injects or replaces <code>values</code> for the matching first index when a
+  complete <code>process.id</code> is given;
+- records common model and hyperprior information for summaries; and
+- rewrites the special <code>model = "iidkd_LKJ"</code> form described later.
+
+Because the preprocessor recognizes the call name literally, use
+<code>f(...)</code>, not <code>INLA::f(...)</code>, in these formulas.
+
+## Mapping observations with `index()`
+
+```r
+index(var, data.id, process.id = NULL)
+```
+
+Here <code>data.id</code> and <code>process.id</code> are arguments of
+<code>index()</code>, not separate functions.
+
+- <code>var</code> is a character string matching the first argument of an
+  <code>f()</code> term.
+- <code>data.id</code> maps each observation row to a latent-process node and
+  should normally have <code>nrow(data)</code> entries.
+- <code>process.id</code> optionally gives the complete ordered node set. When
+  supplied, it becomes the INLA <code>values</code> argument for an
+  <code>f()</code> term whose first argument matches <code>var</code>, replacing
+  any existing <code>values</code> argument. When it is <code>NULL</code>, INLA
+  infers represented values from the observation index. A mapping can supply
+  <code>data.id</code> for a first, group, or replicate variable, but
+  <code>process.id</code> applies only to a matching first index.
+
+```{r latent-index}
+hour_index <- index(
+  var = "hour_effect",
+  data.id = c(1, 2, 2, 4),
+  process.id = 1:4
+)
+
+hour_index
+```
+
+Pass one object directly or several in a list:
+
+```{r multiple-indices, eval=FALSE}
+latent_indices <- list(
+  index("hour_effect", data.id = data$hour, process.id = 0:23),
+  index("region_effect", data.id = data$region, process.id = region_ids)
+)
+```
+
+If a mapped name is not used by any <code>f()</code> first, group, or
+replicate argument, it is ignored with a warning. For an ordinary shared
+effect, <code>index(var, data.id = "likelihood")</code> sets its index to the
+likelihood-block number. A later section documents the different special LKJ
+form <code>process.id = "likelihood"</code>.
+
+# Fitting with `inlacc()`
+
+The complete call is
+
+```r
+inlacc(
+  model,
+  data,
+  latent.index = NULL,
+  LKJ.eta = 5,
+  control.family = NULL,
+  control.fixed = NULL,
+  control.inla = list(cmin = 0, compute.initial.values = TRUE),
+  metrics = FALSE,
+  verbose = FALSE,
+  ...
+)
+```
+
+## Arguments and defaults
+
+- <code>model</code> is one <code>likelihood()</code> object or a non-empty
+  list of them.
+- <code>data</code> is a data frame containing every simple response column,
+  fixed-effect variable, and ordinary latent index. All likelihood blocks use
+  the same number and ordering of observation rows; missing responses are
+  represented with <code>NA</code> and handled by INLA.
+- <code>latent.index</code> is one <code>index()</code> object or a list of
+  them.
+- <code>LKJ.eta</code> is one positive finite LKJ shape shared by every
+  <code>iidkd_LKJ</code> group. It defaults to 5 and is irrelevant when no
+  such group is present.
+- <code>control.family</code> optionally overrides block-level
+  <code>family.setting</code>. Supply one nested control list per likelihood,
+  even for a single block. When no override exists for a block, that block's
+  <code>family.setting</code> is used.
+- <code>control.fixed</code> is an INLA fixed-effect control list. The package
+  defaults are mean 0 and precision 0.001, equivalent to SD about 31.62.
+  Its <code>mean</code> and <code>prec</code> may be scalars or INLA named lists
+  with a <code>default</code> entry; existing named entries are preserved.
+  Priors specified in <code>intercept()</code> or <code>covariate()</code>
+  override the matching coefficients.
+- <code>control.inla</code> is passed to <code>INLA::inla()</code>. Its package
+  default sets <code>cmin = 0</code> and
+  <code>compute.initial.values = TRUE</code>. Supplying another list replaces
+  that whole default, so include either setting explicitly when it remains
+  required.
+- <code>metrics = TRUE</code> requests CPO, DIC, WAIC, and INLA configuration
+  output. The default is <code>FALSE</code>.
+- <code>verbose</code> is passed directly to <code>INLA::inla()</code>.
+- <code>...</code> accepts further INLA arguments. Common examples are
+  <code>control.predictor</code>, <code>control.compute</code>,
+  <code>control.mode</code>, <code>num.threads</code>, and
+  <code>blas.num.threads</code>. A supplied <code>control.compute</code> is
+  merged field by field with the values implied by <code>metrics</code>.
+
+Do not pass <code>formula</code> or <code>family</code> through
+<code>...</code>: those names would replace the internally assembled values.
+Use the formal <code>control.family</code> and <code>control.fixed</code>
+arguments only for their documented controls; the stacked formula and data are
+owned by <code>inlacc()</code>.
+
+## Single-likelihood fit
+
+```{r inlacc-fit, eval=FALSE}
+fit <- inlacc(
+  model = angle_model,
+  data = data.frame(
+    angle = angle,
+    z = z,
+    hour_effect = hour
+  ),
+  latent.index = index(
+    "hour_effect",
+    data.id = hour,
+    process.id = 0:23
+  ),
+  control.predictor = list(compute = TRUE),
+  metrics = TRUE
+)
+```
+
+## Joint likelihoods and copied predictors
+
+The following outline fits a circular response and a Gaussian response. The
+second block uses the first block's latent predictor through an INLA copy term.
+Because <code>angle</code> is the response of another likelihood block,
+<code>covariate(angle)</code> selects this behavior automatically.
+
+```{r joint-inlacc, eval=FALSE}
+joint_model <- list(
+  likelihood(
+    angle ~
+      intercept(name = "alpha0", mean = 0, sd = 2) +
+      covariate(z, name = "alpha_z", mean = 0, sd = 1),
+    family = "lavm",
+    family.setting = lavm_setting
+  ),
+  likelihood(
+    y ~
+      intercept(name = "beta0", mean = 0, sd = 5) +
+      covariate(z, name = "beta_z", mean = 0, sd = 2) +
+      covariate(
+        angle,
+        name = "beta_angle_predictor",
+        mean = 0,
+        sd = 1,
+        initial = 0,
+        fixed = FALSE
+      ),
+    family = "gaussian",
+    family.setting = list(
+      hyper = list(
+        prec = list(prior = "pc.prec", param = c(1, 0.01))
+      )
+    )
+  )
+)
+
+joint_fit <- inlacc(
+  model = joint_model,
+  data = data.frame(angle = angle, y = y, z = z),
+  control.predictor = list(compute = TRUE),
+  metrics = TRUE
+)
+```
+
+Writing <code>predictor = TRUE</code> in that term is equivalent but makes the
+copy request explicit. To regress on the observed angles instead of their
+latent predictor, use
+<code>covariate(angle, predictor = FALSE)</code>.
+
+Set <code>control.predictor = list(compute = TRUE)</code> when fitted linear
+predictors are needed. The custom summary warns when predictor computation is
+particularly relevant, including models with copied covariates.
+
+## Returned object
+
+The result inherits from both <code>inlacc</code> and INLA result classes, so
+ordinary INLA components remain available. The package also records:
+
+- the assembled formula, stacked data, effective families, and family
+  controls in <code>inlacc_meta</code>;
+- fixed-effect, hyperparameter, prior, and latent-process mappings used by
+  <code>summary.inlacc()</code>;
+- the names of copied predictors; and
+- <code>lkj_modes</code> and <code>inlacc_meta$LKJ</code>, both always lists and
+  empty when no LKJ effect is present.
+
+LAvM concentration marginals are normally transformed from
+\(\log(\kappa)\) to \(\kappa\) and renamed in the fitted object. Raw INLA
+fields such as <code>summary.fixed</code>, <code>summary.hyperpar</code>,
+<code>marginals.fixed</code>, <code>marginals.hyperpar</code>,
+<code>summary.fitted.values</code>, and <code>cpu.used</code> remain available.
+
+# Modelling multivariate effects with `graphpcor`
+
+INLAcircular integrates one specific graphpcor model: a dense
+LKJ-correlated IID vector shared across likelihood blocks. It does not expose
+graphpcor's general graph-structured or tree-structured model interfaces.
+
+Install the optional dependencies before using this feature:
+
+```{r graphpcor-install, eval=FALSE}
+install.packages(c("graphpcor", "INLAtools"))
+```
+
+The feature inherits graphpcor's own R-version and dependency requirements.
+Both packages are checked at run time.
+
+## Declaring an LKJ-correlated effect
+
+Use the exact special syntax
+
+```r
+f(
+  i,
+  model = "iidkd_LKJ",
+  pc.prior.u = 1,
+  pc.prior.alpha = 0.5
+)
+```
+
+in at least two likelihood blocks. Terms with the same bare first argument
+(<code>i</code> above) form one multivariate process. Component order follows
+the likelihood objects supplied to <code>inlacc()</code>.
+
+- A process may occur at most once in each likelihood.
+- Its dimension is the number of likelihoods containing the term and must be
+  at least two.
+- The same index name cannot also be used by another <code>f()</code> model.
+- <code>LKJ.eta</code> is supplied once to <code>inlacc()</code>, not as
+  <code>eta</code> inside <code>f()</code>.
+- <code>prior.param</code> is not supported for this special term.
+
+The per-component scale prior is passed to graphpcor as
+<code>sigma.prior.reference = pc.prior.u</code> and
+<code>sigma.prior.probability = pc.prior.alpha</code>. The defaults are 1 and
+0.5. The reference must be positive; the probability may be in [0, 1] or
+<code>NA</code>. The PC-scale calibration used by the implementation is
+\(\Pr(\sigma>u)=\alpha\), equivalently
+\(\lambda=-\log(\alpha)/u\). Values <code>0</code>, <code>1</code>, and
+<code>NA</code> fix that component's standard deviation at <code>u</code>
+rather than estimating a scale parameter.
+
+```{r graphpcor-model, eval=FALSE}
+multivariate_model <- list(
+  likelihood(
+    angle ~ intercept(name = "alpha0") +
+      f(
+        i,
+        model = "iidkd_LKJ",
+        pc.prior.u = 1,
+        pc.prior.alpha = 0.5
+      ),
+    family = "lavm",
+    family.setting = lavm_setting
+  ),
+  likelihood(
+    y ~ intercept(name = "beta0") +
+      f(
+        i,
+        model = "iidkd_LKJ",
+        pc.prior.u = 2,
+        pc.prior.alpha = 0.5
+      ),
+    family = "gaussian"
+  )
+)
+
+fit_lkj <- inlacc(
+  multivariate_model,
+  data = data.frame(angle = angle, y = y),
+  LKJ.eta = 5,
+  control.predictor = list(compute = TRUE)
+)
+```
+
+<code>LKJcc()</code> performs the preprocessing internally: it collects the
+terms, constructs graphpcor's cgeneric model, rewrites the formulas, and
+creates component and replicate indices. Most users should not call it
+directly. Its return value contains the rewritten formulas, generated models,
+block data, process metadata, and unconsumed ordinary index mappings.
+
+## Replicate indices
+
+By default, observations receive replicate IDs
+<code>seq_len(nrow(data))</code>; no <code>i</code> column is required. To use
+explicit replicate IDs, supply the special mapping
+
+```{r graphpcor-index, eval=FALSE}
+lkj_index <- index(
+  var = "i",
+  data.id = replicate_id,
+  process.id = "likelihood"
+)
+
+fit_lkj <- inlacc(
+  multivariate_model,
+  data = data,
+  latent.index = lkj_index,
+  LKJ.eta = 5
+)
+```
+
+In this special form, <code>data.id</code> must contain one positive integer
+per observation and becomes the INLA replicate index. The component index is
+generated from likelihood order. An explicit
+<code>replicate = some_name</code> must use a bare variable name. It may be
+written in one or more special <code>f()</code> terms, but every explicit name
+within a group must agree. That name controls the generated replicate column;
+its values still come from this mapping or the default row sequence.
+
+## Recovering covariance information
+
+<code>fit_lkj$lkj_modes[["i"]]</code> stores internal posterior-mode values,
+not a full posterior correlation summary. When every scale is free
+(<code>0 &lt; pc.prior.alpha &lt; 1</code>), the first \(p\) entries for a
+\(p\)-dimensional group are log standard deviations and the remaining
+\(p(p-1)/2\) entries parameterize the correlation matrix. The example above
+has this all-free form.
+
+```{r graphpcor-reconstruct, eval=FALSE}
+p <- 2L
+theta_i <- fit_lkj$lkj_modes[["i"]]
+
+sd_mode <- exp(theta_i[seq_len(p)])
+correlation_mode <- graphpcor::basecor(
+  theta_i[-seq_len(p)],
+  p = p
+)$base
+
+sd_mode
+correlation_mode
+```
+
+For a mixture of free and fixed scales, reconstruct the complete SD vector
+before extracting the correlation parameters:
+
+```{r graphpcor-reconstruct-fixed, eval=FALSE}
+process_i <- fit_lkj$inlacc_meta$LKJ[["i"]]
+u <- process_i$pc.prior.u
+alpha <- process_i$pc.prior.alpha
+fixed_scale <- is.na(alpha) | alpha <= 0 | alpha >= 1
+n_free <- sum(!fixed_scale)
+
+theta_i <- fit_lkj$lkj_modes[["i"]]
+log_sd_mode <- log(u)
+log_sd_mode[!fixed_scale] <- theta_i[seq_len(n_free)]
+
+n_cor <- p * (p - 1L) / 2L
+cor_index <- n_free + seq_len(n_cor)
+correlation_mode <- graphpcor::basecor(
+  theta_i[cor_index],
+  p = p
+)$base
+
+sd_mode <- exp(log_sd_mode)
+```
+
+For multiple LKJ groups, use the corresponding first-argument name as the
+list key. Component order is always the likelihood order used to build the
+group. These are point estimates at the internal posterior mode; use INLA's
+marginal or sampling tools when full uncertainty summaries are required.
+
+# Results and summaries
+
+<code>summary()</code> dispatches to <code>summary.inlacc()</code> for fitted
+models:
+
+```r
+summary(object, decimal = 3, ...)
+```
+
+It returns an <code>inlacc_summary</code> object with the following components:
+
+- <code>fixed_par</code>: fixed-effect posterior summaries and displayed
+  Gaussian priors;
+- <code>likelihood_par</code>: transformed likelihood parameters, including
+  natural-scale LAvM concentration and Gaussian standard deviations;
+- <code>random_par</code>: latent-process hyperparameters and their prior
+  labels;
+- <code>time.summary</code>: setup, computation, post-processing, and total
+  times;
+- <code>metrics</code>: available marginal likelihood, DIC, and WAIC summaries;
+  and
+- <code>needs_pred_warning</code>: whether the fitted model would benefit from
+  <code>control.predictor = list(compute = TRUE)</code>.
+
+The <code>decimal</code> value controls printing, not stored posterior
+precision. <code>print.inlacc_summary(x, decimal = NULL, metrics = TRUE)</code>
+can override the number of displayed decimal places and suppress the metrics
+section. Timing components use
+<code>print.inlacc_time(x)</code>. These methods are normally called through
+<code>summary()</code> and <code>print()</code> rather than directly.
+
+```{r summaries, eval=FALSE}
+fit_summary <- summary(fit, decimal = 3)
+print(fit_summary, metrics = TRUE)
+```
+
+Because an <code>inlacc</code> result remains an INLA result, the original
+posterior summaries, marginals, fitted values, predictor values, model
+criteria, and timing fields remain accessible with standard INLA component
+names. CPO values remain on the raw fit even though the custom printed summary
+does not create a separate CPO table.
+
+# Utilities and included data
+
+## Modified Bessel function
+
+<code>bessel_i(x, nu, expon.scaled = FALSE)</code> evaluates the modified
+Bessel function of the first kind. Set <code>expon.scaled = TRUE</code> to
+return \(I_\nu(x)\exp(-|x|)\), which avoids overflow for large x.
+
+```{r bessel}
+bessel_i(c(0, 1, 5), nu = 0)
+bessel_i(1000, nu = 0, expon.scaled = TRUE)
+```
+
+## New York wind data
+
+<code>wind_newyork</code> contains 8,759 hourly observations from JFK
+International Airport, with circular wind direction, wind speed, temperature,
+timestamp, month, day, and hour fields.
+
+```{r wind-data}
+data("wind_newyork", package = "INLAcircular")
+dim(wind_newyork)
+utils::head(names(wind_newyork), 4)
+```
+
+# Complete public API index
+
+| Area | Functions |
+|:--|:--|
+| Von Mises distribution | dvm, pvm, qvm, rvm |
+| Link-adjusted von Mises | lavm.link, dlavm, plavm, qlavm, rlavm |
+| Other circular densities | dcardioid (dcard), dwrappedcauchy (dwc) |
+| Von Mises PC prior, uniform base | dpc.vm0, ppc.vm0, qpc.vm0, rpc.vm0 |
+| Von Mises PC prior, point-mass base | dpc.vminf, ppc.vminf, qpc.vminf, rpc.vminf |
+| Cardioid PC prior, uniform base | dpc.card0, ppc.card0, qpc.card0, rpc.card0 |
+| Cardioid PC prior, kappa = 1/2 base | dpc.card, ppc.card, qpc.card, rpc.card |
+| Wrapped Cauchy PC prior | dpc.wc, ppc.wc, qpc.wc, rpc.wc |
+| Model specification | likelihood, intercept, covariate, index |
+| Model fitting | inlacc, inla, lavm.cloglike |
+| Multivariate preprocessing | LKJcc |
+| Results | summary.inlacc, print.inlacc_summary, print.inlacc_time |
+| Numerical utility | bessel_i |
+| Included data | wind_newyork |
+
+Function-level help is available with <code>?function_name</code>. For names
+containing dots, quote the topic if needed, for example
+<code>help("dpc.card0")</code>.
+
+# Numerical implementation notes
+
+The new cardioid and wrapped Cauchy routines use compiled C throughout their
+numerical path. Endpoint limits, log-density calculations, inverse transforms,
+and random generation are not implemented as R formulas. Cancellation-prone
+expressions use algebraic reductions, <code>log1p()</code>,
+<code>expm1()</code>, and local series near difficult boundaries.
+
+The standalone INLA sources under <code>src-cloglike/</code> are separate
+from the R package numerical interface. Installing the R package compiles
+<code>src/</code>, not <code>src-cloglike/</code>.
+
+# Reproducibility
+
+```{r session-info}
+R.version.string
+packageVersion("INLAcircular")
+```

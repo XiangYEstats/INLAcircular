@@ -2,12 +2,13 @@
 % Please edit documentation in R/cc.summary.R
 \name{print.inlacc_time}
 \alias{print.inlacc_time}
-\title{Print method for inlacc time summary}
+\title{Print elapsed times from an \code{inlacc()} fit}
 \usage{
 \method{print}{inlacc_time}(x, ...)
 }
 \arguments{
-\item{x}{An \code{inlacc_time} object.}
+\item{x}{A named numeric \code{inlacc_time} object with entries \code{Pre}, \code{Running},
+\code{Post}, and \code{Total}, measured in seconds.}
 
 \item{...}{Additional arguments, currently unused.}
 }
@@ -15,5 +16,16 @@
 \code{x}, invisibly.
 }
 \description{
-Print method for inlacc time summary
+Format the setup, INLA computation, post-processing, and total elapsed
+times stored by an \code{\link[=inlacc]{inlacc()}} result.
+}
+\examples{
+timing <- structure(
+  c(Pre = 0.1, Running = 1.2, Post = 0.2, Total = 1.5),
+  class = c("inlacc_time", "numeric")
+)
+print(timing)
+}
+\seealso{
+\code{\link[=inlacc]{inlacc()}}, \code{\link[=summary.inlacc]{summary.inlacc()}}, \code{\link[=print.inlacc_summary]{print.inlacc_summary()}}
 }

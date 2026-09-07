@@ -2,6 +2,8 @@
 #' @keywords internal
 cc.summary <- function(result) {
 
+  .INLAcircular_require_inla()
+
   get_inla_prior <- function(h_name, res) {
     format_pr <- function(pr) {
       if (is.null(pr) || is.null(pr$prior)) return("None")
@@ -256,11 +258,22 @@ cc.summary <- function(result) {
   return(out)
 }
 
-#' Print method for inlacc time summary
+#' Print elapsed times from an `inlacc()` fit
 #'
-#' @param x An `inlacc_time` object.
+#' Format the setup, INLA computation, post-processing, and total elapsed
+#' times stored by an [`inlacc()`][inlacc] result.
+#'
+#' @param x A named numeric `inlacc_time` object with entries `Pre`, `Running`,
+#'   `Post`, and `Total`, measured in seconds.
 #' @param ... Additional arguments, currently unused.
 #' @return `x`, invisibly.
+#' @seealso [inlacc()], [summary.inlacc()], [print.inlacc_summary()]
+#' @examples
+#' timing <- structure(
+#'   c(Pre = 0.1, Running = 1.2, Post = 0.2, Total = 1.5),
+#'   class = c("inlacc_time", "numeric")
+#' )
+#' print(timing)
 #' @export
 print.inlacc_time <- function(x, ...) {
   cat(sprintf("Setup: %.2f  |  Computation: %.2f  |  Post-processing: %.2f  |  Total: %.2f\n",
@@ -268,12 +281,40 @@ print.inlacc_time <- function(x, ...) {
   invisible(x)
 }
 
-#' Summary method for inlacc models
+#' Summarize an `inlacc()` fit
+#'
+#' Transform and organize the fixed effects, likelihood parameters, latent
+#' hyperparameters, timing, and requested model criteria from an
+#' [`inlacc()`][inlacc] result.
 #'
 #' @param object A fitted `inlacc` model.
-#' @param decimal Number of decimal places retained for printing.
+#' @param decimal Number of decimal places used later by the print method. It
+#'   does not round values stored in the returned object.
 #' @param ... Additional arguments, currently unused.
-#' @return An object of class `inlacc_summary`.
+#'
+#' @return An object of class `inlacc_summary`, which is a list containing:
+#'
+#' - `fixed_par`: fixed-effect posterior summaries and displayed Gaussian
+#'   priors;
+#' - `likelihood_par`: transformed likelihood-parameter summaries, or `NULL`;
+#' - `random_par`: transformed latent-process hyperparameter summaries, or
+#'   `NULL`;
+#' - `time.summary`: a named `inlacc_time` vector in seconds;
+#' - `metrics`: available marginal log-likelihood, DIC, and WAIC entries;
+#' - `needs_pred_warning`: whether predictor computation is recommended; and
+#' - `decimal`: the requested printing precision.
+#'
+#' Posterior summary tables use columns `mean`, `SD`, `2.5%`, `50%`, `97.5%`,
+#' `mode`, and `prior`; likelihood and random-effect tables also carry family
+#' or process-type information when available.
+#'
+#' @seealso [inlacc()], [print.inlacc_summary()], [print.inlacc_time()]
+#' @examples
+#' \dontrun{
+#' fit_summary <- summary(fit, decimal = 4)
+#' fit_summary$fixed_par
+#' print(fit_summary, metrics = FALSE)
+#' }
 #' @export
 summary.inlacc <- function(object, decimal = 3L, ...) {
   # Generate the base summary using your internal function
@@ -284,13 +325,31 @@ summary.inlacc <- function(object, decimal = 3L, ...) {
   return(res)
 }
 
-#' Print method for inlacc summaries
+#' Print an `inlacc` summary
 #'
-#' @param x An `inlacc_summary` object.
-#' @param decimal Optional number of decimal places to print.
-#' @param metrics Logical; whether to print available model metrics.
+#' Print timing, posterior summaries, prior labels, family or latent-process
+#' labels, and optionally the available model-comparison criteria.
+#'
+#' @param x An `inlacc_summary` object returned by [summary.inlacc()].
+#' @param decimal Optional number of decimal places to print. If `NULL`, use
+#'   `x$decimal`, falling back to `3`.
+#' @param metrics Logical; whether to print available marginal log-likelihood,
+#'   DIC, and WAIC values. This cannot create criteria that were not requested
+#'   when fitting the model.
 #' @param ... Additional arguments, currently unused.
 #' @return `x`, invisibly.
+#'
+#' @details The printed table combines likelihood, fixed-effect, and random
+#' effect summaries while retaining section labels. A final note recommends
+#' `control.predictor = list(compute = TRUE)` for models where fitted predictor
+#' marginals are particularly relevant and were not requested.
+#'
+#' @seealso [inlacc()], [summary.inlacc()], [print.inlacc_time()]
+#' @examples
+#' \dontrun{
+#' fit_summary <- summary(fit, decimal = 4)
+#' print(fit_summary, decimal = 2, metrics = FALSE)
+#' }
 #' @export
 print.inlacc_summary <- function(x, decimal = NULL, metrics = TRUE, ...) {
 

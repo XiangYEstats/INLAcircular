@@ -2,20 +2,52 @@
 % Please edit documentation in R/cc.model.R
 \name{index}
 \alias{index}
-\title{Define identifier mapping for latent processes}
+\title{Map observations to a latent process in \code{inlacc()}}
 \usage{
 index(var, data.id, process.id = NULL)
 }
 \arguments{
-\item{var}{Character string. The name of the latent variable as it appears in your model formula (e.g., "w2").}
+\item{var}{Character string naming the first argument of the corresponding
+bare \code{f()} term, for example \code{"hour_effect"}. Quote the name.}
 
-\item{data.id}{A vector mapping each observation in your dataset to a specific location/node in the latent process. The length must match the number of rows in your data.}
+\item{data.id}{Observation-level node identifiers. This should normally
+have \code{nrow(data)} entries. The special value \code{"likelihood"} assigns the
+likelihood-block number for an ordinary shared effect.}
 
-\item{process.id}{A vector defining the complete, unique set of locations/nodes that make up the latent process (e.g., \code{1:24} for hours of a day, or \code{1:50} for spatial regions). If \code{NULL}, it automatically defaults to the sorted unique values found in \code{data.id}.}
+\item{process.id}{Optional complete ordered node set. When supplied for a
+matching first \code{f()} index, \code{\link[=inlacc]{inlacc()}} injects it as the INLA \code{values}
+argument, replacing an existing \code{values} argument and allowing unobserved
+process nodes. If \code{NULL}, no explicit \code{values} vector is injected and
+INLA infers the represented values from \code{data.id}.}
 }
 \value{
-A list containing the mapping specifications.
+A list containing \code{var}, \code{data.id}, and \code{process.id}.
 }
 \description{
-Define identifier mapping for latent processes
+Create an observation-to-process mapping for an INLA \code{f()} term. Pass one
+mapping, or a list of mappings, through the \code{latent.index} argument of
+\code{\link[=inlacc]{inlacc()}}.
+}
+\details{
+If \code{var} is not used as an \code{f()} first, group, or replicate
+argument, \code{\link[=inlacc]{inlacc()}} ignores the mapping with a warning. Without a mapping
+or same-named data column, a discovered index is generated as
+\code{seq_len(nrow(data))}. A mapping may provide \code{data.id} for a first, group,
+or replicate variable, but \code{process.id} is injected only when \code{var} matches
+the first argument of \code{f()}.
+
+For \code{model = "iidkd_LKJ"}, the special form
+\code{index(var, data.id = replicate_ids, process.id = "likelihood")} has a
+different meaning: \code{data.id} supplies positive integer replicate IDs and
+the component index is generated from likelihood order. See \code{\link[=LKJcc]{LKJcc()}}.
+}
+\examples{
+hour_index <- index(
+  var = "hour_effect",
+  data.id = c(1, 2, 2, 4),
+  process.id = 1:4
+)
+}
+\seealso{
+\code{\link[=inlacc]{inlacc()}}, \code{\link[=LKJcc]{LKJcc()}}
 }

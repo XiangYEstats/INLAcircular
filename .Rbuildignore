@@ -3,4 +3,12 @@
 ^LICENSE\.md$
 ^LKJ-INTEGRATION\.md$
 ^NATIVE-CODE\.md$
-^src-cloglike/build$
+^RELEASE\.md$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^src-cloglike$
+^tmp$
+^vignettes/.*[.]log$
+^output$
+^\.vscode$
+^\.github$

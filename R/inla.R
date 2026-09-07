@@ -114,15 +114,17 @@
 
 #' Run INLA with the INLAcircular LAvM likelihood
 #'
-#' `INLAcircular::inla()` is a transparent compatibility layer over
+#' `inla()` is a compatibility layer over
 #' `INLA::inla()`. Calls without `family = "lavm"` are forwarded unchanged.
 #' For LAvM calls, it installs the package's C `cloglike`, converts the response
 #' to an INLA matrix-valued response, and evaluates the `pc.vm0` or `pc.vminf`
 #' concentration prior in the same C module used by [inlacc()].
 #'
-#' @param ... Arguments accepted by `INLA::inla()`. For `family = "lavm"`,
-#'   use `control.family = list(link = ..., hyper = list(kappa = ...))`.
-#'   The single-family nested form `list(list(...))` is also accepted.
+#' @param ... Arguments accepted by `INLA::inla()`. For one
+#'   `family = "lavm"`, use
+#'   `control.family = list(link = ..., hyper = list(kappa = ...))`; the nested
+#'   form `list(list(...))` is also accepted. With multiple families,
+#'   `control.family` must contain exactly one list per family.
 #'
 #' @details Loading `INLAcircular` after `INLA` makes this function available
 #'   as `inla()`. The underlying likelihood sent to INLA is `"cloglike"`, which
@@ -134,7 +136,28 @@
 #'   The defaults are `initial = 6`, `prior = "pc.vminf"`,
 #'   `param = c(0.5, 0.5)`, and `fixed = FALSE`.
 #'
-#' @return The fitted object returned by `INLA::inla()`.
+#'   When multiple families are requested and at least one is `"lavm"`, the
+#'   formula response must evaluate to a matrix, data frame, or list with one
+#'   component per family. LAvM components are converted with
+#'   `INLA::inla.mdata()`; other families and controls are retained.
+#'
+#'   For any call containing LAvM, missing `control.inla$cmin` and
+#'   `control.inla$compute.initial.values` fields are filled with `0` and
+#'   `TRUE`, respectively. User-supplied fields and values take precedence.
+#'
+#'   The returned object gains an `INLAcircular` list recording the requested
+#'   families, effective internal families, and LAvM prior labels. LAvM
+#'   concentration summaries and marginals are normally transformed from
+#'   internal `log(kappa)` to natural-scale `kappa` and renamed.
+#'
+#'   For a literal namespaced `INLA::inla()` call, construct the external
+#'   likelihood explicitly with [lavm.cloglike()], convert the response with
+#'   `INLA::inla.mdata()`, and use `family = "cloglike"`. A namespaced call
+#'   with `family = "lavm"` bypasses this compatibility layer.
+#'
+#' @return The fitted object returned by `INLA::inla()`, augmented as described
+#'   in Details when LAvM is requested.
+#' @seealso [lavm.cloglike()], [inlacc()]
 #' @export
 #' @examples
 #' \dontrun{
@@ -164,12 +187,7 @@
 #' )
 #' }
 inla <- function(...) {
-  if (!requireNamespace("INLA", quietly = TRUE)) {
-    stop(
-      "Package 'INLA' is required. Install the INLA testing version first.",
-      call. = FALSE
-    )
-  }
+  .INLAcircular_require_inla()
 
   caller <- parent.frame()
   original.call <- match.call(expand.dots = TRUE)

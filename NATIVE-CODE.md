@@ -4,7 +4,8 @@ The R-package build and the INLA source-tree build are deliberately separate.
 
 ```text
 src/
-  INLAcirc_distributions.c       R-facing VM, LAvM, and PC-prior functions
+  INLAcirc_distributions.c       R-facing circular distribution functions
+  INLAcirc_priors.c              R-facing PC-prior functions for all families
   INLAcirc_r_bessel.c            R-facing Bessel wrapper
   INLAcirc_init.c                R native-routine registration
   INLAcirc_cloglike.c            package-DLL copy of the LAvM cloglike
@@ -41,12 +42,17 @@ boundary.
 
 ## Direct `inla()` integration
 
-Loading `INLAcircular` after `INLA` exposes `INLAcircular::inla()` on the
-search path. It delegates ordinary likelihoods unchanged to `INLA::inla()`.
-For `family = "lavm"`, it translates the call to the package's compiled
-`cloglike`, converts the response with `INLA::inla.mdata()`, and passes the
-LAvM link, concentration, and PC-prior controls to the native module. This is
-also the path used internally by `inlacc()`.
+Loading `INLAcircular` after `INLA` exposes the package compatibility function
+as the unqualified `inla()` on the search path. It delegates ordinary
+likelihoods unchanged to `INLA::inla()`. For `family = "lavm"`, it translates
+the call to the package's compiled `cloglike`, converts the response with
+`INLA::inla.mdata()`, and passes the LAvM link, concentration, and PC-prior
+controls to the native module. This is also the likelihood path used by
+`inlacc()`.
+
+A literal `INLA::inla()` call must instead use `family = "cloglike"`, an
+`INLA::inla.mdata()` response, and a likelihood object returned by
+`lavm.cloglike()`.
 
 The public control is `hyper$kappa`. Its `initial` value is already on INLA's
 internal `log(kappa)` scale; there is no separate `log.initial` argument.

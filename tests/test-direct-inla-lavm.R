@@ -1,5 +1,7 @@
 if (requireNamespace("INLA", quietly = TRUE)) {
-  suppressPackageStartupMessages(library(INLA))
+  # INLA only needs to be installed. Its namespace is loaded on demand; users
+  # do not have to attach it with library(INLA).
+  stopifnot(!"package:INLA" %in% search())
   suppressPackageStartupMessages(library(INLAcircular))
 
   stopifnot(identical(inla, INLAcircular::inla))

@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Xiang Ye" />
+
+
+<title>INLAcircular: User Guide and Function Reference</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">INLAcircular: User Guide and Function
+Reference</h1>
+<h4 class="author">Xiang Ye</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#scope-and-conventions" id="toc-scope-and-conventions"><span class="toc-section-number">1</span>
+Scope and conventions</a></li>
+<li><a href="#installation" id="toc-installation"><span class="toc-section-number">2</span> Installation</a></li>
+<li><a href="#circular-distributions" id="toc-circular-distributions"><span class="toc-section-number">3</span> Circular distributions</a>
+<ul>
+<li><a href="#quick-comparison" id="toc-quick-comparison"><span class="toc-section-number">3.1</span> Quick comparison</a></li>
+<li><a href="#von-mises" id="toc-von-mises"><span class="toc-section-number">3.2</span> Von Mises</a></li>
+<li><a href="#link-adjusted-von-mises" id="toc-link-adjusted-von-mises"><span class="toc-section-number">3.3</span> Link-adjusted von Mises</a></li>
+<li><a href="#cardioid-and-wrapped-cauchy-densities" id="toc-cardioid-and-wrapped-cauchy-densities"><span class="toc-section-number">3.4</span> Cardioid and wrapped Cauchy
+densities</a></li>
+</ul></li>
+<li><a href="#penalized-complexity-priors" id="toc-penalized-complexity-priors"><span class="toc-section-number">4</span> Penalized-complexity priors</a>
+<ul>
+<li><a href="#von-mises-prior-with-uniform-base-pc.vm0" id="toc-von-mises-prior-with-uniform-base-pc.vm0"><span class="toc-section-number">4.1</span> Von Mises prior with uniform base:
+pc.vm0</a></li>
+<li><a href="#von-mises-prior-with-point-mass-base-pc.vminf" id="toc-von-mises-prior-with-point-mass-base-pc.vminf"><span class="toc-section-number">4.2</span> Von Mises prior with point-mass
+base: pc.vminf</a></li>
+<li><a href="#cardioid-prior-with-uniform-base-pc.card0" id="toc-cardioid-prior-with-uniform-base-pc.card0"><span class="toc-section-number">4.3</span> Cardioid prior with uniform base:
+pc.card0</a></li>
+<li><a href="#cardioid-prior-with-base-kappa-12-pc.card" id="toc-cardioid-prior-with-base-kappa-12-pc.card"><span class="toc-section-number">4.4</span> Cardioid prior with base kappa =
+1/2: pc.card</a></li>
+<li><a href="#wrapped-cauchy-prior-pc.wc" id="toc-wrapped-cauchy-prior-pc.wc"><span class="toc-section-number">4.5</span> Wrapped Cauchy prior:
+pc.wc</a></li>
+<li><a href="#density-probability-and-vectorization-rules" id="toc-density-probability-and-vectorization-rules"><span class="toc-section-number">4.6</span> Density, probability, and
+vectorization rules</a></li>
+</ul></li>
+<li><a href="#direct-fitting-with-r-inla" id="toc-direct-fitting-with-r-inla"><span class="toc-section-number">5</span> Direct fitting with R-INLA</a>
+<ul>
+<li><a href="#lavm-likelihood-controls" id="toc-lavm-likelihood-controls"><span class="toc-section-number">5.1</span> LAvM likelihood controls</a></li>
+<li><a href="#convenience-call-for-a-single-lavm-model" id="toc-convenience-call-for-a-single-lavm-model"><span class="toc-section-number">5.2</span> Convenience call for a single LAvM
+model</a></li>
+</ul></li>
+<li><a href="#building-model-specifications" id="toc-building-model-specifications"><span class="toc-section-number">6</span> Building model specifications</a>
+<ul>
+<li><a href="#formula-terms-and-their-interpretation" id="toc-formula-terms-and-their-interpretation"><span class="toc-section-number">6.1</span> Formula terms and their
+interpretation</a>
+<ul>
+<li><a href="#intercept" id="toc-intercept"><span class="toc-section-number">6.1.1</span>
+<code>intercept()</code></a></li>
+<li><a href="#covariate" id="toc-covariate"><span class="toc-section-number">6.1.2</span>
+<code>covariate()</code></a></li>
+<li><a href="#f-and-standard-inla-options" id="toc-f-and-standard-inla-options"><span class="toc-section-number">6.1.3</span> <code>f()</code> and standard
+INLA options</a></li>
+</ul></li>
+<li><a href="#mapping-observations-with-index" id="toc-mapping-observations-with-index"><span class="toc-section-number">6.2</span> Mapping observations with
+<code>index()</code></a></li>
+</ul></li>
+<li><a href="#fitting-with-inlacc" id="toc-fitting-with-inlacc"><span class="toc-section-number">7</span> Fitting with
+<code>inlacc()</code></a>
+<ul>
+<li><a href="#arguments-and-defaults" id="toc-arguments-and-defaults"><span class="toc-section-number">7.1</span> Arguments and defaults</a></li>
+<li><a href="#single-likelihood-fit" id="toc-single-likelihood-fit"><span class="toc-section-number">7.2</span> Single-likelihood fit</a></li>
+<li><a href="#joint-likelihoods-and-copied-predictors" id="toc-joint-likelihoods-and-copied-predictors"><span class="toc-section-number">7.3</span> Joint likelihoods and copied
+predictors</a></li>
+<li><a href="#returned-object" id="toc-returned-object"><span class="toc-section-number">7.4</span> Returned object</a></li>
+</ul></li>
+<li><a href="#modelling-multivariate-effects-with-graphpcor" id="toc-modelling-multivariate-effects-with-graphpcor"><span class="toc-section-number">8</span> Modelling multivariate effects with
+<code>graphpcor</code></a>
+<ul>
+<li><a href="#declaring-an-lkj-correlated-effect" id="toc-declaring-an-lkj-correlated-effect"><span class="toc-section-number">8.1</span> Declaring an LKJ-correlated
+effect</a></li>
+<li><a href="#replicate-indices" id="toc-replicate-indices"><span class="toc-section-number">8.2</span> Replicate indices</a></li>
+<li><a href="#recovering-covariance-information" id="toc-recovering-covariance-information"><span class="toc-section-number">8.3</span> Recovering covariance
+information</a></li>
+</ul></li>
+<li><a href="#results-and-summaries" id="toc-results-and-summaries"><span class="toc-section-number">9</span>
+Results and summaries</a></li>
+<li><a href="#utilities-and-included-data" id="toc-utilities-and-included-data"><span class="toc-section-number">10</span> Utilities and included data</a>
+<ul>
+<li><a href="#modified-bessel-function" id="toc-modified-bessel-function"><span class="toc-section-number">10.1</span> Modified Bessel function</a></li>
+<li><a href="#new-york-wind-data" id="toc-new-york-wind-data"><span class="toc-section-number">10.2</span> New York wind data</a></li>
+</ul></li>
+<li><a href="#complete-public-api-index" id="toc-complete-public-api-index"><span class="toc-section-number">11</span> Complete public API index</a></li>
+<li><a href="#numerical-implementation-notes" id="toc-numerical-implementation-notes"><span class="toc-section-number">12</span> Numerical implementation
+notes</a></li>
+<li><a href="#reproducibility" id="toc-reproducibility"><span class="toc-section-number">13</span> Reproducibility</a></li>
+</ul>
+</div>
+
+<div id="scope-and-conventions" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Scope and
+conventions</h1>
+<p>INLAcircular provides probability functions and a model-building
+interface for Bayesian circular and joint circular regression with
+Integrated Nested Laplace Approximation (INLA). Its core numerical
+routines are written in C and exposed through ordinary R functions.</p>
+<p>The package follows these conventions:</p>
+<ul>
+<li>Angles are measured in radians.</li>
+<li>Location parameters are named <code>mu</code>.</li>
+<li>Concentration parameters are named <code>kappa</code>, including for
+cardioid and wrapped Cauchy distributions.</li>
+<li>Density functions use <code>log = TRUE</code> for
+log-densities.</li>
+<li>PC-prior distribution and quantile functions use <code>log.p =
+TRUE</code> for probabilities on the log scale.</li>
+<li>The d/p/q/r prefix has its usual R meaning: density, distribution
+function, quantile function, and random generation.</li>
+</ul>
+<p>The core distribution and PC-prior functions can be used without
+<code>INLA</code>. Model fitting requires the optional <code>INLA</code>
+package, and LKJ multivariate random effects also require
+<code>graphpcor</code>.</p>
+</div>
+<div id="installation" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Installation</h1>
+<p>After the package is published on CRAN, install it with:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;INLAcircular&quot;</span>)</span></code></pre></div>
+<p>The installation above provides the circular distributions and
+PC-prior functions without installing INLA. For model fitting, install
+optional INLA &gt;= 25.08.21 from the current stable repository
+separately:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">install.packages</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="st">&quot;INLA&quot;</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="at">repos =</span> <span class="fu">c</span>(</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>    <span class="fu">getOption</span>(<span class="st">&quot;repos&quot;</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>    <span class="at">INLA =</span> <span class="st">&quot;https://inla.r-inla-download.org/R/stable&quot;</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  )</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>)</span></code></pre></div>
+<p>For a development installation from GitHub:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;remotes&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="st">&quot;XiangYEstats/INLAcircular&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">library</span>(INLAcircular)</span></code></pre></div>
+<p>Attaching INLA is optional because <code>INLAcircular</code> loads
+its namespace when a model-fitting function needs it. If both packages
+are attached and you want the compatibility <code>inla()</code> function
+on the search path, load <code>INLA</code> first and then
+<code>INLAcircular</code>.</p>
+</div>
+<div id="circular-distributions" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Circular
+distributions</h1>
+<div id="quick-comparison" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Quick comparison</h2>
+<p>The package supplies the full d/p/q/r interface for the von Mises and
+link-adjusted von Mises distributions. It supplies compiled densities
+for the cardioid and wrapped Cauchy distributions.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>theta <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span>pi, pi, <span class="at">length.out =</span> <span class="dv">361</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>densities <span class="ot">&lt;-</span> <span class="fu">cbind</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="st">&quot;von Mises&quot;</span> <span class="ot">=</span> <span class="fu">dvm</span>(theta, <span class="at">mu =</span> <span class="dv">0</span>, <span class="at">kappa =</span> <span class="dv">2</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="st">&quot;cardioid&quot;</span> <span class="ot">=</span> <span class="fu">dcardioid</span>(theta, <span class="at">mu =</span> <span class="dv">0</span>, <span class="at">kappa =</span> <span class="fl">0.4</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="st">&quot;wrapped Cauchy&quot;</span> <span class="ot">=</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>    <span class="fu">dwrappedcauchy</span>(theta, <span class="at">mu =</span> <span class="dv">0</span>, <span class="at">kappa =</span> <span class="fl">0.7</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="fu">matplot</span>(</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>  theta,</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  densities,</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;l&quot;</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>  <span class="at">lty =</span> <span class="dv">1</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">&quot;Angle (radians)&quot;</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">&quot;Density&quot;</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>)</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="fu">legend</span>(</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>  <span class="st">&quot;topright&quot;</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>  <span class="at">legend =</span> <span class="fu">colnames</span>(densities),</span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>  <span class="at">col =</span> <span class="fu">seq_len</span>(<span class="fu">ncol</span>(densities)),</span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>  <span class="at">lty =</span> <span class="dv">1</span>,</span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>  <span class="at">bty =</span> <span class="st">&quot;n&quot;</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>)</span></code></pre></div>
+<div class="float">
+<img role="img" aria-label="Three circular density families with mean direction zero." src="data:image/png;base64,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" alt="Three circular density families with mean direction zero." />
+<div class="figcaption">Three circular density families with mean
+direction zero.</div>
+</div>
+</div>
+<div id="von-mises" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Von Mises</h2>
+<p><code>dvm()</code>, <code>pvm()</code>, <code>qvm()</code>, and
+<code>rvm()</code> evaluate the von Mises distribution with density</p>
+<p><span class="math display">\[
+f(x\mid\mu,\kappa)
+=\frac{\exp\{\kappa\cos(x-\mu)\}}{2\pi I_0(\kappa)}.
+\]</span></p>
+<p><code>kappa = 0</code> gives the circular uniform limit. The CDF and
+quantile functions use a cached spline grid; <code>len</code> controls
+its resolution. With <code>strategy = “circular”</code>, the CDF origin
+follows the mean direction. The alternative <code>strategy =
+“linear”</code> retains a fixed linear representation.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">rvm</span>(<span class="dv">5</span>, <span class="at">mu =</span> <span class="dv">0</span>, <span class="at">kappa =</span> <span class="dv">3</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; [1] -0.3859961 -0.2006438  0.1103994  0.8385810 -0.5174967</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="fu">pvm</span>(pi <span class="sc">/</span> <span class="dv">2</span>, <span class="at">mu =</span> <span class="dv">0</span>, <span class="at">kappa =</span> <span class="dv">2</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; [1] 0.9625691</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="fu">qvm</span>(<span class="fl">0.95</span>, <span class="at">mu =</span> <span class="dv">0</span>, <span class="at">kappa =</span> <span class="dv">2</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; [1] 1.416584</span></span></code></pre></div>
+</div>
+<div id="link-adjusted-von-mises" class="section level2" number="3.3">
+<h2><span class="header-section-number">3.3</span> Link-adjusted von
+Mises</h2>
+<p><code>dlavm()</code>, <code>plavm()</code>, <code>qlavm()</code>, and
+<code>rlavm()</code> use a linear predictor <code>eta</code> and
+concentration <code>kappa</code>. The current direct distribution
+interface uses the inverse-tangent transformation</p>
+<p><span class="math display">\[
+z=2\arctan\{\tan(x/2)-\eta\}.
+\]</span></p>
+<p><code>lavm.link(“tan”)</code> returns the corresponding
+transformation and inverse functions. The <code>link_obj</code> argument
+in the p/q/r functions is reserved for interface compatibility; the
+current compiled implementation uses the inverse-tangent link.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">rlavm</span>(<span class="dv">5</span>, <span class="at">eta =</span> <span class="fl">1.5</span>, <span class="at">kappa =</span> <span class="dv">3</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; [1] 1.763773 2.058985 1.998958 1.745235 2.237412</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="fu">dlavm</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>), <span class="at">eta =</span> <span class="fl">1.5</span>, <span class="at">kappa =</span> <span class="dv">3</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; [1] 0.001291978 0.003164735 0.025559191</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="fu">plavm</span>(pi <span class="sc">/</span> <span class="dv">2</span>, <span class="at">eta =</span> <span class="fl">1.5</span>, <span class="at">kappa =</span> <span class="dv">3</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; [1] 0.07300838</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="fu">qlavm</span>(<span class="fl">0.5</span>, <span class="at">eta =</span> <span class="fl">1.5</span>, <span class="at">kappa =</span> <span class="dv">3</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; [1] 1.965116</span></span></code></pre></div>
+</div>
+<div id="cardioid-and-wrapped-cauchy-densities" class="section level2" number="3.4">
+<h2><span class="header-section-number">3.4</span> Cardioid and wrapped
+Cauchy densities</h2>
+<p>The cardioid density is</p>
+<p><span class="math display">\[
+f_{\mathrm{card}}(x\mid\mu,\kappa)
+=\frac{1+2\kappa\cos(x-\mu)}{2\pi},
+\qquad 0\leq\kappa\leq\frac12.
+\]</span></p>
+<p>Use <code>dcardioid()</code>, or its short alias
+<code>dcard()</code>.</p>
+<p>The wrapped Cauchy density is</p>
+<p><span class="math display">\[
+f_{\mathrm{wc}}(x\mid\mu,\kappa)
+=\frac{1-\kappa^2}
+{2\pi\{1+\kappa^2-2\kappa\cos(x-\mu)\}},
+\qquad 0\leq\kappa&lt;1.
+\]</span></p>
+<p>Use <code>dwrappedcauchy()</code>, or its short alias
+<code>dwc()</code>. The endpoint <code>kappa = 1</code> is a point-mass
+limit: the compiled density reports <code>Inf</code> at the mean
+direction and zero elsewhere. Finite-parameter likelihoods should use
+<code>kappa &lt; 1</code>.</p>
+<p>Both functions recycle <code>x</code>, <code>mu</code>, and
+<code>kappa</code> to a common length.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span>pi <span class="sc">/</span> <span class="dv">2</span>, <span class="dv">0</span>, pi <span class="sc">/</span> <span class="dv">2</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">dcardioid</span>(x, <span class="at">mu =</span> <span class="dv">0</span>, <span class="at">kappa =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>))</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; [1] 0.1591549 0.2387324 0.1591549</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="fu">dwrappedcauchy</span>(x, <span class="at">mu =</span> <span class="dv">0</span>, <span class="at">kappa =</span> <span class="fl">0.7</span>, <span class="at">log =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; [1] -2.909998 -0.103276 -2.909998</span></span></code></pre></div>
+</div>
+</div>
+<div id="penalized-complexity-priors" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Penalized-complexity
+priors</h1>
+<p>A PC prior assigns an exponential distribution with rate
+<code>lambda</code> to a distance from a simpler base model. Larger
+<code>lambda</code> puts more prior mass near the base. All five prior
+families expose matching density, CDF, quantile, and random-generation
+functions.</p>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Help topic</th>
+<th align="left">Base model</th>
+<th align="left">Support for kappa</th>
+<th align="left">Special behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">pc.vm0</td>
+<td align="left">von Mises uniform limit, kappa = 0</td>
+<td align="left">[0, Inf)</td>
+<td align="left">Continuous</td>
+</tr>
+<tr class="even">
+<td align="left">pc.vminf</td>
+<td align="left">von Mises point-mass limit</td>
+<td align="left">[0, Inf)</td>
+<td align="left">Atom exp(-lambda) at zero</td>
+</tr>
+<tr class="odd">
+<td align="left">pc.card0</td>
+<td align="left">cardioid uniform model, kappa = 0</td>
+<td align="left">[0, 1/2]</td>
+<td align="left">Normalized truncated exponential distance</td>
+</tr>
+<tr class="even">
+<td align="left">pc.card</td>
+<td align="left">cardioid base, kappa = 1/2</td>
+<td align="left">[0, 1/2]</td>
+<td align="left">Atom at zero; integrable singularity at 1/2</td>
+</tr>
+<tr class="odd">
+<td align="left">pc.wc</td>
+<td align="left">wrapped Cauchy uniform model, kappa = 0</td>
+<td align="left">[0, 1)</td>
+<td align="left">Continuous; open upper endpoint</td>
+</tr>
+</tbody>
+</table>
+<p>For a monotone distance <span class="math inline">\(d(\kappa)\)</span>, an untruncated continuous PC
+prior has density</p>
+<p><span class="math display">\[
+\pi(\kappa)=\lambda\exp\{-\lambda d(\kappa)\}
+              \left|d&#39;(\kappa)\right|.
+\]</span></p>
+<p>When the attainable distance range is bounded, the remaining
+exponential tail must be handled explicitly. <code>pc.card0</code>
+truncates and normalizes the exponential distance law;
+<code>pc.vminf</code> and <code>pc.card</code> collapse the remaining
+tail to a boundary atom. The density functions below return densities
+with respect to Lebesgue measure. A boundary atom is therefore
+represented by the CDF and RNG, not added to the value returned by a
+density function.</p>
+<div id="von-mises-prior-with-uniform-base-pc.vm0" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Von Mises prior with
+uniform base: pc.vm0</h2>
+<p>Write</p>
+<p><span class="math display">\[
+A(\kappa)=\frac{I_1(\kappa)}{I_0(\kappa)},\qquad
+A&#39;(\kappa)=1-A(\kappa)^2-\frac{A(\kappa)}{\kappa},
+\]</span></p>
+<p>where the continuous limit is <span class="math inline">\(A&#39;(0)=1/2\)</span>. The distance from the
+circular uniform model is</p>
+<p><span class="math display">\[
+d_0(\kappa)=
+\sqrt{\kappa A(\kappa)-\log I_0(\kappa)}.
+\]</span></p>
+<p>For <span class="math inline">\(\kappa&gt;0\)</span>, the density and
+CDF are</p>
+<p><span class="math display">\[
+\boxed{
+\pi_0(\kappa)=
+\lambda e^{-\lambda d_0(\kappa)}
+\frac{\kappa A&#39;(\kappa)}{2d_0(\kappa)}
+},\qquad
+F_0(\kappa)=1-e^{-\lambda d_0(\kappa)}.
+\]</span></p>
+<p>The density has the finite endpoint limit <span class="math inline">\(\pi_0(0)=\lambda/2\)</span>. This is a continuous
+distribution with no atom at zero. Use <code>dpc.vm0()</code>,
+<code>ppc.vm0()</code>, <code>qpc.vm0()</code>, and
+<code>rpc.vm0()</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>probability <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>q0 <span class="ot">&lt;-</span> <span class="fu">qpc.vm0</span>(probability, <span class="at">lambda =</span> <span class="dv">2</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="fu">cbind</span>(</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="at">probability =</span> probability,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="at">quantile =</span> q0,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="at">recovered =</span> <span class="fu">ppc.vm0</span>(q0, <span class="at">lambda =</span> <span class="dv">2</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>)</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt;      probability  quantile recovered</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; [1,]         0.1 0.1054703       0.1</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; [2,]         0.5 0.7266853       0.5</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; [3,]         0.9 6.6791614       0.9</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="fu">dpc.vm0</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">2</span>), <span class="at">lambda =</span> <span class="dv">2</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; [1] 1.00000000 0.57267102 0.09577906</span></span></code></pre></div>
+</div>
+<div id="von-mises-prior-with-point-mass-base-pc.vminf" class="section level2" number="4.2">
+<h2><span class="header-section-number">4.2</span> Von Mises prior with
+point-mass base: pc.vminf</h2>
+<p>The distance from the point-mass limit <span class="math inline">\(\kappa\rightarrow\infty\)</span> is</p>
+<p><span class="math display">\[
+d_\infty(\kappa)=\sqrt{1-A(\kappa)}.
+\]</span></p>
+<p>The continuous density for <span class="math inline">\(\kappa&gt;0\)</span> and the full CDF are</p>
+<p><span class="math display">\[
+\boxed{
+\pi_\infty^{\mathrm{cont}}(\kappa)=
+\lambda e^{-\lambda d_\infty(\kappa)}
+\frac{A&#39;(\kappa)}{2d_\infty(\kappa)}
+},\qquad
+F_\infty(\kappa)=e^{-\lambda d_\infty(\kappa)}.
+\]</span></p>
+<p>Because <span class="math inline">\(d_\infty(0)=1\)</span>, the full
+law has boundary mass <span class="math inline">\(\Pr(\kappa=0)=e^{-\lambda}\)</span>.
+<code>dpc.vminf()</code> returns only the continuous component, whose
+right-hand endpoint limit is <span class="math inline">\(\lambda
+e^{-\lambda}/4\)</span>. <code>ppc.vminf()</code>,
+<code>qpc.vminf()</code>, and <code>rpc.vminf()</code> include the
+atom.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>lambda <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>atom_vm <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="sc">-</span>lambda)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="fu">c</span>(<span class="at">computed =</span> <span class="fu">ppc.vminf</span>(<span class="dv">0</span>, lambda), <span class="at">expected =</span> atom_vm)</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt;  computed  expected </span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; 0.1353353 0.1353353</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="fu">dpc.vminf</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">2</span>), lambda)</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co">#&gt; [1] 0.06766764 0.09193625 0.09948602</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="fu">qpc.vminf</span>(<span class="fu">c</span>(atom_vm <span class="sc">/</span> <span class="dv">2</span>, (<span class="dv">1</span> <span class="sc">+</span> atom_vm) <span class="sc">/</span> <span class="dv">2</span>), lambda)</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co">#&gt; [1] 0.000000 6.527716</span></span></code></pre></div>
+</div>
+<div id="cardioid-prior-with-uniform-base-pc.card0" class="section level2" number="4.3">
+<h2><span class="header-section-number">4.3</span> Cardioid prior with
+uniform base: pc.card0</h2>
+<p>Let</p>
+<p><span class="math display">\[
+s(\kappa)=\sqrt{1-4\kappa^2},\qquad
+d_0(\kappa)=
+\sqrt{1-s(\kappa)+\log\{(1+s(\kappa))/2\}}.
+\]</span></p>
+<p>The distance is bounded above by <span class="math inline">\(D_0=\sqrt{1-\log 2}\)</span>. Therefore pc.card0
+uses the normalized, truncated exponential density</p>
+<p><span class="math display">\[
+\boxed{
+\pi_0(\kappa)=
+\frac{\lambda e^{-\lambda d_0(\kappa)}}
+     {1-e^{-\lambda D_0}}
+\frac{2\kappa}{\{1+s(\kappa)\}d_0(\kappa)}
+}.
+\]</span></p>
+<p>Its CDF is</p>
+<p><span class="math display">\[
+F_0(\kappa)=
+\frac{1-\exp\{-\lambda d_0(\kappa)\}}
+{1-\exp(-\lambda D_0)}.
+\]</span></p>
+<p>Use <code>dpc.card0()</code>, <code>ppc.card0()</code>,
+<code>qpc.card0()</code>, and <code>rpc.card0()</code>. The density at
+zero is evaluated by continuity and equals <span class="math inline">\(\lambda/\{1-e^{-\lambda D_0}\}\)</span>. At <span class="math inline">\(\kappa=1/2\)</span>, it equals <span class="math inline">\(\lambda e^{-\lambda D_0}/[D_0\{1-e^{-\lambda
+D_0}\}]\)</span>.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>probability <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>quantile <span class="ot">&lt;-</span> <span class="fu">qpc.card0</span>(probability, <span class="at">lambda =</span> <span class="dv">2</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">cbind</span>(</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="at">probability =</span> probability,</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="at">quantile =</span> quantile,</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  <span class="at">recovered =</span> <span class="fu">ppc.card0</span>(quantile, <span class="at">lambda =</span> <span class="dv">2</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>)</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt;      probability   quantile recovered</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#&gt; [1,]         0.1 0.03465088       0.1</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt; [2,]         0.5 0.20172637       0.5</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#&gt; [3,]         0.9 0.43368208       0.9</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="fu">dpc.card0</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>), <span class="at">lambda =</span> <span class="dv">2</span>)</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co">#&gt; [1] 2.986217 1.892776 1.780359</span></span></code></pre></div>
+</div>
+<div id="cardioid-prior-with-base-kappa-12-pc.card" class="section level2" number="4.4">
+<h2><span class="header-section-number">4.4</span> Cardioid prior with
+base kappa = 1/2: pc.card</h2>
+<p>The distance to the concentrated cardioid base is</p>
+<p><span class="math display">\[
+d_{1/2}(\kappa)=
+\sqrt{1-2\kappa-s(\kappa)+\log\{1+s(\kappa)\}}.
+\]</span></p>
+<p>It decreases from <span class="math inline">\(\sqrt{\log 2}\)</span>
+at zero to zero at the base. Its continuous density is</p>
+<p><span class="math display">\[
+\boxed{
+\pi_{1/2}^{\mathrm{cont}}(\kappa)=
+\lambda e^{-\lambda d_{1/2}(\kappa)}
+\frac{1+s(\kappa)-2\kappa}
+     {\{1+s(\kappa)\}d_{1/2}(\kappa)}
+}.
+\]</span></p>
+<p>The full CDF is</p>
+<p><span class="math display">\[
+F_{1/2}(\kappa)=\exp\{-\lambda d_{1/2}(\kappa)\}.
+\]</span></p>
+<p>Consequently, the distribution has boundary mass <span class="math inline">\(\exp\{-\lambda\sqrt{\log 2}\}\)</span> at
+<code>kappa = 0</code>. <code>dpc.card()</code> returns the continuous
+density component. <code>ppc.card()</code>, <code>qpc.card()</code>, and
+<code>rpc.card()</code> include the atom. The continuous density tends
+to <code>Inf</code> at <code>kappa = 0.5</code>, but the singularity is
+integrable. At zero, its continuous component is <span class="math inline">\(\lambda e^{-\lambda\sqrt{\log 2}}/\sqrt{\log
+2}\)</span>; this value is distinct from the atom probability.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>lambda <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>atom_card <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="sc">-</span>lambda <span class="sc">*</span> <span class="fu">sqrt</span>(<span class="fu">log</span>(<span class="dv">2</span>)))</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="fu">c</span>(<span class="at">computed =</span> <span class="fu">ppc.card</span>(<span class="dv">0</span>, lambda), <span class="at">expected =</span> atom_card)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt; computed expected </span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt;  0.18917  0.18917</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="fu">qpc.card</span>(<span class="fu">c</span>(atom_card <span class="sc">/</span> <span class="dv">2</span>, (<span class="dv">1</span> <span class="sc">+</span> atom_card) <span class="sc">/</span> <span class="dv">2</span>), lambda)</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; [1] 0.0000000 0.4024443</span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="fu">dpc.card</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.49</span>), lambda)</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt; [1] 0.4544326 1.0445693 6.6278466</span></span></code></pre></div>
+</div>
+<div id="wrapped-cauchy-prior-pc.wc" class="section level2" number="4.5">
+<h2><span class="header-section-number">4.5</span> Wrapped Cauchy prior:
+pc.wc</h2>
+<p>For the wrapped Cauchy family,</p>
+<p><span class="math display">\[
+d_{\mathrm{wc}}(\kappa)=\sqrt{-\log(1-\kappa^2)}
+\]</span></p>
+<p>maps [0, 1) to the full nonnegative distance axis. Its density is</p>
+<p><span class="math display">\[
+\boxed{
+\pi_{\mathrm{wc}}(\kappa)=
+\lambda e^{-\lambda d_{\mathrm{wc}}(\kappa)}
+\frac{\kappa}{(1-\kappa^2)d_{\mathrm{wc}}(\kappa)}
+}.
+\]</span></p>
+<p>The CDF is</p>
+<p><span class="math display">\[
+F_{\mathrm{wc}}(\kappa)
+=1-\exp\{-\lambda d_{\mathrm{wc}}(\kappa)\}.
+\]</span></p>
+<p>Use <code>dpc.wc()</code>, <code>ppc.wc()</code>,
+<code>qpc.wc()</code>, and <code>rpc.wc()</code>. The density limit at
+zero is <code>lambda</code>; the density diverges as <code>kappa</code>
+approaches one. Interior-probability quantiles
+(<code>0 &lt; p &lt; 1</code>) and RNG output remain strictly below one.
+There is no atom at one; the value <code>dpc.wc(1, lambda)</code> is the
+limiting density convention.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>q_wc <span class="ot">&lt;-</span> <span class="fu">qpc.wc</span>(<span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span>), <span class="at">lambda =</span> <span class="dv">2</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">cbind</span>(<span class="at">quantile =</span> q_wc, <span class="at">recovered =</span> <span class="fu">ppc.wc</span>(q_wc, <span class="at">lambda =</span> <span class="dv">2</span>))</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#&gt;        quantile recovered</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#&gt; [1,] 0.05264373       0.1</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="co">#&gt; [2,] 0.33642236       0.5</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co">#&gt; [3,] 0.85692657       0.9</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">3</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="fu">rpc.wc</span>(<span class="dv">5</span>, <span class="at">lambda =</span> <span class="dv">2</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co">#&gt; [1] 0.09179213 0.70196661 0.23947530 0.19660997 0.43736859</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="fu">dpc.wc</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span>), <span class="at">lambda =</span> <span class="dv">2</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="co">#&gt; [1] 2.0000000 0.8503661 0.5585013</span></span></code></pre></div>
+</div>
+<div id="density-probability-and-vectorization-rules" class="section level2" number="4.6">
+<h2><span class="header-section-number">4.6</span> Density, probability,
+and vectorization rules</h2>
+<p>Every family follows the same call pattern:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">dpc.NAME</span>(kappa, lambda, <span class="at">log =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="fu">ppc.NAME</span>(q, lambda, <span class="at">log.p =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="fu">qpc.NAME</span>(p, lambda, <span class="at">log.p =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="fu">rpc.NAME</span>(n, lambda)</span></code></pre></div>
+<p>The PC-prior functions recycle concentrations or probabilities
+against <code>lambda</code>. The rate must always contain positive,
+finite values. With <code>log.p = TRUE</code>, CDFs return
+log-probabilities and quantiles accept log-probabilities. The density
+flag is <code>log</code>, and both flags must be one non-missing logical
+value. There is no <code>lower.tail</code> argument; all probabilities
+are lower-tail.</p>
+<p>Values and <code>lambda</code> recycle to their common maximum
+length, with a warning for non-multiple lengths. For random generation,
+a vector <code>n</code> requests <code>length(n)</code> draws; otherwise
+its scalar value is converted to an integer. The generators use R’s RNG
+stream. Apart from the documented limiting-endpoint conventions,
+densities are zero outside their mathematical support, while invalid
+probabilities produce <code>NaN</code>.</p>
+<p>Names such as <code>pc.card0</code> are help topics and prior labels,
+not callable R functions. Use the corresponding d/p/q/r functions.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">dpc.card0</span>(<span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>), <span class="at">lambda =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>), <span class="at">log =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="co">#&gt; [1] 0.7622848 0.7219704 0.4663980</span></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="fu">qpc.wc</span>(<span class="fu">log</span>(<span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span>)), <span class="at">lambda =</span> <span class="dv">2</span>, <span class="at">log.p =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">#&gt; [1] 0.05264373 0.33642236 0.85692657</span></span></code></pre></div>
+</div>
+</div>
+<div id="direct-fitting-with-r-inla" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> Direct fitting with
+R-INLA</h1>
+<p>This section uses <code>INLA::inla()</code> literally. The LAvM
+likelihood in this package is an external compiled
+<code>cloglike</code>, so a direct call has three explicit preparation
+steps:</p>
+<ol style="list-style-type: decimal">
+<li>convert the circular response with
+<code>INLA::inla.mdata()</code>;</li>
+<li>construct the compiled likelihood with <code>lavm.cloglike()</code>;
+and</li>
+<li>call <code>INLA::inla()</code> with <code>family =
+“cloglike”</code>.</li>
+</ol>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>lavm_setting <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>  <span class="at">link =</span> <span class="st">&quot;inverse.tangent&quot;</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>  <span class="at">hyper =</span> <span class="fu">list</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>    <span class="at">kappa =</span> <span class="fu">list</span>(</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>      <span class="at">initial =</span> <span class="fu">log</span>(<span class="dv">50</span>),</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>      <span class="at">prior =</span> <span class="st">&quot;pc.vminf&quot;</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>      <span class="at">param =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>),</span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>      <span class="at">fixed =</span> <span class="cn">FALSE</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>    )</span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>  )</span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>)</span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a>direct_data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a>  <span class="at">angle_lavm =</span> INLA<span class="sc">::</span><span class="fu">inla.mdata</span>(angle),</span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a>  <span class="at">z =</span> z</span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a>)</span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a>fit_direct <span class="ot">&lt;-</span> INLA<span class="sc">::</span><span class="fu">inla</span>(</span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a>  angle_lavm <span class="sc">~</span> z,</span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a>  <span class="at">family =</span> <span class="st">&quot;cloglike&quot;</span>,</span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a>  <span class="at">data =</span> direct_data,</span>
+<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a>  <span class="at">control.family =</span> <span class="fu">list</span>(</span>
+<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a>    <span class="at">cloglike =</span> <span class="fu">lavm.cloglike</span>(lavm_setting)</span>
+<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a>  ),</span>
+<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a>  <span class="at">control.inla =</span> <span class="fu">list</span>(</span>
+<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a>    <span class="at">cmin =</span> <span class="dv">0</span>,</span>
+<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a>    <span class="at">compute.initial.values =</span> <span class="cn">TRUE</span></span>
+<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a>  ),</span>
+<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a>  <span class="at">control.compute =</span> <span class="fu">list</span>(<span class="at">cpo =</span> <span class="cn">TRUE</span>, <span class="at">dic =</span> <span class="cn">TRUE</span>, <span class="at">waic =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a>)</span></code></pre></div>
+<p>Do not replace <code>family = “cloglike”</code> by <code>family =
+“lavm”</code> in this namespaced call. Some INLA versions have an
+experimental native family with that name, but its links, hyperparameter
+names, and priors are different from the INLAcircular LAvM interface.
+The custom prior names <code>pc.vm0</code> and <code>pc.vminf</code> are
+implemented inside this package’s cloglike.</p>
+<div id="lavm-likelihood-controls" class="section level2" number="5.1">
+<h2><span class="header-section-number">5.1</span> LAvM likelihood
+controls</h2>
+<p><code>lavm.cloglike(family.setting)</code> accepts the following
+controls:</p>
+<ul>
+<li><code>link</code> is <code>“inverse.tangent”</code> (the default),
+<code>“scaled.logit”</code>, or <code>“scaled.probit”</code>.</li>
+<li><code>hyper<span class="math inline">\(kappa\)</span>initial</code>
+is one finite initial value for <span class="math inline">\(\theta=\log(\kappa)\)</span>. The default is 6; it
+is not a natural-scale concentration.</li>
+<li><code>hyper<span class="math inline">\(kappa\)</span>prior</code> is
+<code>“pc.vminf”</code> (the default) or <code>“pc.vm0”</code>.</li>
+<li><code>hyper<span class="math inline">\(kappa\)</span>param = c(u,
+alpha)</code> contains two values strictly between zero and one. Here
+<span class="math inline">\(u\)</span> is a threshold for the mean
+resultant length <span class="math inline">\(A(\kappa)=I_1(\kappa)/I_0(\kappa)\)</span>, and
+the calibration is <span class="math inline">\(\Pr\{A(\kappa)&gt;u\}=\alpha\)</span>.</li>
+<li><code>hyper<span class="math inline">\(kappa\)</span>fixed =
+TRUE</code> fixes <span class="math inline">\(\log(\kappa)\)</span> at
+<code>initial</code>; the default is <code>FALSE</code>.</li>
+</ul>
+<p>If <span class="math inline">\(\kappa_u\)</span> solves <span class="math inline">\(A(\kappa_u)=u\)</span>, <code>pc.vm0</code>
+uses</p>
+<p><span class="math display">\[
+\lambda=-\frac{\log(\alpha)}{d_0(\kappa_u)},
+\]</span></p>
+<p>whereas <code>pc.vminf</code> uses</p>
+<p><span class="math display">\[
+\lambda=-\frac{\log(1-\alpha)}{\sqrt{1-u}}.
+\]</span></p>
+<p>This <code>c(u, alpha)</code> interface differs from the standalone
+d/p/q/r functions, which take <code>lambda</code> directly. The obsolete
+names <code>hyper$prec</code> and <code>log.initial</code> are
+rejected.</p>
+<p>For <code>pc.vminf</code>, this calibration comes from the full PC
+law, including its atom at <code>kappa = 0</code>. A fitted INLA
+hyperparameter is finite <span class="math inline">\(\theta=\log(\kappa)\)</span>, so the cloglike
+evaluates only the continuous component transformed to the <span class="math inline">\(\theta\)</span> scale, including its Jacobian. It
+has no separate discrete state at <span class="math inline">\(\theta=-\infty\)</span>. Treat <code>c(u,
+alpha)</code> as the rate calibration for the fitted continuous prior,
+not as a claim that the fitted hyperparameter retains the boundary
+atom.</p>
+<p>For numerical stability, the compiled cloglike evaluates its
+likelihood and prior after restricting the working value of <span class="math inline">\(\theta\)</span> to <span class="math inline">\([-30,30]\)</span>. This matters only at extreme
+concentrations, but is relevant when selecting initial values or
+diagnosing an optimizer at a boundary.</p>
+<p>The literal lower-level fit retains ordinary INLA cloglike names and
+the internal <span class="math inline">\(\log(\kappa)\)</span> marginal.
+Transform it when needed:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>theta_name <span class="ot">&lt;-</span> <span class="fu">grep</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>  <span class="st">&quot;^Theta1 for&quot;</span>,</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>  <span class="fu">names</span>(fit_direct<span class="sc">$</span>marginals.hyperpar),</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>  <span class="at">value =</span> <span class="cn">TRUE</span></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>)[<span class="dv">1</span>]</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>kappa_marginal <span class="ot">&lt;-</span> INLA<span class="sc">::</span><span class="fu">inla.tmarginal</span>(</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>  exp,</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>  fit_direct<span class="sc">$</span>marginals.hyperpar[[theta_name]]</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>)</span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a>INLA<span class="sc">::</span><span class="fu">inla.zmarginal</span>(kappa_marginal)</span></code></pre></div>
+</div>
+<div id="convenience-call-for-a-single-lavm-model" class="section level2" number="5.2">
+<h2><span class="header-section-number">5.2</span> Convenience call for
+a single LAvM model</h2>
+<p>Loading INLA first and INLAcircular second makes the package’s
+compatibility function available as the unqualified <code>inla()</code>.
+It accepts <code>family = “lavm”</code>, performs the three preparation
+steps above, and renames the concentration output onto the natural kappa
+scale.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="fu">library</span>(INLA)</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="fu">library</span>(INLAcircular)</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>fit_short <span class="ot">&lt;-</span> <span class="fu">inla</span>(</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>  angle <span class="sc">~</span> z,</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>  <span class="at">family =</span> <span class="st">&quot;lavm&quot;</span>,</span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="at">angle =</span> angle, <span class="at">z =</span> z),</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>  <span class="at">control.family =</span> lavm_setting</span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a>)</span></code></pre></div>
+<p>Use <code>INLA::inla()</code> for the explicit low-level interface
+and for ordinary INLA families. Use the unqualified <code>inla()</code>
+form above only when you intentionally want the package’s LAvM
+compatibility layer.</p>
+</div>
+</div>
+<div id="building-model-specifications" class="section level1" number="6">
+<h1><span class="header-section-number">6</span> Building model
+specifications</h1>
+<p><code>inlacc()</code> uses a formula-building layer to assemble one
+or more likelihood blocks into a stacked INLA model. Create one response
+block with</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu">likelihood</span>(formula, family, <span class="at">family.setting =</span> <span class="cn">NULL</span>)</span></code></pre></div>
+<p>Its arguments are:</p>
+<ul>
+<li><code>formula</code>: a two-sided formula for one response. The left
+side should be a single column name in <code>data</code>.</li>
+<li><code>family</code>: one INLA likelihood name. Use
+<code>“lavm”</code> for the package’s link-adjusted von Mises
+likelihood; other names are passed to INLA.</li>
+<li><code>family.setting</code>: the <code>control.family</code> list
+for this block. For LAvM it has the structure documented in the
+preceding section.</li>
+</ul>
+<p>A single likelihood object can be passed directly to
+<code>inlacc()</code>. A joint model is a list. Likelihood order
+determines response-block order and, where relevant, multivariate
+component order.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>angle_model <span class="ot">&lt;-</span> <span class="fu">likelihood</span>(</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>  angle <span class="sc">~</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>    <span class="fu">intercept</span>(<span class="at">name =</span> <span class="st">&quot;alpha0&quot;</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>    <span class="fu">covariate</span>(z, <span class="at">name =</span> <span class="st">&quot;alpha_z&quot;</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>    <span class="fu">f</span>(</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>      hour_effect,</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>      <span class="at">model =</span> <span class="st">&quot;rw1&quot;</span>,</span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a>      <span class="at">cyclic =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a>      <span class="at">constr =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a>      <span class="at">scale.model =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a>      <span class="at">hyper =</span> <span class="fu">list</span>(</span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a>        <span class="at">prec =</span> <span class="fu">list</span>(</span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a>          <span class="at">prior =</span> <span class="st">&quot;pc.prec&quot;</span>,</span>
+<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a>          <span class="at">param =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.01</span>)</span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a>        )</span>
+<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a>      )</span>
+<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a>    ),</span>
+<span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a>  <span class="at">family =</span> <span class="st">&quot;lavm&quot;</span>,</span>
+<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a>  <span class="at">family.setting =</span> lavm_setting</span>
+<span id="cb20-20"><a href="#cb20-20" tabindex="-1"></a>)</span></code></pre></div>
+<div id="formula-terms-and-their-interpretation" class="section level2" number="6.1">
+<h2><span class="header-section-number">6.1</span> Formula terms and
+their interpretation</h2>
+<p>The right side may contain ordinary numeric fixed-effect expressions
+and the following markers:</p>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Meaning inside <code>inlacc()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>1</code></td>
+<td align="left">Automatic block-specific intercept named
+<code>Intercept_&lt;response&gt;</code></td>
+</tr>
+<tr class="even">
+<td align="left"><code>0</code> or <code>-1</code></td>
+<td align="left">Remove the automatic intercept</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>intercept(...)</code></td>
+<td align="left">Named intercept with an optional Gaussian prior</td>
+</tr>
+<tr class="even">
+<td align="left">ordinary term such as <code>z</code> or
+<code>log(z)</code></td>
+<td align="left">Block-specific fixed effect evaluated in
+<code>data</code></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>covariate(...)</code></td>
+<td align="left">Fixed effect or automatically/explicitly copied
+response predictor</td>
+</tr>
+<tr class="even">
+<td align="left"><code>f(...)</code></td>
+<td align="left">Standard INLA latent-effect term, passed into the
+assembled formula</td>
+</tr>
+</tbody>
+</table>
+<p>Use numeric columns and expressions for ordinary terms. The assembler
+does not reproduce every <code>model.matrix()</code> feature for
+factors, offsets, or special response expressions. Use unique custom
+coefficient names across likelihoods unless a shared fixed coefficient
+is intentional.</p>
+<div id="intercept" class="section level3" number="6.1.1">
+<h3><span class="header-section-number">6.1.1</span>
+<code>intercept()</code></h3>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">intercept</span>(<span class="at">name =</span> <span class="cn">NULL</span>, <span class="at">mean =</span> <span class="cn">NULL</span>, <span class="at">sd =</span> <span class="cn">NULL</span>)</span></code></pre></div>
+<ul>
+<li><code>name</code> changes the coefficient label; its default is
+<code>Intercept_&lt;response&gt;</code>.</li>
+<li><code>mean</code> and <code>sd</code> set the Gaussian prior. A
+missing value inherits the corresponding global fixed-effect
+setting.</li>
+<li>A formula <code>0</code> or <code>-1</code> removes the automatic
+intercept, while an explicit <code>intercept()</code> adds the custom
+one.</li>
+</ul>
+<p>This is a formula marker. It returns <code>NULL</code> when called by
+itself because <code>inlacc()</code> interprets its unevaluated
+call.</p>
+</div>
+<div id="covariate" class="section level3" number="6.1.2">
+<h3><span class="header-section-number">6.1.2</span>
+<code>covariate()</code></h3>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">covariate</span>(</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>  var,</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>  <span class="at">name =</span> <span class="cn">NULL</span>,</span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>  <span class="at">mean =</span> <span class="cn">NULL</span>,</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>  <span class="at">sd =</span> <span class="cn">NULL</span>,</span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>  <span class="at">initial =</span> <span class="cn">NULL</span>,</span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>  <span class="at">fixed =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>  <span class="at">predictor =</span> <span class="cn">NULL</span></span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>)</span></code></pre></div>
+<ul>
+<li><code>var</code> is an unquoted variable or expression evaluated in
+<code>data</code>. It is an argument, not a separate function named
+<code>var()</code>.</li>
+<li><code>name</code> supplies a stable coefficient and display
+name.</li>
+<li><code>mean</code> and <code>sd</code> independently override the
+Gaussian prior for an ordinary fixed effect.</li>
+<li><code>predictor = NULL</code>, the default, copies the latent
+predictor when <code>var</code> is an untransformed response in another
+likelihood block; otherwise it creates an ordinary observed fixed
+effect.</li>
+<li><code>predictor = TRUE</code> explicitly requests copying. It is an
+error if <code>var</code> is not an untransformed response from another
+block.</li>
+<li><code>predictor = FALSE</code> always creates an ordinary fixed
+effect from the observed values, including when <code>var</code> is
+another response.</li>
+<li><code>initial</code> and <code>fixed</code> control the INLA
+copy-scaling coefficient. They apply to copied predictors and are not
+used for ordinary fixed effects.</li>
+</ul>
+<p>For a copied predictor, provide both <code>mean</code> and
+<code>sd</code> to customize its scaling prior. If either is absent, the
+current implementation uses its default <span class="math inline">\(N(0,31.62^2)\)</span> scaling prior. Any response
+used directly as a bare term on another block’s right side is also
+copied automatically. To use that response’s observed values instead,
+write <code>covariate(response, predictor = FALSE)</code>. A transformed
+expression such as <code>log(response)</code> is an ordinary observed
+fixed effect under <code>predictor = NULL</code> or <code>FALSE</code>;
+requesting <code>predictor = TRUE</code> for a transformed expression is
+an error because this interface can copy only a named source
+predictor.</p>
+</div>
+<div id="f-and-standard-inla-options" class="section level3" number="6.1.3">
+<h3><span class="header-section-number">6.1.3</span> <code>f()</code>
+and standard INLA options</h3>
+<p>INLAcircular does not export a separate <code>f()</code>. Write a
+bare <code>f(…)</code> in an <code>inlacc()</code> formula. Its syntax
+is the R-INLA latent-effect syntax, including <code>model</code>,
+<code>hyper</code>, <code>constr</code>, <code>scale.model</code>,
+<code>cyclic</code>, <code>group</code>, <code>control.group</code>,
+<code>replicate</code>, <code>values</code>, and <code>copy</code>. Use
+<code>INLA::inla.doc()</code> for details of the selected latent
+model.</p>
+<p>The term is preserved in the assembled INLA formula. INLAcircular
+additionally does the following:</p>
+<ul>
+<li>supplies an index column from <code>data</code> or
+<code>index()</code>;</li>
+<li>creates <code>1:nrow(data)</code> when an index is otherwise
+absent;</li>
+<li>injects or replaces <code>values</code> for the matching first index
+when a complete <code>process.id</code> is given;</li>
+<li>records common model and hyperprior information for summaries;
+and</li>
+<li>rewrites the special <code>model = “iidkd_LKJ”</code> form described
+later.</li>
+</ul>
+<p>Because the preprocessor recognizes the call name literally, use
+<code>f(…)</code>, not <code>INLA::f(…)</code>, in these formulas.</p>
+</div>
+</div>
+<div id="mapping-observations-with-index" class="section level2" number="6.2">
+<h2><span class="header-section-number">6.2</span> Mapping observations
+with <code>index()</code></h2>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">index</span>(var, data.id, <span class="at">process.id =</span> <span class="cn">NULL</span>)</span></code></pre></div>
+<p>Here <code>data.id</code> and <code>process.id</code> are arguments
+of <code>index()</code>, not separate functions.</p>
+<ul>
+<li><code>var</code> is a character string matching the first argument
+of an <code>f()</code> term.</li>
+<li><code>data.id</code> maps each observation row to a latent-process
+node and should normally have <code>nrow(data)</code> entries.</li>
+<li><code>process.id</code> optionally gives the complete ordered node
+set. When supplied, it becomes the INLA <code>values</code> argument for
+an <code>f()</code> term whose first argument matches <code>var</code>,
+replacing any existing <code>values</code> argument. When it is
+<code>NULL</code>, INLA infers represented values from the observation
+index. A mapping can supply <code>data.id</code> for a first, group, or
+replicate variable, but <code>process.id</code> applies only to a
+matching first index.</li>
+</ul>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>hour_index <span class="ot">&lt;-</span> <span class="fu">index</span>(</span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>  <span class="at">var =</span> <span class="st">&quot;hour_effect&quot;</span>,</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>  <span class="at">data.id =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">4</span>),</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>  <span class="at">process.id =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span></span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>)</span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a>hour_index</span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a><span class="co">#&gt; $var</span></span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a><span class="co">#&gt; [1] &quot;hour_effect&quot;</span></span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a><span class="co">#&gt; $data.id</span></span>
+<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a><span class="co">#&gt; [1] 1 2 2 4</span></span>
+<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb24-14"><a href="#cb24-14" tabindex="-1"></a><span class="co">#&gt; $process.id</span></span>
+<span id="cb24-15"><a href="#cb24-15" tabindex="-1"></a><span class="co">#&gt; [1] 1 2 3 4</span></span></code></pre></div>
+<p>Pass one object directly or several in a list:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>latent_indices <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>  <span class="fu">index</span>(<span class="st">&quot;hour_effect&quot;</span>, <span class="at">data.id =</span> data<span class="sc">$</span>hour, <span class="at">process.id =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">23</span>),</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>  <span class="fu">index</span>(<span class="st">&quot;region_effect&quot;</span>, <span class="at">data.id =</span> data<span class="sc">$</span>region, <span class="at">process.id =</span> region_ids)</span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>)</span></code></pre></div>
+<p>If a mapped name is not used by any <code>f()</code> first, group, or
+replicate argument, it is ignored with a warning. For an ordinary shared
+effect, <code>index(var, data.id = “likelihood”)</code> sets its index
+to the likelihood-block number. A later section documents the different
+special LKJ form <code>process.id = “likelihood”</code>.</p>
+</div>
+</div>
+<div id="fitting-with-inlacc" class="section level1" number="7">
+<h1><span class="header-section-number">7</span> Fitting with
+<code>inlacc()</code></h1>
+<p>The complete call is</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">inlacc</span>(</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>  model,</span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>  data,</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>  <span class="at">latent.index =</span> <span class="cn">NULL</span>,</span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>  <span class="at">LKJ.eta =</span> <span class="dv">5</span>,</span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a>  <span class="at">control.family =</span> <span class="cn">NULL</span>,</span>
+<span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a>  <span class="at">control.fixed =</span> <span class="cn">NULL</span>,</span>
+<span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a>  <span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">cmin =</span> <span class="dv">0</span>, <span class="at">compute.initial.values =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb26-9"><a href="#cb26-9" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb26-10"><a href="#cb26-10" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb26-11"><a href="#cb26-11" tabindex="-1"></a>  ...</span>
+<span id="cb26-12"><a href="#cb26-12" tabindex="-1"></a>)</span></code></pre></div>
+<div id="arguments-and-defaults" class="section level2" number="7.1">
+<h2><span class="header-section-number">7.1</span> Arguments and
+defaults</h2>
+<ul>
+<li><code>model</code> is one <code>likelihood()</code> object or a
+non-empty list of them.</li>
+<li><code>data</code> is a data frame containing every simple response
+column, fixed-effect variable, and ordinary latent index. All likelihood
+blocks use the same number and ordering of observation rows; missing
+responses are represented with <code>NA</code> and handled by INLA.</li>
+<li><code>latent.index</code> is one <code>index()</code> object or a
+list of them.</li>
+<li><code>LKJ.eta</code> is one positive finite LKJ shape shared by
+every <code>iidkd_LKJ</code> group. It defaults to 5 and is irrelevant
+when no such group is present.</li>
+<li><code>control.family</code> optionally overrides block-level
+<code>family.setting</code>. Supply one nested control list per
+likelihood, even for a single block. When no override exists for a
+block, that block’s <code>family.setting</code> is used.</li>
+<li><code>control.fixed</code> is an INLA fixed-effect control list. The
+package defaults are mean 0 and precision 0.001, equivalent to SD about
+31.62. Its <code>mean</code> and <code>prec</code> may be scalars or
+INLA named lists with a <code>default</code> entry; existing named
+entries are preserved. Priors specified in <code>intercept()</code> or
+<code>covariate()</code> override the matching coefficients.</li>
+<li><code>control.inla</code> is passed to <code>INLA::inla()</code>.
+Its package default sets <code>cmin = 0</code> and
+<code>compute.initial.values = TRUE</code>. Supplying another list
+replaces that whole default, so include either setting explicitly when
+it remains required.</li>
+<li><code>metrics = TRUE</code> requests CPO, DIC, WAIC, and INLA
+configuration output. The default is <code>FALSE</code>.</li>
+<li><code>verbose</code> is passed directly to
+<code>INLA::inla()</code>.</li>
+<li><code>…</code> accepts further INLA arguments. Common examples are
+<code>control.predictor</code>, <code>control.compute</code>,
+<code>control.mode</code>, <code>num.threads</code>, and
+<code>blas.num.threads</code>. A supplied <code>control.compute</code>
+is merged field by field with the values implied by
+<code>metrics</code>.</li>
+</ul>
+<p>Do not pass <code>formula</code> or <code>family</code> through
+<code>…</code>: those names would replace the internally assembled
+values. Use the formal <code>control.family</code> and
+<code>control.fixed</code> arguments only for their documented controls;
+the stacked formula and data are owned by <code>inlacc()</code>.</p>
+</div>
+<div id="single-likelihood-fit" class="section level2" number="7.2">
+<h2><span class="header-section-number">7.2</span> Single-likelihood
+fit</h2>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">inlacc</span>(</span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>  <span class="at">model =</span> angle_model,</span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a>    <span class="at">angle =</span> angle,</span>
+<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a>    <span class="at">z =</span> z,</span>
+<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a>    <span class="at">hour_effect =</span> hour</span>
+<span id="cb27-7"><a href="#cb27-7" tabindex="-1"></a>  ),</span>
+<span id="cb27-8"><a href="#cb27-8" tabindex="-1"></a>  <span class="at">latent.index =</span> <span class="fu">index</span>(</span>
+<span id="cb27-9"><a href="#cb27-9" tabindex="-1"></a>    <span class="st">&quot;hour_effect&quot;</span>,</span>
+<span id="cb27-10"><a href="#cb27-10" tabindex="-1"></a>    <span class="at">data.id =</span> hour,</span>
+<span id="cb27-11"><a href="#cb27-11" tabindex="-1"></a>    <span class="at">process.id =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">23</span></span>
+<span id="cb27-12"><a href="#cb27-12" tabindex="-1"></a>  ),</span>
+<span id="cb27-13"><a href="#cb27-13" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb27-14"><a href="#cb27-14" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="cn">TRUE</span></span>
+<span id="cb27-15"><a href="#cb27-15" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="joint-likelihoods-and-copied-predictors" class="section level2" number="7.3">
+<h2><span class="header-section-number">7.3</span> Joint likelihoods and
+copied predictors</h2>
+<p>The following outline fits a circular response and a Gaussian
+response. The second block uses the first block’s latent predictor
+through an INLA copy term. Because <code>angle</code> is the response of
+another likelihood block, <code>covariate(angle)</code> selects this
+behavior automatically.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>joint_model <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>  <span class="fu">likelihood</span>(</span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a>    angle <span class="sc">~</span></span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a>      <span class="fu">intercept</span>(<span class="at">name =</span> <span class="st">&quot;alpha0&quot;</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a>      <span class="fu">covariate</span>(z, <span class="at">name =</span> <span class="st">&quot;alpha_z&quot;</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>),</span>
+<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a>    <span class="at">family =</span> <span class="st">&quot;lavm&quot;</span>,</span>
+<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a>    <span class="at">family.setting =</span> lavm_setting</span>
+<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a>  ),</span>
+<span id="cb28-9"><a href="#cb28-9" tabindex="-1"></a>  <span class="fu">likelihood</span>(</span>
+<span id="cb28-10"><a href="#cb28-10" tabindex="-1"></a>    y <span class="sc">~</span></span>
+<span id="cb28-11"><a href="#cb28-11" tabindex="-1"></a>      <span class="fu">intercept</span>(<span class="at">name =</span> <span class="st">&quot;beta0&quot;</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb28-12"><a href="#cb28-12" tabindex="-1"></a>      <span class="fu">covariate</span>(z, <span class="at">name =</span> <span class="st">&quot;beta_z&quot;</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb28-13"><a href="#cb28-13" tabindex="-1"></a>      <span class="fu">covariate</span>(</span>
+<span id="cb28-14"><a href="#cb28-14" tabindex="-1"></a>        angle,</span>
+<span id="cb28-15"><a href="#cb28-15" tabindex="-1"></a>        <span class="at">name =</span> <span class="st">&quot;beta_angle_predictor&quot;</span>,</span>
+<span id="cb28-16"><a href="#cb28-16" tabindex="-1"></a>        <span class="at">mean =</span> <span class="dv">0</span>,</span>
+<span id="cb28-17"><a href="#cb28-17" tabindex="-1"></a>        <span class="at">sd =</span> <span class="dv">1</span>,</span>
+<span id="cb28-18"><a href="#cb28-18" tabindex="-1"></a>        <span class="at">initial =</span> <span class="dv">0</span>,</span>
+<span id="cb28-19"><a href="#cb28-19" tabindex="-1"></a>        <span class="at">fixed =</span> <span class="cn">FALSE</span></span>
+<span id="cb28-20"><a href="#cb28-20" tabindex="-1"></a>      ),</span>
+<span id="cb28-21"><a href="#cb28-21" tabindex="-1"></a>    <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb28-22"><a href="#cb28-22" tabindex="-1"></a>    <span class="at">family.setting =</span> <span class="fu">list</span>(</span>
+<span id="cb28-23"><a href="#cb28-23" tabindex="-1"></a>      <span class="at">hyper =</span> <span class="fu">list</span>(</span>
+<span id="cb28-24"><a href="#cb28-24" tabindex="-1"></a>        <span class="at">prec =</span> <span class="fu">list</span>(<span class="at">prior =</span> <span class="st">&quot;pc.prec&quot;</span>, <span class="at">param =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.01</span>))</span>
+<span id="cb28-25"><a href="#cb28-25" tabindex="-1"></a>      )</span>
+<span id="cb28-26"><a href="#cb28-26" tabindex="-1"></a>    )</span>
+<span id="cb28-27"><a href="#cb28-27" tabindex="-1"></a>  )</span>
+<span id="cb28-28"><a href="#cb28-28" tabindex="-1"></a>)</span>
+<span id="cb28-29"><a href="#cb28-29" tabindex="-1"></a></span>
+<span id="cb28-30"><a href="#cb28-30" tabindex="-1"></a>joint_fit <span class="ot">&lt;-</span> <span class="fu">inlacc</span>(</span>
+<span id="cb28-31"><a href="#cb28-31" tabindex="-1"></a>  <span class="at">model =</span> joint_model,</span>
+<span id="cb28-32"><a href="#cb28-32" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="at">angle =</span> angle, <span class="at">y =</span> y, <span class="at">z =</span> z),</span>
+<span id="cb28-33"><a href="#cb28-33" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb28-34"><a href="#cb28-34" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="cn">TRUE</span></span>
+<span id="cb28-35"><a href="#cb28-35" tabindex="-1"></a>)</span></code></pre></div>
+<p>Writing <code>predictor = TRUE</code> in that term is equivalent but
+makes the copy request explicit. To regress on the observed angles
+instead of their latent predictor, use <code>covariate(angle, predictor
+= FALSE)</code>.</p>
+<p>Set <code>control.predictor = list(compute = TRUE)</code> when fitted
+linear predictors are needed. The custom summary warns when predictor
+computation is particularly relevant, including models with copied
+covariates.</p>
+</div>
+<div id="returned-object" class="section level2" number="7.4">
+<h2><span class="header-section-number">7.4</span> Returned object</h2>
+<p>The result inherits from both <code>inlacc</code> and INLA result
+classes, so ordinary INLA components remain available. The package also
+records:</p>
+<ul>
+<li>the assembled formula, stacked data, effective families, and family
+controls in <code>inlacc_meta</code>;</li>
+<li>fixed-effect, hyperparameter, prior, and latent-process mappings
+used by <code>summary.inlacc()</code>;</li>
+<li>the names of copied predictors; and</li>
+<li><code>lkj_modes</code> and <code>inlacc_meta$LKJ</code>, both always
+lists and empty when no LKJ effect is present.</li>
+</ul>
+<p>LAvM concentration marginals are normally transformed from <span class="math inline">\(\log(\kappa)\)</span> to <span class="math inline">\(\kappa\)</span> and renamed in the fitted object.
+Raw INLA fields such as <code>summary.fixed</code>,
+<code>summary.hyperpar</code>, <code>marginals.fixed</code>,
+<code>marginals.hyperpar</code>, <code>summary.fitted.values</code>, and
+<code>cpu.used</code> remain available.</p>
+</div>
+</div>
+<div id="modelling-multivariate-effects-with-graphpcor" class="section level1" number="8">
+<h1><span class="header-section-number">8</span> Modelling multivariate
+effects with <code>graphpcor</code></h1>
+<p>INLAcircular integrates one specific graphpcor model: a dense
+LKJ-correlated IID vector shared across likelihood blocks. It does not
+expose graphpcor’s general graph-structured or tree-structured model
+interfaces.</p>
+<p>Install the optional dependencies before using this feature:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;graphpcor&quot;</span>, <span class="st">&quot;INLAtools&quot;</span>))</span></code></pre></div>
+<p>The feature inherits graphpcor’s own R-version and dependency
+requirements. Both packages are checked at run time.</p>
+<div id="declaring-an-lkj-correlated-effect" class="section level2" number="8.1">
+<h2><span class="header-section-number">8.1</span> Declaring an
+LKJ-correlated effect</h2>
+<p>Use the exact special syntax</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu">f</span>(</span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a>  i,</span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;iidkd_LKJ&quot;</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a>  <span class="at">pc.prior.u =</span> <span class="dv">1</span>,</span>
+<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a>  <span class="at">pc.prior.alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb30-6"><a href="#cb30-6" tabindex="-1"></a>)</span></code></pre></div>
+<p>in at least two likelihood blocks. Terms with the same bare first
+argument (<code>i</code> above) form one multivariate process. Component
+order follows the likelihood objects supplied to
+<code>inlacc()</code>.</p>
+<ul>
+<li>A process may occur at most once in each likelihood.</li>
+<li>Its dimension is the number of likelihoods containing the term and
+must be at least two.</li>
+<li>The same index name cannot also be used by another <code>f()</code>
+model.</li>
+<li><code>LKJ.eta</code> is supplied once to <code>inlacc()</code>, not
+as <code>eta</code> inside <code>f()</code>.</li>
+<li><code>prior.param</code> is not supported for this special
+term.</li>
+</ul>
+<p>The per-component scale prior is passed to graphpcor as
+<code>sigma.prior.reference = pc.prior.u</code> and
+<code>sigma.prior.probability = pc.prior.alpha</code>. The defaults are
+1 and 0.5. The reference must be positive; the probability may be in [0,
+1] or <code>NA</code>. The PC-scale calibration used by the
+implementation is <span class="math inline">\(\Pr(\sigma&gt;u)=\alpha\)</span>, equivalently
+<span class="math inline">\(\lambda=-\log(\alpha)/u\)</span>. Values
+<code>0</code>, <code>1</code>, and <code>NA</code> fix that component’s
+standard deviation at <code>u</code> rather than estimating a scale
+parameter.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a>multivariate_model <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a>  <span class="fu">likelihood</span>(</span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a>    angle <span class="sc">~</span> <span class="fu">intercept</span>(<span class="at">name =</span> <span class="st">&quot;alpha0&quot;</span>) <span class="sc">+</span></span>
+<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a>      <span class="fu">f</span>(</span>
+<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a>        i,</span>
+<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a>        <span class="at">model =</span> <span class="st">&quot;iidkd_LKJ&quot;</span>,</span>
+<span id="cb31-7"><a href="#cb31-7" tabindex="-1"></a>        <span class="at">pc.prior.u =</span> <span class="dv">1</span>,</span>
+<span id="cb31-8"><a href="#cb31-8" tabindex="-1"></a>        <span class="at">pc.prior.alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb31-9"><a href="#cb31-9" tabindex="-1"></a>      ),</span>
+<span id="cb31-10"><a href="#cb31-10" tabindex="-1"></a>    <span class="at">family =</span> <span class="st">&quot;lavm&quot;</span>,</span>
+<span id="cb31-11"><a href="#cb31-11" tabindex="-1"></a>    <span class="at">family.setting =</span> lavm_setting</span>
+<span id="cb31-12"><a href="#cb31-12" tabindex="-1"></a>  ),</span>
+<span id="cb31-13"><a href="#cb31-13" tabindex="-1"></a>  <span class="fu">likelihood</span>(</span>
+<span id="cb31-14"><a href="#cb31-14" tabindex="-1"></a>    y <span class="sc">~</span> <span class="fu">intercept</span>(<span class="at">name =</span> <span class="st">&quot;beta0&quot;</span>) <span class="sc">+</span></span>
+<span id="cb31-15"><a href="#cb31-15" tabindex="-1"></a>      <span class="fu">f</span>(</span>
+<span id="cb31-16"><a href="#cb31-16" tabindex="-1"></a>        i,</span>
+<span id="cb31-17"><a href="#cb31-17" tabindex="-1"></a>        <span class="at">model =</span> <span class="st">&quot;iidkd_LKJ&quot;</span>,</span>
+<span id="cb31-18"><a href="#cb31-18" tabindex="-1"></a>        <span class="at">pc.prior.u =</span> <span class="dv">2</span>,</span>
+<span id="cb31-19"><a href="#cb31-19" tabindex="-1"></a>        <span class="at">pc.prior.alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb31-20"><a href="#cb31-20" tabindex="-1"></a>      ),</span>
+<span id="cb31-21"><a href="#cb31-21" tabindex="-1"></a>    <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span></span>
+<span id="cb31-22"><a href="#cb31-22" tabindex="-1"></a>  )</span>
+<span id="cb31-23"><a href="#cb31-23" tabindex="-1"></a>)</span>
+<span id="cb31-24"><a href="#cb31-24" tabindex="-1"></a></span>
+<span id="cb31-25"><a href="#cb31-25" tabindex="-1"></a>fit_lkj <span class="ot">&lt;-</span> <span class="fu">inlacc</span>(</span>
+<span id="cb31-26"><a href="#cb31-26" tabindex="-1"></a>  multivariate_model,</span>
+<span id="cb31-27"><a href="#cb31-27" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="at">angle =</span> angle, <span class="at">y =</span> y),</span>
+<span id="cb31-28"><a href="#cb31-28" tabindex="-1"></a>  <span class="at">LKJ.eta =</span> <span class="dv">5</span>,</span>
+<span id="cb31-29"><a href="#cb31-29" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb31-30"><a href="#cb31-30" tabindex="-1"></a>)</span></code></pre></div>
+<p><code>LKJcc()</code> performs the preprocessing internally: it
+collects the terms, constructs graphpcor’s cgeneric model, rewrites the
+formulas, and creates component and replicate indices. Most users should
+not call it directly. Its return value contains the rewritten formulas,
+generated models, block data, process metadata, and unconsumed ordinary
+index mappings.</p>
+</div>
+<div id="replicate-indices" class="section level2" number="8.2">
+<h2><span class="header-section-number">8.2</span> Replicate
+indices</h2>
+<p>By default, observations receive replicate IDs
+<code>seq_len(nrow(data))</code>; no <code>i</code> column is required.
+To use explicit replicate IDs, supply the special mapping</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a>lkj_index <span class="ot">&lt;-</span> <span class="fu">index</span>(</span>
+<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a>  <span class="at">var =</span> <span class="st">&quot;i&quot;</span>,</span>
+<span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a>  <span class="at">data.id =</span> replicate_id,</span>
+<span id="cb32-4"><a href="#cb32-4" tabindex="-1"></a>  <span class="at">process.id =</span> <span class="st">&quot;likelihood&quot;</span></span>
+<span id="cb32-5"><a href="#cb32-5" tabindex="-1"></a>)</span>
+<span id="cb32-6"><a href="#cb32-6" tabindex="-1"></a></span>
+<span id="cb32-7"><a href="#cb32-7" tabindex="-1"></a>fit_lkj <span class="ot">&lt;-</span> <span class="fu">inlacc</span>(</span>
+<span id="cb32-8"><a href="#cb32-8" tabindex="-1"></a>  multivariate_model,</span>
+<span id="cb32-9"><a href="#cb32-9" tabindex="-1"></a>  <span class="at">data =</span> data,</span>
+<span id="cb32-10"><a href="#cb32-10" tabindex="-1"></a>  <span class="at">latent.index =</span> lkj_index,</span>
+<span id="cb32-11"><a href="#cb32-11" tabindex="-1"></a>  <span class="at">LKJ.eta =</span> <span class="dv">5</span></span>
+<span id="cb32-12"><a href="#cb32-12" tabindex="-1"></a>)</span></code></pre></div>
+<p>In this special form, <code>data.id</code> must contain one positive
+integer per observation and becomes the INLA replicate index. The
+component index is generated from likelihood order. An explicit
+<code>replicate = some_name</code> must use a bare variable name. It may
+be written in one or more special <code>f()</code> terms, but every
+explicit name within a group must agree. That name controls the
+generated replicate column; its values still come from this mapping or
+the default row sequence.</p>
+</div>
+<div id="recovering-covariance-information" class="section level2" number="8.3">
+<h2><span class="header-section-number">8.3</span> Recovering covariance
+information</h2>
+<p><code>fit_lkj$lkj_modes[[“i”]]</code> stores internal posterior-mode
+values, not a full posterior correlation summary. When every scale is
+free (<code>0 &lt; pc.prior.alpha &lt; 1</code>), the first <span class="math inline">\(p\)</span> entries for a <span class="math inline">\(p\)</span>-dimensional group are log standard
+deviations and the remaining <span class="math inline">\(p(p-1)/2\)</span> entries parameterize the
+correlation matrix. The example above has this all-free form.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">2</span><span class="dt">L</span></span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>theta_i <span class="ot">&lt;-</span> fit_lkj<span class="sc">$</span>lkj_modes[[<span class="st">&quot;i&quot;</span>]]</span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>sd_mode <span class="ot">&lt;-</span> <span class="fu">exp</span>(theta_i[<span class="fu">seq_len</span>(p)])</span>
+<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>correlation_mode <span class="ot">&lt;-</span> graphpcor<span class="sc">::</span><span class="fu">basecor</span>(</span>
+<span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a>  theta_i[<span class="sc">-</span><span class="fu">seq_len</span>(p)],</span>
+<span id="cb33-7"><a href="#cb33-7" tabindex="-1"></a>  <span class="at">p =</span> p</span>
+<span id="cb33-8"><a href="#cb33-8" tabindex="-1"></a>)<span class="sc">$</span>base</span>
+<span id="cb33-9"><a href="#cb33-9" tabindex="-1"></a></span>
+<span id="cb33-10"><a href="#cb33-10" tabindex="-1"></a>sd_mode</span>
+<span id="cb33-11"><a href="#cb33-11" tabindex="-1"></a>correlation_mode</span></code></pre></div>
+<p>For a mixture of free and fixed scales, reconstruct the complete SD
+vector before extracting the correlation parameters:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a>process_i <span class="ot">&lt;-</span> fit_lkj<span class="sc">$</span>inlacc_meta<span class="sc">$</span>LKJ[[<span class="st">&quot;i&quot;</span>]]</span>
+<span id="cb34-2"><a href="#cb34-2" tabindex="-1"></a>u <span class="ot">&lt;-</span> process_i<span class="sc">$</span>pc.prior.u</span>
+<span id="cb34-3"><a href="#cb34-3" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> process_i<span class="sc">$</span>pc.prior.alpha</span>
+<span id="cb34-4"><a href="#cb34-4" tabindex="-1"></a>fixed_scale <span class="ot">&lt;-</span> <span class="fu">is.na</span>(alpha) <span class="sc">|</span> alpha <span class="sc">&lt;=</span> <span class="dv">0</span> <span class="sc">|</span> alpha <span class="sc">&gt;=</span> <span class="dv">1</span></span>
+<span id="cb34-5"><a href="#cb34-5" tabindex="-1"></a>n_free <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="sc">!</span>fixed_scale)</span>
+<span id="cb34-6"><a href="#cb34-6" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" tabindex="-1"></a>theta_i <span class="ot">&lt;-</span> fit_lkj<span class="sc">$</span>lkj_modes[[<span class="st">&quot;i&quot;</span>]]</span>
+<span id="cb34-8"><a href="#cb34-8" tabindex="-1"></a>log_sd_mode <span class="ot">&lt;-</span> <span class="fu">log</span>(u)</span>
+<span id="cb34-9"><a href="#cb34-9" tabindex="-1"></a>log_sd_mode[<span class="sc">!</span>fixed_scale] <span class="ot">&lt;-</span> theta_i[<span class="fu">seq_len</span>(n_free)]</span>
+<span id="cb34-10"><a href="#cb34-10" tabindex="-1"></a></span>
+<span id="cb34-11"><a href="#cb34-11" tabindex="-1"></a>n_cor <span class="ot">&lt;-</span> p <span class="sc">*</span> (p <span class="sc">-</span> <span class="dv">1</span><span class="dt">L</span>) <span class="sc">/</span> <span class="dv">2</span><span class="dt">L</span></span>
+<span id="cb34-12"><a href="#cb34-12" tabindex="-1"></a>cor_index <span class="ot">&lt;-</span> n_free <span class="sc">+</span> <span class="fu">seq_len</span>(n_cor)</span>
+<span id="cb34-13"><a href="#cb34-13" tabindex="-1"></a>correlation_mode <span class="ot">&lt;-</span> graphpcor<span class="sc">::</span><span class="fu">basecor</span>(</span>
+<span id="cb34-14"><a href="#cb34-14" tabindex="-1"></a>  theta_i[cor_index],</span>
+<span id="cb34-15"><a href="#cb34-15" tabindex="-1"></a>  <span class="at">p =</span> p</span>
+<span id="cb34-16"><a href="#cb34-16" tabindex="-1"></a>)<span class="sc">$</span>base</span>
+<span id="cb34-17"><a href="#cb34-17" tabindex="-1"></a></span>
+<span id="cb34-18"><a href="#cb34-18" tabindex="-1"></a>sd_mode <span class="ot">&lt;-</span> <span class="fu">exp</span>(log_sd_mode)</span></code></pre></div>
+<p>For multiple LKJ groups, use the corresponding first-argument name as
+the list key. Component order is always the likelihood order used to
+build the group. These are point estimates at the internal posterior
+mode; use INLA’s marginal or sampling tools when full uncertainty
+summaries are required.</p>
+</div>
+</div>
+<div id="results-and-summaries" class="section level1" number="9">
+<h1><span class="header-section-number">9</span> Results and
+summaries</h1>
+<p><code>summary()</code> dispatches to <code>summary.inlacc()</code>
+for fitted models:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="fu">summary</span>(object, <span class="at">decimal =</span> <span class="dv">3</span>, ...)</span></code></pre></div>
+<p>It returns an <code>inlacc_summary</code> object with the following
+components:</p>
+<ul>
+<li><code>fixed_par</code>: fixed-effect posterior summaries and
+displayed Gaussian priors;</li>
+<li><code>likelihood_par</code>: transformed likelihood parameters,
+including natural-scale LAvM concentration and Gaussian standard
+deviations;</li>
+<li><code>random_par</code>: latent-process hyperparameters and their
+prior labels;</li>
+<li><code>time.summary</code>: setup, computation, post-processing, and
+total times;</li>
+<li><code>metrics</code>: available marginal likelihood, DIC, and WAIC
+summaries; and</li>
+<li><code>needs_pred_warning</code>: whether the fitted model would
+benefit from <code>control.predictor = list(compute = TRUE)</code>.</li>
+</ul>
+<p>The <code>decimal</code> value controls printing, not stored
+posterior precision. <code>print.inlacc_summary(x, decimal = NULL,
+metrics = TRUE)</code> can override the number of displayed decimal
+places and suppress the metrics section. Timing components use
+<code>print.inlacc_time(x)</code>. These methods are normally called
+through <code>summary()</code> and <code>print()</code> rather than
+directly.</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a>fit_summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit, <span class="at">decimal =</span> <span class="dv">3</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" tabindex="-1"></a><span class="fu">print</span>(fit_summary, <span class="at">metrics =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Because an <code>inlacc</code> result remains an INLA result, the
+original posterior summaries, marginals, fitted values, predictor
+values, model criteria, and timing fields remain accessible with
+standard INLA component names. CPO values remain on the raw fit even
+though the custom printed summary does not create a separate CPO
+table.</p>
+</div>
+<div id="utilities-and-included-data" class="section level1" number="10">
+<h1><span class="header-section-number">10</span> Utilities and included
+data</h1>
+<div id="modified-bessel-function" class="section level2" number="10.1">
+<h2><span class="header-section-number">10.1</span> Modified Bessel
+function</h2>
+<p><code>bessel_i(x, nu, expon.scaled = FALSE)</code> evaluates the
+modified Bessel function of the first kind. Set <code>expon.scaled =
+TRUE</code> to return <span class="math inline">\(I_\nu(x)\exp(-|x|)\)</span>, which avoids overflow
+for large x.</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a><span class="fu">bessel_i</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">5</span>), <span class="at">nu =</span> <span class="dv">0</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" tabindex="-1"></a><span class="co">#&gt; [1]  1.000000  1.266066 27.239872</span></span>
+<span id="cb37-3"><a href="#cb37-3" tabindex="-1"></a><span class="fu">bessel_i</span>(<span class="dv">1000</span>, <span class="at">nu =</span> <span class="dv">0</span>, <span class="at">expon.scaled =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb37-4"><a href="#cb37-4" tabindex="-1"></a><span class="co">#&gt; [1] 0.01261724</span></span></code></pre></div>
+</div>
+<div id="new-york-wind-data" class="section level2" number="10.2">
+<h2><span class="header-section-number">10.2</span> New York wind
+data</h2>
+<p><code>wind_newyork</code> contains 8,759 hourly observations from JFK
+International Airport, with circular wind direction, wind speed,
+temperature, timestamp, month, day, and hour fields.</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;wind_newyork&quot;</span>, <span class="at">package =</span> <span class="st">&quot;INLAcircular&quot;</span>)</span>
+<span id="cb38-2"><a href="#cb38-2" tabindex="-1"></a><span class="fu">dim</span>(wind_newyork)</span>
+<span id="cb38-3"><a href="#cb38-3" tabindex="-1"></a><span class="co">#&gt; [1] 8759    8</span></span>
+<span id="cb38-4"><a href="#cb38-4" tabindex="-1"></a>utils<span class="sc">::</span><span class="fu">head</span>(<span class="fu">names</span>(wind_newyork), <span class="dv">4</span>)</span>
+<span id="cb38-5"><a href="#cb38-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;DATE&quot;            &quot;HLY.WIND.VCTDIR&quot; &quot;HLY.WIND.VCTSPD&quot; &quot;HLY.TEMP.NORMAL&quot;</span></span></code></pre></div>
+</div>
+</div>
+<div id="complete-public-api-index" class="section level1" number="11">
+<h1><span class="header-section-number">11</span> Complete public API
+index</h1>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Area</th>
+<th align="left">Functions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Von Mises distribution</td>
+<td align="left">dvm, pvm, qvm, rvm</td>
+</tr>
+<tr class="even">
+<td align="left">Link-adjusted von Mises</td>
+<td align="left">lavm.link, dlavm, plavm, qlavm, rlavm</td>
+</tr>
+<tr class="odd">
+<td align="left">Other circular densities</td>
+<td align="left">dcardioid (dcard), dwrappedcauchy (dwc)</td>
+</tr>
+<tr class="even">
+<td align="left">Von Mises PC prior, uniform base</td>
+<td align="left">dpc.vm0, ppc.vm0, qpc.vm0, rpc.vm0</td>
+</tr>
+<tr class="odd">
+<td align="left">Von Mises PC prior, point-mass base</td>
+<td align="left">dpc.vminf, ppc.vminf, qpc.vminf, rpc.vminf</td>
+</tr>
+<tr class="even">
+<td align="left">Cardioid PC prior, uniform base</td>
+<td align="left">dpc.card0, ppc.card0, qpc.card0, rpc.card0</td>
+</tr>
+<tr class="odd">
+<td align="left">Cardioid PC prior, kappa = 1/2 base</td>
+<td align="left">dpc.card, ppc.card, qpc.card, rpc.card</td>
+</tr>
+<tr class="even">
+<td align="left">Wrapped Cauchy PC prior</td>
+<td align="left">dpc.wc, ppc.wc, qpc.wc, rpc.wc</td>
+</tr>
+<tr class="odd">
+<td align="left">Model specification</td>
+<td align="left">likelihood, intercept, covariate, index</td>
+</tr>
+<tr class="even">
+<td align="left">Model fitting</td>
+<td align="left">inlacc, inla, lavm.cloglike</td>
+</tr>
+<tr class="odd">
+<td align="left">Multivariate preprocessing</td>
+<td align="left">LKJcc</td>
+</tr>
+<tr class="even">
+<td align="left">Results</td>
+<td align="left">summary.inlacc, print.inlacc_summary,
+print.inlacc_time</td>
+</tr>
+<tr class="odd">
+<td align="left">Numerical utility</td>
+<td align="left">bessel_i</td>
+</tr>
+<tr class="even">
+<td align="left">Included data</td>
+<td align="left">wind_newyork</td>
+</tr>
+</tbody>
+</table>
+<p>Function-level help is available with <code>?function_name</code>.
+For names containing dots, quote the topic if needed, for example
+<code>help(“dpc.card0”)</code>.</p>
+</div>
+<div id="numerical-implementation-notes" class="section level1" number="12">
+<h1><span class="header-section-number">12</span> Numerical
+implementation notes</h1>
+<p>The new cardioid and wrapped Cauchy routines use compiled C
+throughout their numerical path. Endpoint limits, log-density
+calculations, inverse transforms, and random generation are not
+implemented as R formulas. Cancellation-prone expressions use algebraic
+reductions, <code>log1p()</code>, <code>expm1()</code>, and local series
+near difficult boundaries.</p>
+<p>The standalone INLA sources under <code>src-cloglike/</code> are
+separate from the R package numerical interface. Installing the R
+package compiles <code>src/</code>, not <code>src-cloglike/</code>.</p>
+</div>
+<div id="reproducibility" class="section level1" number="13">
+<h1><span class="header-section-number">13</span> Reproducibility</h1>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a>R.version.string</span>
+<span id="cb39-2"><a href="#cb39-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;R version 4.6.1 (2026-06-24)&quot;</span></span>
+<span id="cb39-3"><a href="#cb39-3" tabindex="-1"></a><span class="fu">packageVersion</span>(<span class="st">&quot;INLAcircular&quot;</span>)</span>
+<span id="cb39-4"><a href="#cb39-4" tabindex="-1"></a><span class="co">#&gt; [1] &#39;1.0.0&#39;</span></span></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

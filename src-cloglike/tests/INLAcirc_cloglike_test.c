@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +48,11 @@ int main(void)
     inla_cgeneric_vec_tp entries[6];
     inla_cgeneric_vec_tp *entry_pointers[6];
     inla_cgeneric_data_tp data;
+
+    /* Verify each toolchain constant or strict-C fallback numerically. */
+    INLAcirc_test_close(M_PI, acos(-1.0), 4.0 * DBL_EPSILON);
+    INLAcirc_test_close(M_LN2, log(2.0), 4.0 * DBL_EPSILON);
+    INLAcirc_test_close(M_SQRT1_2, sqrt(0.5), 4.0 * DBL_EPSILON);
 
     memset(&data, 0, sizeof(data));
     INLAcirc_test_set_entry(&entries[0], "lavm.link", &link);

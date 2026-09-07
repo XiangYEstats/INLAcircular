@@ -2,16 +2,19 @@
 % Please edit documentation in R/cc.summary.R
 \name{print.inlacc_summary}
 \alias{print.inlacc_summary}
-\title{Print method for inlacc summaries}
+\title{Print an \code{inlacc} summary}
 \usage{
 \method{print}{inlacc_summary}(x, decimal = NULL, metrics = TRUE, ...)
 }
 \arguments{
-\item{x}{An \code{inlacc_summary} object.}
+\item{x}{An \code{inlacc_summary} object returned by \code{\link[=summary.inlacc]{summary.inlacc()}}.}
 
-\item{decimal}{Optional number of decimal places to print.}
+\item{decimal}{Optional number of decimal places to print. If \code{NULL}, use
+\code{x$decimal}, falling back to \code{3}.}
 
-\item{metrics}{Logical; whether to print available model metrics.}
+\item{metrics}{Logical; whether to print available marginal log-likelihood,
+DIC, and WAIC values. This cannot create criteria that were not requested
+when fitting the model.}
 
 \item{...}{Additional arguments, currently unused.}
 }
@@ -19,5 +22,21 @@
 \code{x}, invisibly.
 }
 \description{
-Print method for inlacc summaries
+Print timing, posterior summaries, prior labels, family or latent-process
+labels, and optionally the available model-comparison criteria.
+}
+\details{
+The printed table combines likelihood, fixed-effect, and random
+effect summaries while retaining section labels. A final note recommends
+\code{control.predictor = list(compute = TRUE)} for models where fitted predictor
+marginals are particularly relevant and were not requested.
+}
+\examples{
+\dontrun{
+fit_summary <- summary(fit, decimal = 4)
+print(fit_summary, decimal = 2, metrics = FALSE)
+}
+}
+\seealso{
+\code{\link[=inlacc]{inlacc()}}, \code{\link[=summary.inlacc]{summary.inlacc()}}, \code{\link[=print.inlacc_time]{print.inlacc_time()}}
 }

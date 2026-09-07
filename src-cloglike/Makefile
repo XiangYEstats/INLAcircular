@@ -36,7 +36,7 @@ $(TEST_BINARY): $(CLOGLIKE_SOURCE) tests/INLAcirc_cloglike_test.c \
 
 check: $(TEST_OBJECT) $(TEST_BINARY)
 	./$(TEST_BINARY)
-	@symbols="$$(nm -g --defined-only $(TEST_OBJECT) | awk '{print $$3}')"; \
+	@symbols="$$(nm -g -U $(TEST_OBJECT) | awk '{print $$NF}' | sed 's/^_//')"; \
 	bad="$$(printf '%s\n' "$$symbols" | grep -Ev '^INLAcirc_' || true)"; \
 	test -z "$$bad" || { printf 'Unnamespaced symbols:\n%s\n' "$$bad"; exit 1; }
 

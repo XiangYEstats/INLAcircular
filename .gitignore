@@ -6,6 +6,7 @@
 .Rcheck/
 /vignettes/*.html
 /vignettes/*.pdf
+/output/cran/
 
 # C++ compiled files
 src/*.o

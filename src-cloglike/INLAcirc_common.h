@@ -15,6 +15,21 @@
 #       include <float.h>
 #       include <math.h>
 
+/*
+ * C does not require the common M_* mathematical constants.  Keep using the
+ * toolchain definitions when present and provide identical double-precision
+ * fallbacks for strict C implementations that omit them.
+ */
+#       ifndef M_PI
+#               define M_PI 3.141592653589793238462643383279502884
+#       endif
+#       ifndef M_LN2
+#               define M_LN2 0.693147180559945309417232121458176568
+#       endif
+#       ifndef M_SQRT1_2
+#               define M_SQRT1_2 0.707106781186547524400844362104849039
+#       endif
+
 #       define INLACIRC_LOG_2PI 1.837877066409345483560659472811235279
 #       define INLACIRC_LOG_1E5 11.512925464970228420089957273421821038
 

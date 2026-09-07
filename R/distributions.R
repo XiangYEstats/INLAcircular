@@ -2,6 +2,135 @@
 #' @importFrom stats qlogis plogis runif
 NULL
 
+.circular_density_recycle <- function(x, mu, kappa) {
+  values <- list(
+    x = as.numeric(x),
+    mu = as.numeric(mu),
+    kappa = as.numeric(kappa)
+  )
+  lengths <- lengths(values)
+
+  if (any(lengths == 0L)) {
+    return(lapply(values, function(value) value[FALSE]))
+  }
+
+  output_length <- max(lengths)
+  if (any(output_length %% lengths != 0L)) {
+    warning(
+      "longer object length is not a multiple of shorter object length",
+      call. = FALSE
+    )
+  }
+  lapply(values, rep_len, length.out = output_length)
+}
+
+.circular_density_warn_kappa <- function(kappa, upper) {
+  invalid <- !is.na(kappa) &
+    (!is.finite(kappa) | kappa < 0 | kappa > upper)
+  if (any(invalid)) {
+    warning("NaNs produced", call. = FALSE)
+  }
+  invisible(NULL)
+}
+
+#' Cardioid and Wrapped Cauchy Densities
+#'
+#' Compiled density functions for two circular distributions, parameterized by
+#' mean direction \code{mu} and concentration \code{kappa}.
+#'
+#' @param x Vector of angles in radians.
+#' @param mu Vector of mean directions in radians.
+#' @param kappa Vector of concentration parameters. For the cardioid density,
+#'   \code{0 <= kappa <= 0.5}; for the wrapped Cauchy density,
+#'   \code{0 <= kappa < 1}.
+#' @param log Logical scalar; if \code{TRUE}, return log-densities.
+#'
+#' @details
+#' The cardioid density is
+#' \deqn{f(x\mid\mu,\kappa)=
+#'   \frac{1+2\kappa\cos(x-\mu)}{2\pi},
+#'   \qquad 0\leq\kappa\leq\tfrac12.}
+#'
+#' The wrapped Cauchy density is
+#' \deqn{f(x\mid\mu,\kappa)=
+#'   \frac{1-\kappa^2}
+#'   {2\pi\{1+\kappa^2-2\kappa\cos(x-\mu)\}},
+#'   \qquad 0\leq\kappa<1.}
+#'
+#' Angles are periodic, so adding an integer multiple of \eqn{2\pi} to
+#' \code{x} or \code{mu} does not change the result. The calculations are
+#' performed in compiled C code. The wrapped Cauchy denominator is evaluated
+#' in a cancellation-resistant form near \code{kappa = 1}.
+#'
+#' At the limiting wrapped Cauchy boundary \code{kappa = 1}, the compiled
+#' function returns infinite density at the mean direction and zero elsewhere.
+#' This describes the point-mass limit; finite-parameter likelihoods should use
+#' \code{kappa < 1}.
+#'
+#' @return A numeric vector of densities or log-densities. The arguments are
+#'   recycled to a common length.
+#'
+#' @name circular_densities
+#' @aliases dcard dwc
+#'
+#' @examples
+#' angles <- seq(-pi, pi, length.out = 5)
+#' dcardioid(angles, mu = 0, kappa = 0.25)
+#' dwrappedcauchy(angles, mu = 0, kappa = 0.7)
+#'
+#' # Short aliases give the same results.
+#' identical(
+#'   dcard(angles, mu = 0, kappa = 0.25),
+#'   dcardioid(angles, mu = 0, kappa = 0.25)
+#' )
+#'
+#' @export
+dcardioid <- function(x, mu, kappa, log = FALSE) {
+  log <- .pc_check_flag(log, "log")
+  args <- .circular_density_recycle(x, mu, kappa)
+  if (length(args$x) == 0L) {
+    return(numeric())
+  }
+  .circular_density_warn_kappa(args$kappa, 0.5)
+
+  .Call(
+    "INLAcirc_C_dcardioid",
+    args$x,
+    args$mu,
+    args$kappa,
+    log,
+    PACKAGE = "INLAcircular"
+  )
+}
+
+#' @rdname circular_densities
+#' @export
+dwrappedcauchy <- function(x, mu, kappa, log = FALSE) {
+  log <- .pc_check_flag(log, "log")
+  args <- .circular_density_recycle(x, mu, kappa)
+  if (length(args$x) == 0L) {
+    return(numeric())
+  }
+  .circular_density_warn_kappa(args$kappa, 1)
+
+  .Call(
+    "INLAcirc_C_dwrappedcauchy",
+    args$x,
+    args$mu,
+    args$kappa,
+    log,
+    PACKAGE = "INLAcircular"
+  )
+}
+
+#' @rdname circular_densities
+#' @export
+dcard <- dcardioid
+
+#' @rdname circular_densities
+#' @export
+dwc <- dwrappedcauchy
+
 # Hidden environment to securely cache grids
 .inlacc_cache <- new.env(parent = emptyenv())
 
@@ -78,7 +207,7 @@ lavm.link <- function(type = "tan") {
 #' @param p vector of probabilities.
 #' @param n number of observations. If \code{length(n) > 1}, the length is taken to be the number required.
 #' @param mu mean direction of the distribution (in radians).
-#' @param kappa concentration parameter (must be strictly positive).
+#' @param kappa non-negative concentration parameter.
 #' @param log logical; if TRUE, probabilities/densities are given as log.
 #' @param strategy character; either \code{"circular"} or \code{"linear"} for the CDF integration strategy. If \code{"circular"}, the CDF integration starts from \eqn{\mu - \pi}. If \code{"linear"}, it starts from \eqn{-\pi}.
 #' @param len integer; resolution of the spline grid used for approximation.
@@ -96,7 +225,7 @@ lavm.link <- function(type = "tan") {
 #'
 #' @examples
 #' # Generate 10 random deviates from a von Mises distribution
-#' # with mean direction \eqd{\pi/2} and concentration 5
+#' # with mean direction \eqn{\pi/2} and concentration 5
 #' rvm(10, mu = pi/2, kappa = 5)
 #'
 #' # Calculate the density at specific points
@@ -185,293 +314,7 @@ rvm <- function(n, mu, kappa, len = 2048L) {
 
 
 # ==============================================================================
-# 2. PC Prior for the von Mises Concentration
-# ==============================================================================
-
-.pc_vm_check_flag <- function(value, name) {
-  if (!is.logical(value) || length(value) != 1L || is.na(value)) {
-    stop(sprintf("'%s' must be TRUE or FALSE.", name), call. = FALSE)
-  }
-  value
-}
-
-.pc_vm_recycle <- function(value, lambda, value_name) {
-  value <- as.numeric(value)
-  lambda <- as.numeric(lambda)
-
-  if (length(lambda) == 0L || anyNA(lambda) ||
-      any(!is.finite(lambda)) || any(lambda <= 0)) {
-    stop("'lambda' must contain positive, finite values.", call. = FALSE)
-  }
-  if (length(value) == 0L) {
-    return(list(value = numeric(), lambda = numeric()))
-  }
-
-  output_length <- max(length(value), length(lambda))
-  if (output_length %% length(value) != 0L ||
-      output_length %% length(lambda) != 0L) {
-    warning(sprintf(
-      "longer object length is not a multiple of shorter object length in '%s' and 'lambda'",
-      value_name
-    ), call. = FALSE)
-  }
-
-  list(
-    value = rep_len(value, output_length),
-    lambda = rep_len(lambda, output_length)
-  )
-}
-
-.pc_vm_sample_size <- function(n) {
-  if (length(n) > 1L) {
-    return(length(n))
-  }
-  if (length(n) != 1L || is.na(n) || !is.finite(n) || n < 0) {
-    stop("'n' must be a non-negative finite number.", call. = FALSE)
-  }
-
-  n <- as.integer(n)
-  if (is.na(n)) {
-    stop("'n' is too large.", call. = FALSE)
-  }
-  n
-}
-
-#' PC Prior for von Mises Concentration: Uniform Base
-#'
-#' Density, distribution function, quantile function, and random generation
-#' for the penalized-complexity prior on the von Mises concentration
-#' parameter with the circular uniform distribution (\eqn{\kappa=0}) as its
-#' base model.
-#'
-#' @param kappa,q Vector of non-negative concentration values.
-#' @param p Vector of probabilities.
-#' @param n Number of observations. If \code{length(n) > 1}, its length is
-#'   used.
-#' @param lambda Positive rate parameter.
-#' @param log Logical; if \code{TRUE}, return the log-density.
-#' @param log.p Logical; if \code{TRUE}, probabilities are supplied or
-#'   returned on the log scale.
-#'
-#' @details
-#' The PC distance from the uniform base model is
-#' \deqn{d_0(\kappa) =
-#'   \sqrt{\kappa I_1(\kappa)/I_0(\kappa)-\log I_0(\kappa)}.}
-#' The density and CDF are
-#' \deqn{\pi_0(\kappa)=\lambda\exp\{-\lambda d_0(\kappa)\}
-#'   |d_0'(\kappa)|,}
-#' \deqn{F_0(\kappa)=1-\exp\{-\lambda d_0(\kappa)\}.}
-#'
-#' All Bessel evaluations, small-\eqn{\kappa} density expansions,
-#' large-\eqn{\kappa} asymptotic expansions, CDF calculations, and numerical
-#' inversion are performed by the package's compiled C code.
-#'
-#' @return \code{dpc.vm0} gives the density, \code{ppc.vm0} gives the
-#'   distribution function, \code{qpc.vm0} gives the quantile function, and
-#'   \code{rpc.vm0} generates random deviates.
-#'
-#' @name pc_vm0
-#' @rdname pc_vm0
-#' @aliases pc.vm0
-#'
-#' @examples
-#' dpc.vm0(kappa = c(0, 1, 5), lambda = 2)
-#' ppc.vm0(q = 5, lambda = 2)
-#' qpc.vm0(p = 0.5, lambda = 2)
-#' rpc.vm0(n = 10, lambda = 2)
-#'
-#' @export
-dpc.vm0 <- function(kappa, lambda, log = FALSE) {
-  log <- .pc_vm_check_flag(log, "log")
-  args <- .pc_vm_recycle(kappa, lambda, "kappa")
-  if (length(args$value) == 0L) {
-    return(numeric())
-  }
-
-  .Call(
-    "INLAcirc_C_dpc_vm0",
-    args$value,
-    args$lambda,
-    log,
-    PACKAGE = "INLAcircular"
-  )
-}
-
-#' @rdname pc_vm0
-#' @export
-ppc.vm0 <- function(q, lambda, log.p = FALSE) {
-  log.p <- .pc_vm_check_flag(log.p, "log.p")
-  args <- .pc_vm_recycle(q, lambda, "q")
-  if (length(args$value) == 0L) {
-    return(numeric())
-  }
-
-  .Call(
-    "INLAcirc_C_ppc_vm0",
-    args$value,
-    args$lambda,
-    log.p,
-    PACKAGE = "INLAcircular"
-  )
-}
-
-#' @rdname pc_vm0
-#' @export
-qpc.vm0 <- function(p, lambda, log.p = FALSE) {
-  log.p <- .pc_vm_check_flag(log.p, "log.p")
-  args <- .pc_vm_recycle(p, lambda, "p")
-  if (length(args$value) == 0L) {
-    return(numeric())
-  }
-
-  .Call(
-    "INLAcirc_C_qpc_vm0",
-    args$value,
-    args$lambda,
-    log.p,
-    PACKAGE = "INLAcircular"
-  )
-}
-
-#' @rdname pc_vm0
-#' @export
-rpc.vm0 <- function(n, lambda) {
-  n <- .pc_vm_sample_size(n)
-  lambda <- as.numeric(lambda)
-  if (length(lambda) == 0L || anyNA(lambda) ||
-      any(!is.finite(lambda)) || any(lambda <= 0)) {
-    stop("'lambda' must contain positive, finite values.", call. = FALSE)
-  }
-  if (n == 0L) {
-    return(numeric())
-  }
-
-  .Call(
-    "INLAcirc_C_rpc_vm0",
-    n,
-    rep_len(lambda, n),
-    PACKAGE = "INLAcircular"
-  )
-}
-
-#' PC Prior for von Mises Concentration: Point-Mass Base
-#'
-#' Density, distribution function, quantile function, and random generation
-#' for the penalized-complexity prior on the von Mises concentration
-#' parameter with the point-mass limit (\eqn{\kappa\to\infty}) as its base
-#' model.
-#'
-#' @inheritParams pc_vm0
-#'
-#' @details
-#' The PC distance from the point-mass base model is
-#' \deqn{d_\infty(\kappa)=
-#'   \sqrt{1-I_1(\kappa)/I_0(\kappa)}.}
-#' The continuous density and CDF are
-#' \deqn{\pi_\infty(\kappa)=
-#'   \lambda\exp\{-\lambda d_\infty(\kappa)\}
-#'   |d_\infty'(\kappa)|,}
-#' \deqn{F_\infty(\kappa)=\exp\{-\lambda d_\infty(\kappa)\}.}
-#'
-#' Because \eqn{d_\infty(0)=1}, the CDF contains boundary mass
-#' \eqn{\exp(-\lambda)} at \eqn{\kappa=0}. \code{dpc.vminf} returns the
-#' continuous density component; \code{ppc.vminf}, \code{qpc.vminf}, and
-#' \code{rpc.vminf} include the boundary mass. All numerical calculations,
-#' including the large-\eqn{\kappa} asymptotic branch and quantile inversion,
-#' are performed by compiled C code.
-#'
-#' @return \code{dpc.vminf} gives the continuous density,
-#'   \code{ppc.vminf} gives the distribution function,
-#'   \code{qpc.vminf} gives the quantile function, and \code{rpc.vminf}
-#'   generates random deviates.
-#'
-#' @name pc_vminf
-#' @rdname pc_vminf
-#' @aliases pc.vminf
-#'
-#' @examples
-#' dpc.vminf(kappa = c(0, 1, 5), lambda = 2)
-#' ppc.vminf(q = 5, lambda = 2)
-#' qpc.vminf(p = 0.5, lambda = 2)
-#' rpc.vminf(n = 10, lambda = 2)
-#'
-#' @export
-dpc.vminf <- function(kappa, lambda, log = FALSE) {
-  log <- .pc_vm_check_flag(log, "log")
-  args <- .pc_vm_recycle(kappa, lambda, "kappa")
-  if (length(args$value) == 0L) {
-    return(numeric())
-  }
-
-  .Call(
-    "INLAcirc_C_dpc_vminf",
-    args$value,
-    args$lambda,
-    log,
-    PACKAGE = "INLAcircular"
-  )
-}
-
-#' @rdname pc_vminf
-#' @export
-ppc.vminf <- function(q, lambda, log.p = FALSE) {
-  log.p <- .pc_vm_check_flag(log.p, "log.p")
-  args <- .pc_vm_recycle(q, lambda, "q")
-  if (length(args$value) == 0L) {
-    return(numeric())
-  }
-
-  .Call(
-    "INLAcirc_C_ppc_vminf",
-    args$value,
-    args$lambda,
-    log.p,
-    PACKAGE = "INLAcircular"
-  )
-}
-
-#' @rdname pc_vminf
-#' @export
-qpc.vminf <- function(p, lambda, log.p = FALSE) {
-  log.p <- .pc_vm_check_flag(log.p, "log.p")
-  args <- .pc_vm_recycle(p, lambda, "p")
-  if (length(args$value) == 0L) {
-    return(numeric())
-  }
-
-  .Call(
-    "INLAcirc_C_qpc_vminf",
-    args$value,
-    args$lambda,
-    log.p,
-    PACKAGE = "INLAcircular"
-  )
-}
-
-#' @rdname pc_vminf
-#' @export
-rpc.vminf <- function(n, lambda) {
-  n <- .pc_vm_sample_size(n)
-  lambda <- as.numeric(lambda)
-  if (length(lambda) == 0L || anyNA(lambda) ||
-      any(!is.finite(lambda)) || any(lambda <= 0)) {
-    stop("'lambda' must contain positive, finite values.", call. = FALSE)
-  }
-  if (n == 0L) {
-    return(numeric())
-  }
-
-  .Call(
-    "INLAcirc_C_rpc_vminf",
-    n,
-    rep_len(lambda, n),
-    PACKAGE = "INLAcircular"
-  )
-}
-
-
-# ==============================================================================
-# 3. Link-Adjusted von Mises (LAvM) Distribution
+# 2. Link-Adjusted von Mises (LAvM) Distribution
 # ==============================================================================
 
 #' The Link-Adjusted von Mises (LAvM) Distribution
@@ -484,9 +327,11 @@ rpc.vminf <- function(n, lambda) {
 #' @param p vector of probabilities.
 #' @param n number of observations. If \code{length(n) > 1}, the length is taken to be the number required.
 #' @param eta linear predictor vector.
-#' @param kappa concentration parameter (must be strictly positive).
+#' @param kappa non-negative concentration parameter.
 #' @param log logical; if TRUE, probabilities/densities are given as log.
-#' @param link_obj optional link object generated by \code{lavm.link()}.
+#' @param link_obj reserved for interface compatibility. The current compiled
+#'   implementation always uses the inverse-tangent link returned by
+#'   \code{lavm.link("tan")}.
 #' @param len integer; resolution of the spline grid used for approximation.
 #'
 #' @details
