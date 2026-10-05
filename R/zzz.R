@@ -85,9 +85,15 @@
     " INLA version: ", inla_version, "\n",
     "=============================================================\n",
     " User guide (PDF):\n",
-    " https://github.com/XiangYEstats/INLAcircular/blob/main/output/pdf/INLAcircular-guide.pdf\n",
-    " Local guide: vignette(\"INLAcircular-guide\", package = \"INLAcircular\")"
+    " https://github.com/XiangYEstats/INLAcircular/blob/main/output/pdf/INLAcircular-guide.pdf"
   )
+
+  if (file.exists(file.path(libname, pkgname, "doc", "INLAcircular-guide.html"))) {
+    msg <- paste0(
+      msg,
+      "\n Local guide: vignette(\"INLAcircular-guide\", package = \"INLAcircular\")"
+    )
+  }
 
   packageStartupMessage(msg)
 

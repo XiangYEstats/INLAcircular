@@ -59,6 +59,22 @@ open it with:
 vignette("INLAcircular-guide", package = "INLAcircular")
 ```
 
+GitHub installations skip vignette building by default. To include the local
+guide, install the documentation tools and reinstall with:
+
+```r
+install.packages(c("knitr", "rmarkdown"))
+
+remotes::install_github(
+  "XiangYEstats/INLAcircular",
+  build_vignettes = TRUE,
+  force = TRUE
+)
+```
+
+Building the guide requires `knitr`, `rmarkdown`, and Pandoc (included with
+RStudio). The online guides above are available without these tools.
+
 Function-level documentation is available through
 `help(package = "INLAcircular")` and `?function_name`.
 
