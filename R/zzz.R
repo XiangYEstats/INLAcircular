@@ -59,16 +59,17 @@
 }
 
 .onAttach <- function(libname, pkgname) {
-  pkg_version <- utils::packageVersion(pkgname)
+  pkg_metadata <- utils::packageDescription(pkgname, lib.loc = libname)
+  pkg_version <- pkg_metadata$Version
 
-  # Pull the auto-generated build timestamp
-  pkg_date <- utils::packageDescription(pkgname, fields = "Packaged")
+  # R CMD build supplies this timestamp; no manual Date field is needed.
+  pkg_date <- pkg_metadata$Packaged
 
   # If the package hasn't been formally built yet, just use today's date
   if (is.null(pkg_date) || is.na(pkg_date)) {
     display_date <- as.character(Sys.Date())
   } else {
-    # Extract just the YYYY-MM-DD from the "2026-03-12 11:39:52 UTC; xiang" string
+    # Extract YYYY-MM-DD from the build timestamp.
     display_date <- as.character(as.Date(pkg_date))
   }
 
@@ -82,7 +83,10 @@
     " INLAcircular: Bayesian Joint Circular Regression with INLA\n",
     " Version: ", pkg_version, " (", display_date, ")\n",
     " INLA version: ", inla_version, "\n",
-    "============================================================="
+    "=============================================================\n",
+    " User guide (PDF):\n",
+    " https://github.com/XiangYEstats/INLAcircular/blob/main/output/pdf/INLAcircular-guide.pdf\n",
+    " Local guide: vignette(\"INLAcircular-guide\", package = \"INLAcircular\")"
   )
 
   packageStartupMessage(msg)

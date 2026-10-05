@@ -14,6 +14,12 @@ static double INLAcirc_approx_linear(double x,
     int left;
     int right;
 
+    /* NaN comparisons cannot bracket an interval. Preserve R's NA payload
+     * and ordinary NaNs before the binary search can index outside the grid. */
+    if (ISNAN(x)) {
+        return x;
+    }
+
     if (x <= grid_x[0]) {
         return grid_y[0];
     }

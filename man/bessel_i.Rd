@@ -7,17 +7,36 @@
 bessel_i(x, nu, expon.scaled = FALSE)
 }
 \arguments{
-\item{x}{numeric vector of values.}
+\item{x}{Numeric vector. Negative values are supported for integer orders.
+Missing values are propagated.}
 
-\item{nu}{numeric scalar indicating the order of the Bessel function.}
+\item{nu}{One finite, nonnegative numeric value indicating the order.
+Fractional orders are supported for nonnegative \code{x}.}
 
-\item{expon.scaled}{logical; if TRUE, the results are exponentially scaled
-by \code{exp(-abs(x))}. Default is FALSE.}
+\item{expon.scaled}{Logical scalar; if \code{TRUE}, return
+\eqn{I_\nu(x)\exp(-|x|)}. Defaults to \code{FALSE}.}
 }
 \value{
 A numeric vector of calculated Bessel values.
 }
 \description{
-Evaluates the modified Bessel function of the first kind using high-precision
-Chebyshev approximations.
+Evaluates the modified Bessel function of the first kind using native C
+routines adapted from the GNU Scientific Library (GSL). R supplies only the
+interface; argument checking and numerical computation take place in C.
+}
+\details{
+Negative \code{x} with a fractional order produces \code{NaN} and a warning. For an
+integer order \eqn{n}, \eqn{I_n(-x) = (-1)^n I_n(x)}.
+
+At zero, the result is one for order zero and zero for positive orders.
+At positive infinity, the result is zero when scaled and infinity otherwise.
+Unscaled results can overflow for large arguments; use \code{expon.scaled = TRUE}
+when the scaled value is needed.
+For very large orders, cancellation can reduce the accuracy of an unscaled
+result. A warning is issued when the estimated loss is significant.
+}
+\examples{
+bessel_i(1, nu = 0.5)
+bessel_i(c(0, 1, 5), nu = 0)
+bessel_i(1000, nu = 0, expon.scaled = TRUE)
 }

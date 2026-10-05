@@ -1,4 +1,6 @@
 if (requireNamespace("INLA", quietly = TRUE)) {
+  # INLA exposes the BLAS thread limit as an option, not a fitting argument.
+  INLA::inla.setOption(blas.num.threads = 1L)
   # INLA only needs to be installed. Its namespace is loaded on demand; users
   # do not have to attach it with library(INLA).
   stopifnot(!"package:INLA" %in% search())
@@ -15,6 +17,7 @@ if (requireNamespace("INLA", quietly = TRUE)) {
     y ~ z,
     family = "lavm",
     data = data.frame(y = y, z = z),
+    num.threads = "2:1",
     control.family = list(
       list(
         link = "inverse.tangent",

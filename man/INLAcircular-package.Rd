@@ -30,6 +30,14 @@ structured latent effects.
 See the package guide, \code{vignette("INLAcircular-guide")}, for a
 complete workflow and function index.
 }
+\section{Third-party code credits}{
+
+The package includes Bessel routines adapted from Gerard Jungman's GNU
+Scientific Library code, Peter John Acklam's normal-quantile approximation,
+and INLA interface declarations from Haavard Rue. See the installed
+\file{COPYRIGHTS} file for the upstream copyright and licensing notices.
+}
+
 \seealso{
 Useful links:
 \itemize{
@@ -39,7 +47,8 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Xiang Ye \email{xiang.ye@kaust.edu.sa} [copyright holder]
+Authors: Xiang Ye, Janet Van Niekerk, and Haavard Rue.
 
+Maintainer: Xiang Ye \email{xiang.ye@kaust.edu.sa}.
 }
 \keyword{internal}

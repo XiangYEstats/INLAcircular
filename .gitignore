@@ -3,10 +3,16 @@
 .RData
 .Ruserdata
 *.Rproj
-.Rcheck/
+*.Rcheck/
 /vignettes/*.html
 /vignettes/*.pdf
 /output/cran/
+/tmp/
+
+# Local tooling
+/.agents/
+/.codex/
+/.aws/
 
 # C++ compiled files
 src/*.o

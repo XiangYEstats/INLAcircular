@@ -19,7 +19,7 @@ extern SEXP INLAcirc_C_rvm(SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_plavm(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_qlavm(SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_rlavm(SEXP, SEXP, SEXP, SEXP);
-extern SEXP INLAcirc_C_bessel_i(SEXP, SEXP, SEXP);
+extern SEXP C_bessel_i(SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_dcardioid(SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_dwrappedcauchy(SEXP, SEXP, SEXP, SEXP);
 extern SEXP INLAcirc_C_dpc_card0(SEXP, SEXP, SEXP);
@@ -52,7 +52,7 @@ static const R_CallMethodDef INLAcirc_call_entries[] = {
     {"INLAcirc_C_plavm", (DL_FUNC)&INLAcirc_C_plavm, 5},
     {"INLAcirc_C_qlavm", (DL_FUNC)&INLAcirc_C_qlavm, 4},
     {"INLAcirc_C_rlavm", (DL_FUNC)&INLAcirc_C_rlavm, 4},
-    {"INLAcirc_C_bessel_i", (DL_FUNC)&INLAcirc_C_bessel_i, 3},
+    {"C_bessel_i", (DL_FUNC)&C_bessel_i, 3},
     {"INLAcirc_C_dcardioid", (DL_FUNC)&INLAcirc_C_dcardioid, 4},
     {"INLAcirc_C_dwrappedcauchy", (DL_FUNC)&INLAcirc_C_dwrappedcauchy, 4},
     {"INLAcirc_C_dpc_card0", (DL_FUNC)&INLAcirc_C_dpc_card0, 3},

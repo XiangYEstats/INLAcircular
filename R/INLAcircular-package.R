@@ -26,6 +26,16 @@
 #' @docType package
 #' @name INLAcircular-package
 #' @aliases INLAcircular
+#' @author
+#' Authors: Xiang Ye, Janet Van Niekerk, and Haavard Rue.
+#'
+#' Maintainer: Xiang Ye \email{xiang.ye@@kaust.edu.sa}.
+#'
+#' @section Third-party code credits:
+#' The package includes Bessel routines adapted from Gerard Jungman's GNU
+#' Scientific Library code, Peter John Acklam's normal-quantile approximation,
+#' and INLA interface declarations from Haavard Rue. See the installed
+#' \file{COPYRIGHTS} file for the upstream copyright and licensing notices.
 #' @keywords internal
 #' @importFrom stats as.formula punif terms
 "_PACKAGE"

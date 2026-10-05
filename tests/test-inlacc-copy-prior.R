@@ -41,6 +41,8 @@ assert_error(
 )
 
 if (requireNamespace("INLA", quietly = TRUE)) {
+  # INLA exposes the BLAS thread limit as an option, not a fitting argument.
+  INLA::inla.setOption(blas.num.threads = 1L)
   set.seed(20260901)
   n <- 12L
   x <- stats::rnorm(n)
@@ -77,6 +79,7 @@ if (requireNamespace("INLA", quietly = TRUE)) {
   fit <- inlacc(
     model,
     data = data,
+    num.threads = "2:1",
     control.fixed = list(
       mean = list(default = 0.25, Intercept_y_auto = 1),
       prec = list(default = 0.5, Intercept_y_auto = 2)
@@ -137,7 +140,12 @@ if (requireNamespace("INLA", quietly = TRUE)) {
     )
   )
   assert_error(
-    inlacc(transformed_copy_model, data = data, verbose = FALSE),
+    inlacc(
+      transformed_copy_model,
+      data = data,
+      num.threads = "2:1",
+      verbose = FALSE
+    ),
     "untransformed response from another likelihood block"
   )
 }

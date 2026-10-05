@@ -1,21 +1,45 @@
 Package: INLAcircular
 Type: Package
-Title: Bayesian Joint Circular Regression using 'INLA'
+Title: Bayesian Joint Circular Regression Using 'INLA'
 Version: 1.0.0
-Authors@R: person(
+Authors@R: c(person(
     given = "Xiang",
     family = "Ye",
     email = "xiang.ye@kaust.edu.sa",
     role = c("aut", "cre", "cph")
-  )
+  ),
+  person(
+    given = "Janet",
+    family = "Van Niekerk",
+    role = "aut"
+  ),
+  person(
+    given = "Haavard",
+    family = "Rue",
+    role = c("aut", "cph")
+  ),
+  person(
+    given = "Gerard",
+    family = "Jungman",
+    role = c("ctb", "cph"),
+    comment = "Bessel routines adapted from the GNU Scientific Library"
+  ),
+  person(
+    given = "Peter John",
+    family = "Acklam",
+    role = "ctb",
+    comment = "Normal quantile approximation"
+  ))
 Description: Provides a Bayesian regression framework for joint models with
     circular responses and covariates using integrated nested Laplace
-    approximations. The package supports link-adjusted von Mises likelihoods,
-    shared latent predictors, structured latent effects, and optional
+    approximations, following Ye, Van Niekerk and Rue (2026)
+    <doi:10.48550/arXiv.2602.08413>. The package supports link-adjusted von
+    Mises likelihoods, shared latent predictors, structured latent effects, and optional
     LKJ-based multivariate covariance models. It also provides compiled
     circular densities and d/p/q/r penalized-complexity priors for von Mises,
-    cardioid, and wrapped Cauchy concentration parameters.
-License: MIT + file LICENSE
+    cardioid, and wrapped Cauchy concentration parameters as developed by
+    Ye, Van Niekerk and Rue (2026) <doi:10.1177/1471082X261453677>.
+License: GPL (>= 3)
 URL: https://github.com/XiangYEstats/INLAcircular
 BugReports: https://github.com/XiangYEstats/INLAcircular/issues
 Depends:
@@ -35,8 +59,7 @@ Suggests:
     INLAtools,
     knitr,
     pkgload,
-    rmarkdown,
-    rstudioapi
+    rmarkdown
 VignetteBuilder: knitr, rmarkdown
 Additional_repositories:
     https://inla.r-inla-download.org/R/stable

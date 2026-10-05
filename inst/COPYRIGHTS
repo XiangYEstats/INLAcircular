@@ -1,0 +1,146 @@
+INLAcircular copyright and licensing notices
+==========================================
+
+INLAcircular is distributed under the GNU General Public License, version 3
+or, at your option, any later version. The license text is in LICENSES/GPL-3
+in the installed package (inst/LICENSES/GPL-3 in the source package).
+
+Original package material and adaptations
+----------------------------------------
+
+Copyright (c) 2026 Xiang Ye
+
+The permission notice for original material previously licensed under MIT
+is retained below. This notice applies to that material, not to the
+GSL-derived material described in the next section. The combined package
+is distributed under GPL version 3 or later.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+GNU Scientific Library Bessel routines
+-------------------------------------
+
+src/bessel_i.c adapts portions of these files from GNU Scientific Library
+(GSL) version 2.8:
+
+* specfunc/bessel_Inu.c
+  Copyright (C) 1996, 1997, 1998, 1999, 2000 Gerard Jungman
+* specfunc/bessel.c
+  Copyright (C) 1996,1997,1998,1999,2000,2001,2002,2003 Gerard Jungman
+
+Both files identify G. Jungman as the author and grant permission under
+the GNU General Public License, version 3 or any later version. Their
+copyright and license notices are also retained in src/bessel_i.c.
+
+The pre-existing Bessel routines in src/INLAcirc_common.h are adapted from
+the following GSL 2.8 sources and retain the same license:
+
+* specfunc/bessel_I0.c: bi0_data, ai0_data, ai02_data and scaled I0 evaluation
+  Copyright (C) 1996, 1997, 1998, 1999, 2000 Gerard Jungman
+* specfunc/bessel_I1.c: bi1_data, ai1_data, ai12_data and scaled I1 evaluation
+  Copyright (C) 1996, 1997, 1998, 1999, 2000 Gerard Jungman
+* specfunc/bessel.c: gsl_sf_bessel_I_CF1_ser continued fraction
+  Copyright (C) 1996,1997,1998,1999,2000,2001,2002,2003 Gerard Jungman
+* specfunc/bessel_In.c: integer-order backward recurrence
+  Copyright (C) 1996, 1997, 1998, 1999, 2000 Gerard Jungman
+
+These coefficients use the INLAcirc_ prefix in the package. Their numerical
+values are unchanged; copyright and GPL notices were added to the package
+header. The separate src-cloglike copy was not modified.
+
+Source release: https://ftp.gnu.org/gnu/gsl/gsl-2.8.tar.gz
+Archive SHA-256:
+6a99eeed15632c6354895b1dd542ed5a855c0f15d9ad1326c6fe2b2c9e423190
+
+The package includes selected Taylor-series, continued-fraction and uniform
+asymptotic routines, adapted to a package-local C interface. The adaptation
+uses the C mathematical library for the log-gamma prefactor and returns
+results without calling GSL's error handler. No system GSL library or headers
+are required. The standalone src-cloglike directory is not part of this
+adaptation and is excluded from the R source package.
+
+GSL is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+GSL is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+details.
+
+Normal quantile approximation
+-----------------------------
+
+INLAcirc_qnorm in src/INLAcirc_common.h implements Peter John Acklam's
+rational approximation to the standard-normal quantile, using the
+coefficients and branch points in his original description:
+
+Peter John Acklam, "An algorithm for computing the inverse normal
+cumulative distribution function", first published in 2003 and last
+updated 2010-01-21.
+
+Original page: http://home.online.no/~pjacklam/notes/invnorm/
+Archived page (permission verified 2026-10-05):
+https://web.archive.org/web/20151030215612/http://home.online.no/~pjacklam/notes/invnorm/
+
+The author's Computer implementations section states:
+"Use them as you wish, for whatever purpose."
+His copyright FAQ explicitly extends this permission to the algorithm and
+listed implementations, and requests that credit be given. Peter John
+Acklam is credited here as the author of the approximation. The package
+does not designate this upstream permission as an MIT license or claim
+that Acklam waived copyright.
+
+R-INLA interface declarations and PC-prior reference formulas
+------------------------------------------------------------
+
+src/INLAcirc_cgeneric_compat.h contains the subset of declarations needed
+for the external cloglike ABI from R-INLA's inlaprog/src/cgeneric.h.
+
+The small-concentration and asymptotic PC-prior formulas in
+src/INLAcirc_common.h correspond to rinla/R/pc-vm0.R and
+rinla/R/pc-vminf.R. Both reference files credit Xiang Ye as their author.
+The package evaluates these formulas in C and does not execute R-INLA's
+R implementations for these calculations.
+
+Source repository: https://github.com/hrue/r-inla
+Verified source revision: 6afa911f01e975c4e6c921f22288e80d8e70c88f
+The repository's MIT license notice is retained below:
+
+Copyright 2025 Haavard Rue
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -48,7 +48,15 @@ static inline double INLAcirc_pnorm(double x)
 	return 0.5 * (1.0 + erf(x * M_SQRT1_2));
 }
 
-/* Acklam's rational approximation to the standard-normal quantile. */
+/*
+ * Peter John Acklam's rational approximation to the standard-normal quantile.
+ * Source: "An algorithm for computing the inverse normal cumulative
+ * distribution function", last updated 2010-01-21, archived at
+ * https://web.archive.org/web/20151030215612/http://home.online.no/~pjacklam/notes/invnorm/
+ * The author permits use of the algorithm and listed implementations for
+ * any purpose and requests credit. See inst/COPYRIGHTS for the permission
+ * statement and source details.
+ */
 static inline double INLAcirc_qnorm(double p)
 {
 	const double a1 = -39.69683028665376;
@@ -95,7 +103,29 @@ static inline double INLAcirc_qnorm(double p)
 	return -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) / ((((d1 * q + d2) * q + d3) * q + d4) * q + 1.0);
 }
 
-/* Chebyshev coefficients from the GSL implementation of modified Bessel I. */
+/*
+ * Bessel coefficients and scaled I0/I1 evaluation adapted from GSL's
+ * specfunc/bessel_I0.c and specfunc/bessel_I1.c; continued fraction and
+ * integer-order recurrence adapted from specfunc/bessel.c and
+ * specfunc/bessel_In.c. Verified against GNU Scientific Library 2.8.
+ * Copyright (C) 1996, 1997, 1998, 1999, 2000 Gerard Jungman
+ * Copyright (C) 2001, 2002, 2003 Gerard Jungman (specfunc/bessel.c)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * The full license and provenance are also in inst/LICENSES/GPL-3 and
+ * inst/COPYRIGHTS. The coefficient values are unchanged.
+ */
 static const double INLAcirc_bi0_data[12] = {
 	-0.07660547252839144951, 1.92733795399380827000,
 	0.22826445869203013390, 0.01304891466707290428,
@@ -262,7 +292,9 @@ static inline double INLAcirc_bessel_i(double x, double nu, int scaled)
  *     d_0(kappa)^2 = kappa I1(kappa) / I0(kappa) - log I0(kappa).
  *
  * The small-kappa density polynomial and the large-kappa expansions are the
- * same approximations used in the original INLA reference implementation.
+ * same approximations used in Xiang Ye's INLA reference implementations,
+ * rinla/R/pc-vm0.R and rinla/R/pc-vminf.R. The source revision and INLA MIT
+ * notice are recorded in inst/COPYRIGHTS.
  */
 static inline double INLAcirc_pc_vm0_small_density(double kappa, double lambda)
 {

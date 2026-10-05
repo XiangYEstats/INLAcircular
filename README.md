@@ -45,10 +45,10 @@ library(INLAcircular)
 
 ## Documentation
 
-[Read the full user guide (PDF)](output/pdf/INLAcircular-guide.pdf)
+[Read the full user guide (PDF)](https://github.com/XiangYEstats/INLAcircular/blob/main/output/pdf/INLAcircular-guide.pdf)
 
-[Download the HTML guide](output/html/INLAcircular-guide.html?raw=true)
-(open the downloaded file in your browser).
+[Download the HTML guide](https://raw.githubusercontent.com/XiangYEstats/INLAcircular/main/output/html/INLAcircular-guide.html)
+(save the linked HTML file, then open it in your browser).
 
 The comprehensive guide covers the circular distributions, all PC-prior
 densities and d/p/q/r functions, direct fitting with `INLA::inla()`, model
@@ -119,4 +119,7 @@ fit <- inlacc(
 
 ## License
 
-MIT License.
+GNU General Public License, version 3 or later. The package includes Bessel
+routines adapted from GSL 2.8. See the [license text](inst/LICENSES/GPL-3) and
+[copyright notices](inst/COPYRIGHTS) for details, including the retained MIT
+notice for previously MIT-licensed original material.

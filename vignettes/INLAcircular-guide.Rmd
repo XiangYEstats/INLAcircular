@@ -1231,11 +1231,20 @@ does not create a separate CPO table.
 ## Modified Bessel function
 
 <code>bessel_i(x, nu, expon.scaled = FALSE)</code> evaluates the modified
-Bessel function of the first kind. Set <code>expon.scaled = TRUE</code> to
-return \(I_\nu(x)\exp(-|x|)\), which avoids overflow for large x.
+Bessel function of the first kind using C routines adapted from GSL. R is
+only the interface. The order <code>nu</code> must be finite and nonnegative;
+fractional orders are supported for nonnegative <code>x</code>. Negative
+<code>x</code> is supported for integer orders, with the usual parity rule;
+otherwise it produces <code>NaN</code> and a warning. Set
+<code>expon.scaled = TRUE</code> to return \(I_\nu(x)\exp(-|x|)\), which
+avoids overflow for large x.
+Very large orders can reduce the accuracy of unscaled values near the
+transition between exponential growth and decay; such inputs produce an
+accuracy warning when the estimated loss is significant.
 
 ```{r bessel}
 bessel_i(c(0, 1, 5), nu = 0)
+bessel_i(1, nu = 0.5)
 bessel_i(1000, nu = 0, expon.scaled = TRUE)
 ```
 

@@ -1,0 +1,29 @@
+bibentry(
+  bibtype = "Misc",
+  title = "A Bayesian regression framework for circular models with INLA",
+  author = c(
+    person("Xiang", "Ye"),
+    person("Janet", "Van Niekerk"),
+    person("Haavard", "Rue")
+  ),
+  year = "2026",
+  doi = "10.48550/arXiv.2602.08413",
+  url = "https://arxiv.org/abs/2602.08413",
+  note = "arXiv preprint",
+  header = "To cite the circular regression framework implemented in INLAcircular:"
+)
+
+bibentry(
+  bibtype = "Article",
+  title = "Penalizing complexity priors for Bayesian inference of circular models",
+  author = c(
+    person("Xiang", "Ye"),
+    person("Janet", "Van Niekerk"),
+    person("H\u00e5vard", "Rue")
+  ),
+  journal = "Statistical Modelling",
+  year = "2026",
+  doi = "10.1177/1471082X261453677",
+  url = "https://doi.org/10.1177/1471082X261453677",
+  header = "To cite the penalized-complexity priors:"
+)

@@ -296,6 +296,7 @@ qvm <- function(p, mu, kappa, len = 2048L) {
 #' @rdname von_mises
 #' @export
 rvm <- function(n, mu, kappa, len = 2048L) {
+  if (length(n) > 1L) n <- length(n)
   if (length(mu) == 1) mu <- rep(mu, n)
   if (length(kappa) == 1) kappa <- rep(kappa, n)
 
@@ -424,6 +425,7 @@ qlavm <- function(p, eta, kappa, link_obj = NULL, len = 2048L) {
 #' @rdname lavm
 #' @export
 rlavm <- function(n, eta, kappa, link_obj = NULL, len = 2048L) {
+  if (length(n) > 1L) n <- length(n)
   if (length(eta) == 1) eta <- rep(eta, n)
   if (length(kappa) == 1) kappa <- rep(kappa, n)
 
