@@ -160,31 +160,30 @@
 #' @seealso [lavm.cloglike()], [inlacc()]
 #' @export
 #' @examples
-#' \dontrun{
-#' library(INLA)
-#' library(INLAcircular)
+#' if (requireNamespace("INLA", quietly = TRUE)) {
+#'   set.seed(1)
+#'   n <- 30
+#'   z <- rnorm(n)
+#'   y <- rlavm(n, eta = 1 + 1.5 * z, kappa = 100)
 #'
-#' set.seed(1)
-#' n <- 100
-#' z <- rnorm(n)
-#' y <- rlavm(n, eta = 1 + 1.5 * z, kappa = 100)
-#'
-#' fit <- inla(
-#'   y ~ z,
-#'   family = "lavm",
-#'   data = data.frame(y = y, z = z),
-#'   control.family = list(
-#'     link = "inverse.tangent",
-#'     hyper = list(
-#'       kappa = list(
-#'         initial = 6,
-#'         prior = "pc.vminf",
-#'         param = c(0.5, 0.5),
-#'         fixed = FALSE
+#'   fit <- INLAcircular::inla(
+#'     y ~ z,
+#'     family = "lavm",
+#'     data = data.frame(y = y, z = z),
+#'     num.threads = "2:1",
+#'     control.family = list(
+#'       link = "inverse.tangent",
+#'       hyper = list(
+#'         kappa = list(
+#'           initial = 6,
+#'           prior = "pc.vminf",
+#'           param = c(0.5, 0.5),
+#'           fixed = FALSE
+#'         )
 #'       )
 #'     )
 #'   )
-#' )
+#'   fit$summary.fixed
 #' }
 inla <- function(...) {
   .INLAcircular_require_inla()

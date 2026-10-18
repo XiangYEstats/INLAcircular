@@ -62,7 +62,7 @@ The corresponding density function for the Link-Adjusted von Mises (LAvM) distri
 }
 }
 \examples{
-# Generate 1000 random deviates from the LAvM distribution
+# Generate 10 random deviates from the LAvM distribution
 # with linear predictor eta = 1.5 and concentration kappa = 3
 rlavm(10, eta = 1.5, kappa = 3)
 

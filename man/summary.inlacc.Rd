@@ -38,10 +38,13 @@ hyperparameters, timing, and requested model criteria from an
 \code{\link[=inlacc]{inlacc()}} result.
 }
 \examples{
-\dontrun{
-fit_summary <- summary(fit, decimal = 4)
-fit_summary$fixed_par
-print(fit_summary, metrics = FALSE)
+if (requireNamespace("INLA", quietly = TRUE)) {
+  dat <- data.frame(y = c(0.7, 1.1, 0.9, 1.4, 1.2, 0.8))
+  model <- likelihood(y ~ 1, family = "gaussian")
+  fit <- inlacc(model, data = dat, num.threads = "2:1")
+  fit_summary <- summary(fit, decimal = 4)
+  fit_summary$fixed_par
+  print(fit_summary, metrics = FALSE)
 }
 }
 \seealso{

@@ -72,6 +72,14 @@ knitr::opts_chunk$set(
 Sys.setenv(TZ = "UTC")
 ```
 
+```{r package-logo, echo=FALSE, out.width="120px", fig.align="right", fig.alt="INLAcircular logo"}
+logo <- "../man/figures/logo.png"
+if (!file.exists(logo)) {
+  logo <- system.file("help", "figures", "logo.png", package = "INLAcircular")
+}
+knitr::include_graphics(logo)
+```
+
 # Scope and conventions
 
 INLAcircular provides probability functions and a model-building interface

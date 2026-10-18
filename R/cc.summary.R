@@ -310,10 +310,13 @@ print.inlacc_time <- function(x, ...) {
 #'
 #' @seealso [inlacc()], [print.inlacc_summary()], [print.inlacc_time()]
 #' @examples
-#' \dontrun{
-#' fit_summary <- summary(fit, decimal = 4)
-#' fit_summary$fixed_par
-#' print(fit_summary, metrics = FALSE)
+#' if (requireNamespace("INLA", quietly = TRUE)) {
+#'   dat <- data.frame(y = c(0.7, 1.1, 0.9, 1.4, 1.2, 0.8))
+#'   model <- likelihood(y ~ 1, family = "gaussian")
+#'   fit <- inlacc(model, data = dat, num.threads = "2:1")
+#'   fit_summary <- summary(fit, decimal = 4)
+#'   fit_summary$fixed_par
+#'   print(fit_summary, metrics = FALSE)
 #' }
 #' @export
 summary.inlacc <- function(object, decimal = 3L, ...) {
@@ -346,9 +349,12 @@ summary.inlacc <- function(object, decimal = 3L, ...) {
 #'
 #' @seealso [inlacc()], [summary.inlacc()], [print.inlacc_time()]
 #' @examples
-#' \dontrun{
-#' fit_summary <- summary(fit, decimal = 4)
-#' print(fit_summary, decimal = 2, metrics = FALSE)
+#' if (requireNamespace("INLA", quietly = TRUE)) {
+#'   dat <- data.frame(y = c(0.7, 1.1, 0.9, 1.4, 1.2, 0.8))
+#'   model <- likelihood(y ~ 1, family = "gaussian")
+#'   fit <- inlacc(model, data = dat, num.threads = "2:1")
+#'   fit_summary <- summary(fit, decimal = 4)
+#'   print(fit_summary, decimal = 2, metrics = FALSE)
 #' }
 #' @export
 print.inlacc_summary <- function(x, decimal = NULL, metrics = TRUE, ...) {

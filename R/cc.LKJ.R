@@ -83,12 +83,22 @@
 #'
 #' @seealso [inlacc()], [index()]
 #' @examples
-#' formulas <- list(
-#'   y1 ~ f(i, model = "iidkd_LKJ"),
-#'   y2 ~ f(i, model = "iidkd_LKJ")
-#' )
-#' \dontrun{
-#' prepared <- LKJcc(formulas, LKJ.eta = 5, n.obs = 100)
+#' if (requireNamespace("graphpcor", quietly = TRUE) &&
+#'     requireNamespace("INLAtools", quietly = TRUE)) {
+#'   # The LKJ model also requires graphpcor's compiled shared library.
+#'   # Its path lookup warns when that optional library is absent.
+#'   graphpcor_lib <- suppressWarnings(INLAtools::cgeneric_shlib_path(
+#'     package = "graphpcor", useINLAprecomp = FALSE
+#'   ))
+#'   if (file.exists(graphpcor_lib)) {
+#'     formulas <- list(
+#'       y1 ~ f(i, model = "iidkd_LKJ"),
+#'       y2 ~ f(i, model = "iidkd_LKJ")
+#'     )
+#'     prepared <- LKJcc(formulas, LKJ.eta = 5, n.obs = 5)
+#'     prepared$formulas
+#'     prepared$block.data
+#'   }
 #' }
 #' @export
 LKJcc <- function(formulas, LKJ.eta = 5, n.obs = NULL, latent.index = NULL) {

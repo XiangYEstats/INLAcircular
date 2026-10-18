@@ -6,6 +6,9 @@
 \alias{INLAcircular}
 \title{INLAcircular: Bayesian Joint Circular Regression with INLA}
 \description{
+\if{html}{\figure{logo.png}{options: width="120" alt="INLAcircular logo"}}
+\if{latex}{\figure{logo.png}{options: width=3cm}}
+
 \pkg{INLAcircular} supplies compiled circular probability distributions,
 penalized-complexity priors for their concentration parameters, and a
 formula interface for Bayesian circular and joint circular-linear models

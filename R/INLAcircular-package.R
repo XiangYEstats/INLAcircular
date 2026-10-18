@@ -1,10 +1,15 @@
 #' INLAcircular: Bayesian Joint Circular Regression with INLA
 #'
+#' @description
+#' \if{html}{\figure{logo.png}{options: width="120" alt="INLAcircular logo"}}
+#' \if{latex}{\figure{logo.png}{options: width=3cm}}
+#'
 #' \pkg{INLAcircular} supplies compiled circular probability distributions,
 #' penalized-complexity priors for their concentration parameters, and a
 #' formula interface for Bayesian circular and joint circular-linear models
 #' fitted with Integrated Nested Laplace Approximation (INLA).
 #'
+#' @details
 #' The main entry points are:
 #' \itemize{
 #'   \item \code{\link{dvm}} and the other \code{d/p/q/r} functions for the

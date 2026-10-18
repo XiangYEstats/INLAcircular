@@ -32,9 +32,12 @@ effect summaries while retaining section labels. A final note recommends
 marginals are particularly relevant and were not requested.
 }
 \examples{
-\dontrun{
-fit_summary <- summary(fit, decimal = 4)
-print(fit_summary, decimal = 2, metrics = FALSE)
+if (requireNamespace("INLA", quietly = TRUE)) {
+  dat <- data.frame(y = c(0.7, 1.1, 0.9, 1.4, 1.2, 0.8))
+  model <- likelihood(y ~ 1, family = "gaussian")
+  fit <- inlacc(model, data = dat, num.threads = "2:1")
+  fit_summary <- summary(fit, decimal = 4)
+  print(fit_summary, decimal = 2, metrics = FALSE)
 }
 }
 \seealso{

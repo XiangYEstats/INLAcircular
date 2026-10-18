@@ -1,4 +1,4 @@
-# INLAcircular
+# INLAcircular <img src="man/figures/logo.png" align="right" width="160" alt="INLAcircular logo" />
 
 `INLAcircular` is an R package for Bayesian circular regression and joint circular–linear models using Integrated Nested Laplace Approximation (INLA).
 

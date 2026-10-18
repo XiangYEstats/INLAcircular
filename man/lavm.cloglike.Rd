@@ -53,26 +53,20 @@ For a direct fit, convert the response with \code{INLA::inla.mdata()}, use
 likelihood or priors.
 }
 \examples{
-\dontrun{
-y_lavm <- INLA::inla.mdata(y)
-cloglike <- lavm.cloglike(list(
-  link = "inverse.tangent",
-  hyper = list(
-    kappa = list(
-      initial = log(50),
-      prior = "pc.vminf",
-      param = c(0.5, 0.5),
-      fixed = FALSE
-    )
+if (requireNamespace("INLA", quietly = TRUE)) {
+  set.seed(1)
+  z <- seq(-1, 1, length.out = 30)
+  y <- rlavm(length(z), eta = 0.5 + z, kappa = 50)
+  y_lavm <- INLA::inla.mdata(y)
+  cloglike <- lavm.cloglike()
+  fit <- INLA::inla(
+    y_lavm ~ z,
+    family = "cloglike",
+    data = list(y_lavm = y_lavm, z = z),
+    control.family = list(cloglike = cloglike),
+    num.threads = "2:1"
   )
-))
-fit <- INLA::inla(
-  y_lavm ~ z,
-  family = "cloglike",
-  data = list(y_lavm = y_lavm, z = z),
-  control.family = list(cloglike = cloglike),
-  control.inla = list(cmin = 0, compute.initial.values = TRUE)
-)
+  fit$summary.fixed
 }
 }
 \seealso{

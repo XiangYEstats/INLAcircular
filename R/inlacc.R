@@ -111,19 +111,22 @@
 #' @seealso [likelihood()], [intercept()], [covariate()], [index()],
 #'   [LKJcc()], [lavm.cloglike()], [summary.inlacc()]
 #' @examples
-#' \dontrun{
-#' angle_model <- likelihood(
-#'   angle ~ intercept(name = "alpha0", mean = 0, sd = 2) +
-#'     covariate(z, name = "alpha_z", mean = 0, sd = 1),
-#'   family = "lavm"
-#' )
+#' if (requireNamespace("INLA", quietly = TRUE)) {
+#'   set.seed(1)
+#'   z <- rnorm(30)
+#'   angle <- rlavm(30, eta = 0.5 + z, kappa = 10)
+#'   angle_model <- likelihood(
+#'     angle ~ intercept(name = "alpha0", mean = 0, sd = 2) +
+#'       covariate(z, name = "alpha_z", mean = 0, sd = 1),
+#'     family = "lavm"
+#'   )
 #'
-#' fit <- inlacc(
-#'   model = angle_model,
-#'   data = data.frame(angle = angle, z = z),
-#'   control.predictor = list(compute = TRUE),
-#'   metrics = TRUE
-#' )
+#'   fit <- inlacc(
+#'     model = angle_model,
+#'     data = data.frame(angle = angle, z = z),
+#'     num.threads = "2:1"
+#'   )
+#'   summary(fit)
 #' }
 #' @author Xiang Ye \email{xiang.ye@kaust.edu.sa}
 #' @export
