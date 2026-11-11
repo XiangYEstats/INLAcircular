@@ -644,17 +644,16 @@ for the hourly component.</p>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>quick_fit <span class="ot">&lt;-</span> <span class="fu">inlacc</span>(</span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  quick_model,</span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="at">data =</span> dat,</span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="at">num.threads =</span> <span class="st">&quot;2:1&quot;</span>,</span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>)</span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>columns <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;0.025quant&quot;</span>, <span class="st">&quot;0.975quant&quot;</span>)</span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="fu">round</span>(quick_fit<span class="sc">$</span>summary.fixed[, columns], <span class="dv">3</span>)</span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;              mean    sd 0.025quant 0.975quant</span></span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; Intercept_x 0.509 0.018      0.474      0.543</span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; z_1         0.801 0.017      0.767      0.835</span></span>
-<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="fu">round</span>(quick_fit<span class="sc">$</span>summary.hyperpar[, columns], <span class="dv">3</span>)</span>
-<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt;                              mean    sd 0.025quant 0.975quant</span></span>
-<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; kappa for lavm observations 7.847 0.977      6.052      9.885</span></span></code></pre></div>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>columns <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;0.025quant&quot;</span>, <span class="st">&quot;0.975quant&quot;</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="fu">round</span>(quick_fit<span class="sc">$</span>summary.fixed[, columns], <span class="dv">3</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt;              mean    sd 0.025quant 0.975quant</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; Intercept_x 0.509 0.018      0.474      0.543</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; z_1         0.801 0.017      0.767      0.835</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="fu">round</span>(quick_fit<span class="sc">$</span>summary.hyperpar[, columns], <span class="dv">3</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt;                              mean    sd 0.025quant 0.975quant</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; kappa for lavm observations 7.847 0.977      6.052      9.885</span></span></code></pre></div>
 <p>The result contains posterior summaries for the intercept and the
 slope of <code>z</code>, and a natural-scale concentration
 <code>kappa</code>. The simulated slope is positive. Sampling
@@ -1180,18 +1179,17 @@ taken from the simulated <code>dat</code>.</p>
 <span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>  x <span class="sc">~</span> z,</span>
 <span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>  <span class="at">family =</span> <span class="st">&quot;lavm&quot;</span>,</span>
 <span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>  <span class="at">data =</span> dat,</span>
-<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>  <span class="at">num.threads =</span> <span class="st">&quot;2:1&quot;</span>,</span>
-<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>  <span class="at">control.family =</span> lavm_setting</span>
-<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a>)</span>
-<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a></span>
-<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a>columns <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;0.025quant&quot;</span>, <span class="st">&quot;0.975quant&quot;</span>)</span>
-<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a><span class="fu">round</span>(fit_short<span class="sc">$</span>summary.fixed[, columns], <span class="dv">3</span>)</span>
-<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a><span class="co">#&gt;              mean    sd 0.025quant 0.975quant</span></span>
-<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a><span class="co">#&gt; (Intercept) 0.509 0.018      0.474      0.543</span></span>
-<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a><span class="co">#&gt; z           0.801 0.017      0.767      0.835</span></span>
-<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a><span class="fu">round</span>(fit_short<span class="sc">$</span>summary.hyperpar[, columns], <span class="dv">3</span>)</span>
-<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a><span class="co">#&gt;                              mean    sd 0.025quant 0.975quant</span></span>
-<span id="cb21-18"><a href="#cb21-18" tabindex="-1"></a><span class="co">#&gt; kappa for lavm observations 7.847 0.977      6.052      9.885</span></span></code></pre></div>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>  <span class="at">control.family =</span> lavm_setting</span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>)</span>
+<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a>columns <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;0.025quant&quot;</span>, <span class="st">&quot;0.975quant&quot;</span>)</span>
+<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a><span class="fu">round</span>(fit_short<span class="sc">$</span>summary.fixed[, columns], <span class="dv">3</span>)</span>
+<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a><span class="co">#&gt;              mean    sd 0.025quant 0.975quant</span></span>
+<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a><span class="co">#&gt; (Intercept) 0.509 0.018      0.474      0.543</span></span>
+<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a><span class="co">#&gt; z           0.801 0.017      0.767      0.835</span></span>
+<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a><span class="fu">round</span>(fit_short<span class="sc">$</span>summary.hyperpar[, columns], <span class="dv">3</span>)</span>
+<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a><span class="co">#&gt;                              mean    sd 0.025quant 0.975quant</span></span>
+<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a><span class="co">#&gt; kappa for lavm observations 7.847 0.977      6.052      9.885</span></span></code></pre></div>
 <p>The package reports the concentration on the natural
 <code>kappa</code> scale. Use <code>INLAcircular::inla()</code> if you
 need to select this function explicitly. Calls with other likelihood
@@ -1507,15 +1505,14 @@ fit</h2>
 <div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">inlacc</span>(</span>
 <span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a>  <span class="at">model =</span> x_model,</span>
 <span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a>  <span class="at">data =</span> dat,</span>
-<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a>  <span class="at">num.threads =</span> <span class="st">&quot;2:1&quot;</span>,</span>
-<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a>  <span class="at">latent.index =</span> <span class="fu">index</span>(</span>
-<span id="cb30-6"><a href="#cb30-6" tabindex="-1"></a>    <span class="st">&quot;hour_effect&quot;</span>,</span>
-<span id="cb30-7"><a href="#cb30-7" tabindex="-1"></a>    <span class="at">data.id =</span> dat<span class="sc">$</span>hour,</span>
-<span id="cb30-8"><a href="#cb30-8" tabindex="-1"></a>    <span class="at">process.id =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">24</span></span>
-<span id="cb30-9"><a href="#cb30-9" tabindex="-1"></a>  ),</span>
-<span id="cb30-10"><a href="#cb30-10" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb30-11"><a href="#cb30-11" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="cn">TRUE</span></span>
-<span id="cb30-12"><a href="#cb30-12" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a>  <span class="at">latent.index =</span> <span class="fu">index</span>(</span>
+<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a>    <span class="st">&quot;hour_effect&quot;</span>,</span>
+<span id="cb30-6"><a href="#cb30-6" tabindex="-1"></a>    <span class="at">data.id =</span> dat<span class="sc">$</span>hour,</span>
+<span id="cb30-7"><a href="#cb30-7" tabindex="-1"></a>    <span class="at">process.id =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">24</span></span>
+<span id="cb30-8"><a href="#cb30-8" tabindex="-1"></a>  ),</span>
+<span id="cb30-9"><a href="#cb30-9" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb30-10"><a href="#cb30-10" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="cn">TRUE</span></span>
+<span id="cb30-11"><a href="#cb30-11" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 <div id="joint-likelihoods-and-copied-predictors" class="section level2" number="8.3">
 <h2><span class="header-section-number">8.3</span> Joint likelihoods and
@@ -1552,21 +1549,20 @@ automatically.</p>
 <span id="cb31-24"><a href="#cb31-24" tabindex="-1"></a>  <span class="at">model =</span> joint_model,</span>
 <span id="cb31-25"><a href="#cb31-25" tabindex="-1"></a>  <span class="at">data =</span> dat,</span>
 <span id="cb31-26"><a href="#cb31-26" tabindex="-1"></a>  <span class="at">latent.index =</span> latent_indices,</span>
-<span id="cb31-27"><a href="#cb31-27" tabindex="-1"></a>  <span class="at">num.threads =</span> <span class="st">&quot;2:1&quot;</span>,</span>
-<span id="cb31-28"><a href="#cb31-28" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb31-29"><a href="#cb31-29" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="cn">TRUE</span></span>
-<span id="cb31-30"><a href="#cb31-30" tabindex="-1"></a>)</span>
-<span id="cb31-31"><a href="#cb31-31" tabindex="-1"></a>joint_summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(joint_fit)</span>
-<span id="cb31-32"><a href="#cb31-32" tabindex="-1"></a><span class="fu">round</span>(joint_summary<span class="sc">$</span>fixed_par[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;SD&quot;</span>, <span class="st">&quot;2.5%&quot;</span>, <span class="st">&quot;97.5%&quot;</span>)], <span class="dv">3</span>)</span>
-<span id="cb31-33"><a href="#cb31-33" tabindex="-1"></a><span class="co">#&gt;          mean    SD  2.5% 97.5%</span></span>
-<span id="cb31-34"><a href="#cb31-34" tabindex="-1"></a><span class="co">#&gt; alpha0  0.508 0.006 0.496 0.520</span></span>
-<span id="cb31-35"><a href="#cb31-35" tabindex="-1"></a><span class="co">#&gt; alpha_z 0.794 0.006 0.782 0.806</span></span>
-<span id="cb31-36"><a href="#cb31-36" tabindex="-1"></a><span class="co">#&gt; beta0   1.033 0.028 0.977 1.088</span></span>
-<span id="cb31-37"><a href="#cb31-37" tabindex="-1"></a><span class="fu">round</span>(joint_summary<span class="sc">$</span>random_par[</span>
-<span id="cb31-38"><a href="#cb31-38" tabindex="-1"></a>  <span class="st">&quot;beta_x&quot;</span>, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;SD&quot;</span>, <span class="st">&quot;2.5%&quot;</span>, <span class="st">&quot;97.5%&quot;</span>), <span class="at">drop =</span> <span class="cn">FALSE</span></span>
-<span id="cb31-39"><a href="#cb31-39" tabindex="-1"></a>], <span class="dv">3</span>)</span>
-<span id="cb31-40"><a href="#cb31-40" tabindex="-1"></a><span class="co">#&gt;         mean   SD  2.5% 97.5%</span></span>
-<span id="cb31-41"><a href="#cb31-41" tabindex="-1"></a><span class="co">#&gt; beta_x 0.697 0.03 0.638 0.757</span></span></code></pre></div>
+<span id="cb31-27"><a href="#cb31-27" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb31-28"><a href="#cb31-28" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="cn">TRUE</span></span>
+<span id="cb31-29"><a href="#cb31-29" tabindex="-1"></a>)</span>
+<span id="cb31-30"><a href="#cb31-30" tabindex="-1"></a>joint_summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(joint_fit)</span>
+<span id="cb31-31"><a href="#cb31-31" tabindex="-1"></a><span class="fu">round</span>(joint_summary<span class="sc">$</span>fixed_par[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;SD&quot;</span>, <span class="st">&quot;2.5%&quot;</span>, <span class="st">&quot;97.5%&quot;</span>)], <span class="dv">3</span>)</span>
+<span id="cb31-32"><a href="#cb31-32" tabindex="-1"></a><span class="co">#&gt;          mean    SD  2.5% 97.5%</span></span>
+<span id="cb31-33"><a href="#cb31-33" tabindex="-1"></a><span class="co">#&gt; alpha0  0.508 0.006 0.496 0.520</span></span>
+<span id="cb31-34"><a href="#cb31-34" tabindex="-1"></a><span class="co">#&gt; alpha_z 0.794 0.006 0.782 0.806</span></span>
+<span id="cb31-35"><a href="#cb31-35" tabindex="-1"></a><span class="co">#&gt; beta0   1.033 0.028 0.977 1.088</span></span>
+<span id="cb31-36"><a href="#cb31-36" tabindex="-1"></a><span class="fu">round</span>(joint_summary<span class="sc">$</span>random_par[</span>
+<span id="cb31-37"><a href="#cb31-37" tabindex="-1"></a>  <span class="st">&quot;beta_x&quot;</span>, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;SD&quot;</span>, <span class="st">&quot;2.5%&quot;</span>, <span class="st">&quot;97.5%&quot;</span>), <span class="at">drop =</span> <span class="cn">FALSE</span></span>
+<span id="cb31-38"><a href="#cb31-38" tabindex="-1"></a>], <span class="dv">3</span>)</span>
+<span id="cb31-39"><a href="#cb31-39" tabindex="-1"></a><span class="co">#&gt;         mean   SD  2.5% 97.5%</span></span>
+<span id="cb31-40"><a href="#cb31-40" tabindex="-1"></a><span class="co">#&gt; beta_x 0.697 0.03 0.638 0.757</span></span></code></pre></div>
 <p>The Gaussian block contains the copied predictor without an
 additional effect of <code>z</code>: duplicating the same linear
 information can make the copy coefficient difficult to identify. Here
@@ -1696,13 +1692,12 @@ intercepts, using one replicate per row. It does not overwrite
 <span id="cb35-25"><a href="#cb35-25" tabindex="-1"></a>fit_lkj <span class="ot">&lt;-</span> <span class="fu">inlacc</span>(</span>
 <span id="cb35-26"><a href="#cb35-26" tabindex="-1"></a>  multivariate_model,</span>
 <span id="cb35-27"><a href="#cb35-27" tabindex="-1"></a>  <span class="at">data =</span> dat_lkj,</span>
-<span id="cb35-28"><a href="#cb35-28" tabindex="-1"></a>  <span class="at">num.threads =</span> <span class="st">&quot;2:1&quot;</span>,</span>
-<span id="cb35-29"><a href="#cb35-29" tabindex="-1"></a>  <span class="at">LKJ.eta =</span> <span class="dv">5</span>,</span>
-<span id="cb35-30"><a href="#cb35-30" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb35-31"><a href="#cb35-31" tabindex="-1"></a>)</span>
-<span id="cb35-32"><a href="#cb35-32" tabindex="-1"></a><span class="co">#&gt; Warning in normalizePath(shlib):</span></span>
-<span id="cb35-33"><a href="#cb35-33" tabindex="-1"></a><span class="co">#&gt; path[1]=&quot;/home/xiang/Rlibrary/graphpcor/libs//graphpcor.so&quot;: No such file</span></span>
-<span id="cb35-34"><a href="#cb35-34" tabindex="-1"></a><span class="co">#&gt; or directory</span></span></code></pre></div>
+<span id="cb35-28"><a href="#cb35-28" tabindex="-1"></a>  <span class="at">LKJ.eta =</span> <span class="dv">5</span>,</span>
+<span id="cb35-29"><a href="#cb35-29" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb35-30"><a href="#cb35-30" tabindex="-1"></a>)</span>
+<span id="cb35-31"><a href="#cb35-31" tabindex="-1"></a><span class="co">#&gt; Warning in normalizePath(shlib):</span></span>
+<span id="cb35-32"><a href="#cb35-32" tabindex="-1"></a><span class="co">#&gt; path[1]=&quot;/home/xiang/Rlibrary/graphpcor/libs//graphpcor.so&quot;: No such file</span></span>
+<span id="cb35-33"><a href="#cb35-33" tabindex="-1"></a><span class="co">#&gt; or directory</span></span></code></pre></div>
 <p><code>LKJcc()</code> performs the preprocessing internally: it
 collects the terms, constructs graphpcor’s cgeneric model, rewrites the
 formulas, and creates component and replicate indices. Most users should
@@ -1727,13 +1722,12 @@ To use explicit replicate IDs, supply the special mapping</p>
 <span id="cb36-9"><a href="#cb36-9" tabindex="-1"></a>  multivariate_model,</span>
 <span id="cb36-10"><a href="#cb36-10" tabindex="-1"></a>  <span class="at">data =</span> dat_lkj,</span>
 <span id="cb36-11"><a href="#cb36-11" tabindex="-1"></a>  <span class="at">latent.index =</span> lkj_index,</span>
-<span id="cb36-12"><a href="#cb36-12" tabindex="-1"></a>  <span class="at">num.threads =</span> <span class="st">&quot;2:1&quot;</span>,</span>
-<span id="cb36-13"><a href="#cb36-13" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb36-14"><a href="#cb36-14" tabindex="-1"></a>  <span class="at">LKJ.eta =</span> <span class="dv">5</span></span>
-<span id="cb36-15"><a href="#cb36-15" tabindex="-1"></a>)</span>
-<span id="cb36-16"><a href="#cb36-16" tabindex="-1"></a><span class="co">#&gt; Warning in normalizePath(shlib):</span></span>
-<span id="cb36-17"><a href="#cb36-17" tabindex="-1"></a><span class="co">#&gt; path[1]=&quot;/home/xiang/Rlibrary/graphpcor/libs//graphpcor.so&quot;: No such file</span></span>
-<span id="cb36-18"><a href="#cb36-18" tabindex="-1"></a><span class="co">#&gt; or directory</span></span></code></pre></div>
+<span id="cb36-12"><a href="#cb36-12" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb36-13"><a href="#cb36-13" tabindex="-1"></a>  <span class="at">LKJ.eta =</span> <span class="dv">5</span></span>
+<span id="cb36-14"><a href="#cb36-14" tabindex="-1"></a>)</span>
+<span id="cb36-15"><a href="#cb36-15" tabindex="-1"></a><span class="co">#&gt; Warning in normalizePath(shlib):</span></span>
+<span id="cb36-16"><a href="#cb36-16" tabindex="-1"></a><span class="co">#&gt; path[1]=&quot;/home/xiang/Rlibrary/graphpcor/libs//graphpcor.so&quot;: No such file</span></span>
+<span id="cb36-17"><a href="#cb36-17" tabindex="-1"></a><span class="co">#&gt; or directory</span></span></code></pre></div>
 <p>In this special form, <code>data.id</code> must contain one positive
 integer per observation and becomes the INLA replicate index. The
 component index is generated from likelihood order. An explicit
@@ -1762,11 +1756,11 @@ correlation matrix. The example above has this all-free form.</p>
 <span id="cb37-9"><a href="#cb37-9" tabindex="-1"></a></span>
 <span id="cb37-10"><a href="#cb37-10" tabindex="-1"></a>sd_mode</span>
 <span id="cb37-11"><a href="#cb37-11" tabindex="-1"></a><span class="co">#&gt; Theta1 for i Theta2 for i </span></span>
-<span id="cb37-12"><a href="#cb37-12" tabindex="-1"></a><span class="co">#&gt;    0.5267457    0.6576025</span></span>
+<span id="cb37-12"><a href="#cb37-12" tabindex="-1"></a><span class="co">#&gt;    0.5272970    0.6587168</span></span>
 <span id="cb37-13"><a href="#cb37-13" tabindex="-1"></a>correlation_mode</span>
 <span id="cb37-14"><a href="#cb37-14" tabindex="-1"></a><span class="co">#&gt;           [,1]      [,2]</span></span>
-<span id="cb37-15"><a href="#cb37-15" tabindex="-1"></a><span class="co">#&gt; [1,] 1.0000000 0.4254072</span></span>
-<span id="cb37-16"><a href="#cb37-16" tabindex="-1"></a><span class="co">#&gt; [2,] 0.4254072 1.0000000</span></span></code></pre></div>
+<span id="cb37-15"><a href="#cb37-15" tabindex="-1"></a><span class="co">#&gt; [1,] 1.0000000 0.4311846</span></span>
+<span id="cb37-16"><a href="#cb37-16" tabindex="-1"></a><span class="co">#&gt; [2,] 0.4311846 1.0000000</span></span></code></pre></div>
 <p>For a mixture of free and fixed scales, reconstruct the complete SD
 vector before extracting the correlation parameters. The following code
 also works for the all-free example above:</p>
@@ -1852,14 +1846,14 @@ every returned row is a new observation.</p>
 <span id="cb42-3"><a href="#cb42-3" tabindex="-1"></a>eta_y <span class="ot">&lt;-</span> joint_fit<span class="sc">$</span>summary.linear.predictor[n <span class="sc">+</span> <span class="fu">seq_len</span>(n), ]</span>
 <span id="cb42-4"><a href="#cb42-4" tabindex="-1"></a><span class="fu">head</span>(eta_x[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;0.025quant&quot;</span>, <span class="st">&quot;0.975quant&quot;</span>)], <span class="dv">3</span>)</span>
 <span id="cb42-5"><a href="#cb42-5" tabindex="-1"></a><span class="co">#&gt;                     mean         sd 0.025quant 0.975quant</span></span>
-<span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.0013749 0.02445010  0.9533804  1.0494435</span></span>
-<span id="cb42-7"><a href="#cb42-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.2169085 0.02507923 -0.2660910 -0.1675595</span></span>
-<span id="cb42-8"><a href="#cb42-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  0.7936974 0.02436210  0.7458094  0.8415288</span></span>
+<span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.0013754 0.02445230  0.9533766  1.0494484</span></span>
+<span id="cb42-7"><a href="#cb42-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.2169077 0.02508145 -0.2660945 -0.1675544</span></span>
+<span id="cb42-8"><a href="#cb42-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  0.7936971 0.02436430  0.7458048  0.8415329</span></span>
 <span id="cb42-9"><a href="#cb42-9" tabindex="-1"></a><span class="fu">head</span>(eta_y[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>)], <span class="dv">3</span>)</span>
 <span id="cb42-10"><a href="#cb42-10" tabindex="-1"></a><span class="co">#&gt;                    mean         sd</span></span>
-<span id="cb42-11"><a href="#cb42-11" tabindex="-1"></a><span class="co">#&gt; Predictor.121 1.7310023 0.03418168</span></span>
-<span id="cb42-12"><a href="#cb42-12" tabindex="-1"></a><span class="co">#&gt; Predictor.122 0.8814635 0.03538795</span></span>
-<span id="cb42-13"><a href="#cb42-13" tabindex="-1"></a><span class="co">#&gt; Predictor.123 1.5861952 0.03166662</span></span></code></pre></div>
+<span id="cb42-11"><a href="#cb42-11" tabindex="-1"></a><span class="co">#&gt; Predictor.121 1.7310012 0.03418191</span></span>
+<span id="cb42-12"><a href="#cb42-12" tabindex="-1"></a><span class="co">#&gt; Predictor.122 0.8814658 0.03538820</span></span>
+<span id="cb42-13"><a href="#cb42-13" tabindex="-1"></a><span class="co">#&gt; Predictor.123 1.5861941 0.03166686</span></span></code></pre></div>
 <p>For the inverse-tangent LAvM link, <code>2 * atan(eta)</code> is the
 conditional location/median parameter. Transforming posterior quantiles
 of <code>eta</code> gives quantiles of this parameter. It is not the
@@ -1870,9 +1864,9 @@ interval for a new angle.</p>
 <span id="cb43-3"><a href="#cb43-3" tabindex="-1"></a>)</span>
 <span id="cb43-4"><a href="#cb43-4" tabindex="-1"></a><span class="fu">head</span>(location, <span class="dv">3</span>)</span>
 <span id="cb43-5"><a href="#cb43-5" tabindex="-1"></a><span class="co">#&gt;               0.025quant   0.5quant 0.975quant</span></span>
-<span id="cb43-6"><a href="#cb43-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.5230732  1.5721571  1.6190376</span></span>
-<span id="cb43-7"><a href="#cb43-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.5201297 -0.4272548 -0.3320346</span></span>
-<span id="cb43-8"><a href="#cb43-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  1.2816275  1.3417843  1.3991110</span></span></code></pre></div>
+<span id="cb43-6"><a href="#cb43-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.5230692  1.5721576  1.6190423</span></span>
+<span id="cb43-7"><a href="#cb43-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.5201363 -0.4272533 -0.3320245</span></span>
+<span id="cb43-8"><a href="#cb43-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  1.2816215  1.3417840  1.3991158</span></span></code></pre></div>
 <p>When data were rotated before fitting, add the recorded reference
 direction and wrap again to report locations in the original
 coordinates. Inspect <code>summary.linear.predictor</code> for
@@ -1960,17 +1954,16 @@ creates the hourly node IDs expected by <code>x_model</code>:</p>
 <span id="cb47-4"><a href="#cb47-4" tabindex="-1"></a>  <span class="at">latent.index =</span> <span class="fu">index</span>(</span>
 <span id="cb47-5"><a href="#cb47-5" tabindex="-1"></a>    <span class="st">&quot;hour_effect&quot;</span>, <span class="at">data.id =</span> wind_dat<span class="sc">$</span>hour, <span class="at">process.id =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">24</span></span>
 <span id="cb47-6"><a href="#cb47-6" tabindex="-1"></a>  ),</span>
-<span id="cb47-7"><a href="#cb47-7" tabindex="-1"></a>  <span class="at">num.threads =</span> <span class="st">&quot;2:1&quot;</span>,</span>
-<span id="cb47-8"><a href="#cb47-8" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb47-9"><a href="#cb47-9" tabindex="-1"></a>)</span>
-<span id="cb47-10"><a href="#cb47-10" tabindex="-1"></a><span class="fu">round</span>(wind_fit<span class="sc">$</span>summary.fixed[, columns], <span class="dv">3</span>)</span>
-<span id="cb47-11"><a href="#cb47-11" tabindex="-1"></a><span class="co">#&gt;          mean    sd 0.025quant 0.975quant</span></span>
-<span id="cb47-12"><a href="#cb47-12" tabindex="-1"></a><span class="co">#&gt; alpha0  0.000 0.001     -0.001      0.001</span></span>
-<span id="cb47-13"><a href="#cb47-13" tabindex="-1"></a><span class="co">#&gt; alpha_z 0.011 0.002      0.008      0.014</span></span>
-<span id="cb47-14"><a href="#cb47-14" tabindex="-1"></a><span class="fu">round</span>(wind_fit<span class="sc">$</span>summary.hyperpar[, columns], <span class="dv">3</span>)</span>
-<span id="cb47-15"><a href="#cb47-15" tabindex="-1"></a><span class="co">#&gt;                                 mean      sd 0.025quant 0.975quant</span></span>
-<span id="cb47-16"><a href="#cb47-16" tabindex="-1"></a><span class="co">#&gt; kappa for lavm observations  692.214  36.298    623.341    765.865</span></span>
-<span id="cb47-17"><a href="#cb47-17" tabindex="-1"></a><span class="co">#&gt; Precision for hour_effect   1013.198 316.709    516.695   1750.319</span></span></code></pre></div>
+<span id="cb47-7"><a href="#cb47-7" tabindex="-1"></a>  <span class="at">control.predictor =</span> <span class="fu">list</span>(<span class="at">compute =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb47-8"><a href="#cb47-8" tabindex="-1"></a>)</span>
+<span id="cb47-9"><a href="#cb47-9" tabindex="-1"></a><span class="fu">round</span>(wind_fit<span class="sc">$</span>summary.fixed[, columns], <span class="dv">3</span>)</span>
+<span id="cb47-10"><a href="#cb47-10" tabindex="-1"></a><span class="co">#&gt;          mean    sd 0.025quant 0.975quant</span></span>
+<span id="cb47-11"><a href="#cb47-11" tabindex="-1"></a><span class="co">#&gt; alpha0  0.000 0.001     -0.001      0.001</span></span>
+<span id="cb47-12"><a href="#cb47-12" tabindex="-1"></a><span class="co">#&gt; alpha_z 0.011 0.002      0.008      0.014</span></span>
+<span id="cb47-13"><a href="#cb47-13" tabindex="-1"></a><span class="fu">round</span>(wind_fit<span class="sc">$</span>summary.hyperpar[, columns], <span class="dv">3</span>)</span>
+<span id="cb47-14"><a href="#cb47-14" tabindex="-1"></a><span class="co">#&gt;                                 mean      sd 0.025quant 0.975quant</span></span>
+<span id="cb47-15"><a href="#cb47-15" tabindex="-1"></a><span class="co">#&gt; kappa for lavm observations  692.214  36.298    623.341    765.865</span></span>
+<span id="cb47-16"><a href="#cb47-16" tabindex="-1"></a><span class="co">#&gt; Precision for hour_effect   1013.198 316.707    516.694   1750.312</span></span></code></pre></div>
 <p>This is a small demonstration of the interface, not a complete
 analysis of weather variability. The repository’s
 <code>tests/manual/06-wind-new-york.R</code> contains the larger joint
@@ -2129,10 +2122,6 @@ is currently unavailable.</p>
 <div id="reproducible-computation-and-support" class="section level2" number="14.3">
 <h2><span class="header-section-number">14.3</span> Reproducible
 computation and support</h2>
-<p>The fitting examples request <code>num.threads = &quot;2:1&quot;</code>. BLAS
-thread count is an INLA option, not an argument to <code>inlacc()</code>
-or <code>inla()</code>:</p>
-<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" tabindex="-1"></a>INLA<span class="sc">::</span><span class="fu">inla.setOption</span>(<span class="at">blas.num.threads =</span> <span class="dv">1</span><span class="dt">L</span>)</span></code></pre></div>
 <p>Numerical summaries and run times may differ with R, INLA, dependency
 versions, platform, and thread settings. Preserve seeds, input
 preparation, priors, and the environment information at the end of this
@@ -2211,13 +2200,13 @@ to <code>graphpcor</code> when requested.</p>
 guide</h2>
 <p>From a clone or downloaded source tree, install the documentation
 packages:</p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;knitr&quot;</span>, <span class="st">&quot;rmarkdown&quot;</span>, <span class="st">&quot;pkgload&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;knitr&quot;</span>, <span class="st">&quot;rmarkdown&quot;</span>, <span class="st">&quot;pkgload&quot;</span>))</span></code></pre></div>
 <p>Install Pandoc and a LaTeX distribution containing
 <code>pdflatex</code> for both formats. Then run one of these commands
 from the repository root:</p>
-<div class="sourceCode" id="cb50"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb50-1"><a href="#cb50-1" tabindex="-1"></a><span class="ex">Rscript</span> tools/render-guide.R</span>
-<span id="cb50-2"><a href="#cb50-2" tabindex="-1"></a><span class="ex">Rscript</span> tools/render-guide.R <span class="at">--run-models</span></span>
-<span id="cb50-3"><a href="#cb50-3" tabindex="-1"></a><span class="ex">Rscript</span> tools/render-guide.R <span class="at">--run-lkj</span></span></code></pre></div>
+<div class="sourceCode" id="cb49"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a><span class="ex">Rscript</span> tools/render-guide.R</span>
+<span id="cb49-2"><a href="#cb49-2" tabindex="-1"></a><span class="ex">Rscript</span> tools/render-guide.R <span class="at">--run-models</span></span>
+<span id="cb49-3"><a href="#cb49-3" tabindex="-1"></a><span class="ex">Rscript</span> tools/render-guide.R <span class="at">--run-lkj</span></span></code></pre></div>
 <p>The first command builds the lightweight edition. The second also
 executes the ordinary INLA examples, including the small wind fit. The
 third includes the LKJ examples and requires all optional modelling
@@ -2240,16 +2229,16 @@ INLA is installed from its separate repository; <code>graphpcor</code>,
 <code>INLAtools</code>, and the documentation packages are optional
 dependencies for the complete checks. In a terminal at the repository
 root:</p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" tabindex="-1"></a><span class="ex">R</span> CMD build .</span>
-<span id="cb51-2"><a href="#cb51-2" tabindex="-1"></a><span class="ex">R</span> CMD check <span class="at">--as-cran</span> INLAcircular_1.0.0.tar.gz</span></code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb50-1"><a href="#cb50-1" tabindex="-1"></a><span class="ex">R</span> CMD build .</span>
+<span id="cb50-2"><a href="#cb50-2" tabindex="-1"></a><span class="ex">R</span> CMD check <span class="at">--as-cran</span> INLAcircular_1.0.0.tar.gz</span></code></pre></div>
 <p>Use the archive name printed by <code>R CMD build</code> if the
 package version differs. The standard check runs function examples,
 automated tests, and vignette checks. PDF reference-manual checking also
 requires LaTeX. To run a specific longer developer example after
 installing this source version:</p>
-<div class="sourceCode" id="cb52"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" tabindex="-1"></a><span class="ex">R</span> CMD INSTALL .</span>
-<span id="cb52-2"><a href="#cb52-2" tabindex="-1"></a><span class="ex">Rscript</span> tests/manual/01-direct-inla-lavm.R</span>
-<span id="cb52-3"><a href="#cb52-3" tabindex="-1"></a><span class="ex">Rscript</span> tests/manual/02-joint-circular-linear.R</span></code></pre></div>
+<div class="sourceCode" id="cb51"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" tabindex="-1"></a><span class="ex">R</span> CMD INSTALL .</span>
+<span id="cb51-2"><a href="#cb51-2" tabindex="-1"></a><span class="ex">Rscript</span> tests/manual/01-direct-inla-lavm.R</span>
+<span id="cb51-3"><a href="#cb51-3" tabindex="-1"></a><span class="ex">Rscript</span> tests/manual/02-joint-circular-linear.R</span></code></pre></div>
 <p>See <code>tests/manual/README.md</code> in the repository for the
 remaining scripts and their dependency requirements. These longer
 applications are deliberately outside the automatic CRAN test path. The
@@ -2269,7 +2258,7 @@ used in a publication</h2>
 paper or archived analysis, record the release tag or full commit SHA,
 the package version, the dependency versions, and the guide built from
 that same source. A local Git checkout can report its commit with:</p>
-<div class="sourceCode" id="cb53"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb53-1"><a href="#cb53-1" tabindex="-1"></a><span class="fu">git</span> rev-parse HEAD</span></code></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" tabindex="-1"></a><span class="fu">git</span> rev-parse HEAD</span></code></pre></div>
 <p>Use the corresponding commit or release URL for the source and guide
 links in the article’s software metadata. Record any local modifications
 as well; the version in <code>DESCRIPTION</code> alone does not identify
@@ -2283,8 +2272,8 @@ that an archive or release tag already exists.</p>
 license</h1>
 <p>Use the package’s citation information for the circular-regression
 framework and the PC-prior methods:</p>
-<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" tabindex="-1"></a><span class="fu">citation</span>(<span class="st">&quot;INLAcircular&quot;</span>)</span>
-<span id="cb54-2"><a href="#cb54-2" tabindex="-1"></a><span class="fu">toBibtex</span>(<span class="fu">citation</span>(<span class="st">&quot;INLAcircular&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" tabindex="-1"></a><span class="fu">citation</span>(<span class="st">&quot;INLAcircular&quot;</span>)</span>
+<span id="cb53-2"><a href="#cb53-2" tabindex="-1"></a><span class="fu">toBibtex</span>(<span class="fu">citation</span>(<span class="st">&quot;INLAcircular&quot;</span>))</span></code></pre></div>
 <p>The method references are Ye, Van Niekerk, and Rue’s <a href="https://doi.org/10.48550/arXiv.2602.08413">circular regression
 framework</a> and <a href="https://doi.org/10.1177/1471082X261453677">PC
 priors for circular models</a>. The installed <code>CITATION</code> file
@@ -2294,10 +2283,10 @@ software version used as well as the applicable methods.</p>
 recorded in <code>DESCRIPTION</code>. The full license and third-party
 notices are available through the repository and in an installed
 package:</p>
-<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a><span class="fu">basename</span>(<span class="fu">system.file</span>(<span class="st">&quot;LICENSES&quot;</span>, <span class="st">&quot;GPL-3&quot;</span>, <span class="at">package =</span> <span class="st">&quot;INLAcircular&quot;</span>))</span>
-<span id="cb55-2"><a href="#cb55-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;GPL-3&quot;</span></span>
-<span id="cb55-3"><a href="#cb55-3" tabindex="-1"></a><span class="fu">basename</span>(<span class="fu">system.file</span>(<span class="st">&quot;COPYRIGHTS&quot;</span>, <span class="at">package =</span> <span class="st">&quot;INLAcircular&quot;</span>))</span>
-<span id="cb55-4"><a href="#cb55-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;COPYRIGHTS&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" tabindex="-1"></a><span class="fu">basename</span>(<span class="fu">system.file</span>(<span class="st">&quot;LICENSES&quot;</span>, <span class="st">&quot;GPL-3&quot;</span>, <span class="at">package =</span> <span class="st">&quot;INLAcircular&quot;</span>))</span>
+<span id="cb54-2"><a href="#cb54-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;GPL-3&quot;</span></span>
+<span id="cb54-3"><a href="#cb54-3" tabindex="-1"></a><span class="fu">basename</span>(<span class="fu">system.file</span>(<span class="st">&quot;COPYRIGHTS&quot;</span>, <span class="at">package =</span> <span class="st">&quot;INLAcircular&quot;</span>))</span>
+<span id="cb54-4"><a href="#cb54-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;COPYRIGHTS&quot;</span></span></code></pre></div>
 </div>
 <div id="build-environment" class="section level1" number="17">
 <h1><span class="header-section-number">17</span> Build environment</h1>
@@ -2305,63 +2294,63 @@ package:</p>
 a claim that the listed versions are the only supported versions. An
 optional package being installed does not mean its examples were
 executed; see the evaluation statement in Quick start.</p>
-<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;INLAcircular&quot;</span>, <span class="st">&quot;INLA&quot;</span>, <span class="st">&quot;graphpcor&quot;</span>, <span class="st">&quot;INLAtools&quot;</span>)</span>
-<span id="cb56-2"><a href="#cb56-2" tabindex="-1"></a>versions <span class="ot">&lt;-</span> <span class="fu">vapply</span>(packages, <span class="cf">function</span>(package) {</span>
-<span id="cb56-3"><a href="#cb56-3" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">requireNamespace</span>(package, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
-<span id="cb56-4"><a href="#cb56-4" tabindex="-1"></a>    <span class="fu">as.character</span>(<span class="fu">packageVersion</span>(package))</span>
-<span id="cb56-5"><a href="#cb56-5" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb56-6"><a href="#cb56-6" tabindex="-1"></a>    <span class="st">&quot;not installed&quot;</span></span>
-<span id="cb56-7"><a href="#cb56-7" tabindex="-1"></a>  }</span>
-<span id="cb56-8"><a href="#cb56-8" tabindex="-1"></a>}, <span class="fu">character</span>(<span class="dv">1</span>))</span>
-<span id="cb56-9"><a href="#cb56-9" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="at">package =</span> packages, <span class="at">version =</span> <span class="fu">unname</span>(versions))</span>
-<span id="cb56-10"><a href="#cb56-10" tabindex="-1"></a><span class="co">#&gt;        package version</span></span>
-<span id="cb56-11"><a href="#cb56-11" tabindex="-1"></a><span class="co">#&gt; 1 INLAcircular   1.0.0</span></span>
-<span id="cb56-12"><a href="#cb56-12" tabindex="-1"></a><span class="co">#&gt; 2         INLA 26.11.8</span></span>
-<span id="cb56-13"><a href="#cb56-13" tabindex="-1"></a><span class="co">#&gt; 3    graphpcor  0.1.25</span></span>
-<span id="cb56-14"><a href="#cb56-14" tabindex="-1"></a><span class="co">#&gt; 4    INLAtools   0.1.4</span></span></code></pre></div>
-<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
-<span id="cb57-2"><a href="#cb57-2" tabindex="-1"></a><span class="co">#&gt; R version 4.6.2 (2026-10-29)</span></span>
-<span id="cb57-3"><a href="#cb57-3" tabindex="-1"></a><span class="co">#&gt; Platform: x86_64-redhat-linux-gnu</span></span>
-<span id="cb57-4"><a href="#cb57-4" tabindex="-1"></a><span class="co">#&gt; Running under: Fedora Linux 44 (Workstation Edition)</span></span>
-<span id="cb57-5"><a href="#cb57-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb57-6"><a href="#cb57-6" tabindex="-1"></a><span class="co">#&gt; Matrix products: default</span></span>
-<span id="cb57-7"><a href="#cb57-7" tabindex="-1"></a><span class="co">#&gt; BLAS/LAPACK: FlexiBLAS OPENBLAS-OPENMP;  LAPACK version 3.12.1</span></span>
-<span id="cb57-8"><a href="#cb57-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb57-9"><a href="#cb57-9" tabindex="-1"></a><span class="co">#&gt; locale:</span></span>
-<span id="cb57-10"><a href="#cb57-10" tabindex="-1"></a><span class="co">#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       </span></span>
-<span id="cb57-11"><a href="#cb57-11" tabindex="-1"></a><span class="co">#&gt;  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   </span></span>
-<span id="cb57-12"><a href="#cb57-12" tabindex="-1"></a><span class="co">#&gt;  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          </span></span>
-<span id="cb57-13"><a href="#cb57-13" tabindex="-1"></a><span class="co">#&gt; [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   </span></span>
-<span id="cb57-14"><a href="#cb57-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb57-15"><a href="#cb57-15" tabindex="-1"></a><span class="co">#&gt; time zone: UTC</span></span>
-<span id="cb57-16"><a href="#cb57-16" tabindex="-1"></a><span class="co">#&gt; tzcode source: system (glibc)</span></span>
-<span id="cb57-17"><a href="#cb57-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb57-18"><a href="#cb57-18" tabindex="-1"></a><span class="co">#&gt; attached base packages:</span></span>
-<span id="cb57-19"><a href="#cb57-19" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
-<span id="cb57-20"><a href="#cb57-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb57-21"><a href="#cb57-21" tabindex="-1"></a><span class="co">#&gt; other attached packages:</span></span>
-<span id="cb57-22"><a href="#cb57-22" tabindex="-1"></a><span class="co">#&gt; [1] INLAcircular_1.0.0</span></span>
-<span id="cb57-23"><a href="#cb57-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb57-24"><a href="#cb57-24" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span id="cb57-25"><a href="#cb57-25" tabindex="-1"></a><span class="co">#&gt;  [1] sass_0.4.10         generics_0.1.4      class_7.3-24       </span></span>
-<span id="cb57-26"><a href="#cb57-26" tabindex="-1"></a><span class="co">#&gt;  [4] fmesher_0.8.0.9004  KernSmooth_2.23-27  lattice_0.23-1     </span></span>
-<span id="cb57-27"><a href="#cb57-27" tabindex="-1"></a><span class="co">#&gt;  [7] digest_0.6.39       magrittr_2.0.5      evaluate_1.0.5     </span></span>
-<span id="cb57-28"><a href="#cb57-28" tabindex="-1"></a><span class="co">#&gt; [10] grid_4.6.2          INLAtools_0.1.4     pkgload_1.5.2      </span></span>
-<span id="cb57-29"><a href="#cb57-29" tabindex="-1"></a><span class="co">#&gt; [13] fastmap_1.2.0       rprojroot_2.1.1     jsonlite_2.0.0     </span></span>
-<span id="cb57-30"><a href="#cb57-30" tabindex="-1"></a><span class="co">#&gt; [16] Matrix_1.7-5        pkgbuild_1.4.8      e1071_1.7-17       </span></span>
-<span id="cb57-31"><a href="#cb57-31" tabindex="-1"></a><span class="co">#&gt; [19] DBI_1.3.0           numDeriv_2016.8-1.1 jquerylib_0.1.4    </span></span>
-<span id="cb57-32"><a href="#cb57-32" tabindex="-1"></a><span class="co">#&gt; [22] cli_3.6.6           rlang_1.3.0         units_1.0-1        </span></span>
-<span id="cb57-33"><a href="#cb57-33" tabindex="-1"></a><span class="co">#&gt; [25] graphpcor_0.1.25    INLA_26.11.08       splines_4.6.2      </span></span>
-<span id="cb57-34"><a href="#cb57-34" tabindex="-1"></a><span class="co">#&gt; [28] withr_3.0.3         cachem_1.1.0        yaml_2.3.12        </span></span>
-<span id="cb57-35"><a href="#cb57-35" tabindex="-1"></a><span class="co">#&gt; [31] otel_0.2.0          tools_4.6.2         parallel_4.6.2     </span></span>
-<span id="cb57-36"><a href="#cb57-36" tabindex="-1"></a><span class="co">#&gt; [34] MatrixModels_0.5-4  dplyr_1.2.1         Deriv_4.2.0        </span></span>
-<span id="cb57-37"><a href="#cb57-37" tabindex="-1"></a><span class="co">#&gt; [37] vctrs_0.7.3         R6_2.6.1            proxy_0.4-29       </span></span>
-<span id="cb57-38"><a href="#cb57-38" tabindex="-1"></a><span class="co">#&gt; [40] lifecycle_1.0.5     classInt_0.4-11     pkgconfig_2.0.3    </span></span>
-<span id="cb57-39"><a href="#cb57-39" tabindex="-1"></a><span class="co">#&gt; [43] desc_1.4.3          pillar_1.11.1       bslib_0.10.0       </span></span>
-<span id="cb57-40"><a href="#cb57-40" tabindex="-1"></a><span class="co">#&gt; [46] glue_1.8.1          Rcpp_1.1.2          sf_1.1-3           </span></span>
-<span id="cb57-41"><a href="#cb57-41" tabindex="-1"></a><span class="co">#&gt; [49] xfun_0.57           tibble_3.3.1        tidyselect_1.2.1   </span></span>
-<span id="cb57-42"><a href="#cb57-42" tabindex="-1"></a><span class="co">#&gt; [52] knitr_1.51          htmltools_0.5.9     igraph_2.3.3       </span></span>
-<span id="cb57-43"><a href="#cb57-43" tabindex="-1"></a><span class="co">#&gt; [55] rmarkdown_2.31      compiler_4.6.2</span></span></code></pre></div>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;INLAcircular&quot;</span>, <span class="st">&quot;INLA&quot;</span>, <span class="st">&quot;graphpcor&quot;</span>, <span class="st">&quot;INLAtools&quot;</span>)</span>
+<span id="cb55-2"><a href="#cb55-2" tabindex="-1"></a>versions <span class="ot">&lt;-</span> <span class="fu">vapply</span>(packages, <span class="cf">function</span>(package) {</span>
+<span id="cb55-3"><a href="#cb55-3" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">requireNamespace</span>(package, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb55-4"><a href="#cb55-4" tabindex="-1"></a>    <span class="fu">as.character</span>(<span class="fu">packageVersion</span>(package))</span>
+<span id="cb55-5"><a href="#cb55-5" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb55-6"><a href="#cb55-6" tabindex="-1"></a>    <span class="st">&quot;not installed&quot;</span></span>
+<span id="cb55-7"><a href="#cb55-7" tabindex="-1"></a>  }</span>
+<span id="cb55-8"><a href="#cb55-8" tabindex="-1"></a>}, <span class="fu">character</span>(<span class="dv">1</span>))</span>
+<span id="cb55-9"><a href="#cb55-9" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="at">package =</span> packages, <span class="at">version =</span> <span class="fu">unname</span>(versions))</span>
+<span id="cb55-10"><a href="#cb55-10" tabindex="-1"></a><span class="co">#&gt;        package version</span></span>
+<span id="cb55-11"><a href="#cb55-11" tabindex="-1"></a><span class="co">#&gt; 1 INLAcircular   1.0.0</span></span>
+<span id="cb55-12"><a href="#cb55-12" tabindex="-1"></a><span class="co">#&gt; 2         INLA 26.11.8</span></span>
+<span id="cb55-13"><a href="#cb55-13" tabindex="-1"></a><span class="co">#&gt; 3    graphpcor  0.1.25</span></span>
+<span id="cb55-14"><a href="#cb55-14" tabindex="-1"></a><span class="co">#&gt; 4    INLAtools   0.1.4</span></span></code></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
+<span id="cb56-2"><a href="#cb56-2" tabindex="-1"></a><span class="co">#&gt; R version 4.6.2 (2026-10-29)</span></span>
+<span id="cb56-3"><a href="#cb56-3" tabindex="-1"></a><span class="co">#&gt; Platform: x86_64-redhat-linux-gnu</span></span>
+<span id="cb56-4"><a href="#cb56-4" tabindex="-1"></a><span class="co">#&gt; Running under: Fedora Linux 44 (Workstation Edition)</span></span>
+<span id="cb56-5"><a href="#cb56-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb56-6"><a href="#cb56-6" tabindex="-1"></a><span class="co">#&gt; Matrix products: default</span></span>
+<span id="cb56-7"><a href="#cb56-7" tabindex="-1"></a><span class="co">#&gt; BLAS/LAPACK: FlexiBLAS OPENBLAS-OPENMP;  LAPACK version 3.12.1</span></span>
+<span id="cb56-8"><a href="#cb56-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb56-9"><a href="#cb56-9" tabindex="-1"></a><span class="co">#&gt; locale:</span></span>
+<span id="cb56-10"><a href="#cb56-10" tabindex="-1"></a><span class="co">#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       </span></span>
+<span id="cb56-11"><a href="#cb56-11" tabindex="-1"></a><span class="co">#&gt;  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   </span></span>
+<span id="cb56-12"><a href="#cb56-12" tabindex="-1"></a><span class="co">#&gt;  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          </span></span>
+<span id="cb56-13"><a href="#cb56-13" tabindex="-1"></a><span class="co">#&gt; [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   </span></span>
+<span id="cb56-14"><a href="#cb56-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb56-15"><a href="#cb56-15" tabindex="-1"></a><span class="co">#&gt; time zone: UTC</span></span>
+<span id="cb56-16"><a href="#cb56-16" tabindex="-1"></a><span class="co">#&gt; tzcode source: system (glibc)</span></span>
+<span id="cb56-17"><a href="#cb56-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb56-18"><a href="#cb56-18" tabindex="-1"></a><span class="co">#&gt; attached base packages:</span></span>
+<span id="cb56-19"><a href="#cb56-19" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span id="cb56-20"><a href="#cb56-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb56-21"><a href="#cb56-21" tabindex="-1"></a><span class="co">#&gt; other attached packages:</span></span>
+<span id="cb56-22"><a href="#cb56-22" tabindex="-1"></a><span class="co">#&gt; [1] INLAcircular_1.0.0</span></span>
+<span id="cb56-23"><a href="#cb56-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb56-24"><a href="#cb56-24" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span id="cb56-25"><a href="#cb56-25" tabindex="-1"></a><span class="co">#&gt;  [1] sass_0.4.10         generics_0.1.4      class_7.3-24       </span></span>
+<span id="cb56-26"><a href="#cb56-26" tabindex="-1"></a><span class="co">#&gt;  [4] fmesher_0.8.0.9004  KernSmooth_2.23-27  lattice_0.23-1     </span></span>
+<span id="cb56-27"><a href="#cb56-27" tabindex="-1"></a><span class="co">#&gt;  [7] digest_0.6.39       magrittr_2.0.5      evaluate_1.0.5     </span></span>
+<span id="cb56-28"><a href="#cb56-28" tabindex="-1"></a><span class="co">#&gt; [10] grid_4.6.2          INLAtools_0.1.4     pkgload_1.5.2      </span></span>
+<span id="cb56-29"><a href="#cb56-29" tabindex="-1"></a><span class="co">#&gt; [13] fastmap_1.2.0       rprojroot_2.1.1     jsonlite_2.0.0     </span></span>
+<span id="cb56-30"><a href="#cb56-30" tabindex="-1"></a><span class="co">#&gt; [16] Matrix_1.7-5        pkgbuild_1.4.8      e1071_1.7-17       </span></span>
+<span id="cb56-31"><a href="#cb56-31" tabindex="-1"></a><span class="co">#&gt; [19] DBI_1.3.0           numDeriv_2016.8-1.1 jquerylib_0.1.4    </span></span>
+<span id="cb56-32"><a href="#cb56-32" tabindex="-1"></a><span class="co">#&gt; [22] cli_3.6.6           rlang_1.3.0         units_1.0-1        </span></span>
+<span id="cb56-33"><a href="#cb56-33" tabindex="-1"></a><span class="co">#&gt; [25] graphpcor_0.1.25    INLA_26.11.08       splines_4.6.2      </span></span>
+<span id="cb56-34"><a href="#cb56-34" tabindex="-1"></a><span class="co">#&gt; [28] withr_3.0.3         cachem_1.1.0        yaml_2.3.12        </span></span>
+<span id="cb56-35"><a href="#cb56-35" tabindex="-1"></a><span class="co">#&gt; [31] otel_0.2.0          tools_4.6.2         parallel_4.6.2     </span></span>
+<span id="cb56-36"><a href="#cb56-36" tabindex="-1"></a><span class="co">#&gt; [34] MatrixModels_0.5-4  dplyr_1.2.1         Deriv_4.2.0        </span></span>
+<span id="cb56-37"><a href="#cb56-37" tabindex="-1"></a><span class="co">#&gt; [37] vctrs_0.7.3         R6_2.6.1            proxy_0.4-29       </span></span>
+<span id="cb56-38"><a href="#cb56-38" tabindex="-1"></a><span class="co">#&gt; [40] lifecycle_1.0.5     classInt_0.4-11     pkgconfig_2.0.3    </span></span>
+<span id="cb56-39"><a href="#cb56-39" tabindex="-1"></a><span class="co">#&gt; [43] desc_1.4.3          pillar_1.11.1       bslib_0.10.0       </span></span>
+<span id="cb56-40"><a href="#cb56-40" tabindex="-1"></a><span class="co">#&gt; [46] glue_1.8.1          Rcpp_1.1.2          sf_1.1-3           </span></span>
+<span id="cb56-41"><a href="#cb56-41" tabindex="-1"></a><span class="co">#&gt; [49] xfun_0.57           tibble_3.3.1        tidyselect_1.2.1   </span></span>
+<span id="cb56-42"><a href="#cb56-42" tabindex="-1"></a><span class="co">#&gt; [52] knitr_1.51          htmltools_0.5.9     igraph_2.3.3       </span></span>
+<span id="cb56-43"><a href="#cb56-43" tabindex="-1"></a><span class="co">#&gt; [55] rmarkdown_2.31      compiler_4.6.2</span></span></code></pre></div>
 </div>
 
 

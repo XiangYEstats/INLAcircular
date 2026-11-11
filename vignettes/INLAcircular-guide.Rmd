@@ -262,7 +262,6 @@ quick_model <- likelihood(x ~ z, family = "lavm")
 quick_fit <- inlacc(
   quick_model,
   data = dat,
-  num.threads = "2:1",
   control.predictor = list(compute = TRUE)
 )
 columns <- c("mean", "sd", "0.025quant", "0.975quant")
@@ -783,7 +782,6 @@ fit_short <- inla(
   x ~ z,
   family = "lavm",
   data = dat,
-  num.threads = "2:1",
   control.family = lavm_setting
 )
 
@@ -1059,7 +1057,6 @@ owned by `inlacc()`.
 fit <- inlacc(
   model = x_model,
   data = dat,
-  num.threads = "2:1",
   latent.index = index(
     "hour_effect",
     data.id = dat$hour,
@@ -1105,7 +1102,6 @@ joint_fit <- inlacc(
   model = joint_model,
   data = dat,
   latent.index = latent_indices,
-  num.threads = "2:1",
   control.predictor = list(compute = TRUE),
   metrics = TRUE
 )
@@ -1250,7 +1246,6 @@ multivariate_model <- list(
 fit_lkj <- inlacc(
   multivariate_model,
   data = dat_lkj,
-  num.threads = "2:1",
   LKJ.eta = 5,
   control.predictor = list(compute = TRUE)
 )
@@ -1280,7 +1275,6 @@ fit_lkj <- inlacc(
   multivariate_model,
   data = dat_lkj,
   latent.index = lkj_index,
-  num.threads = "2:1",
   control.predictor = list(compute = TRUE),
   LKJ.eta = 5
 )
@@ -1507,7 +1501,6 @@ wind_fit <- inlacc(
   latent.index = index(
     "hour_effect", data.id = wind_dat$hour, process.id = 1:24
   ),
-  num.threads = "2:1",
   control.predictor = list(compute = TRUE)
 )
 round(wind_fit$summary.fixed[, columns], 3)
@@ -1596,13 +1589,6 @@ positive concentration prior has the boundary limitation described in the
 LAvM controls section, and LAvM PIT is currently unavailable.
 
 ## Reproducible computation and support
-
-The fitting examples request `num.threads = "2:1"`. BLAS thread count is
-an INLA option, not an argument to `inlacc()` or `inla()`:
-
-```{r thread-options, eval=FALSE}
-INLA::inla.setOption(blas.num.threads = 1L)
-```
 
 Numerical summaries and run times may differ with R, INLA, dependency
 versions, platform, and thread settings. Preserve seeds, input preparation,

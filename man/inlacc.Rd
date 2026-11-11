@@ -76,10 +76,6 @@ components.
 \details{
 LAvM responses must be numeric angles in radians on the principal interval
 \verb{(-pi, pi)}; see \code{\link[=inla]{inla()}} for angle preparation and likelihood controls.
-BLAS thread count is an INLA session option. Set it separately when needed:
-\preformatted{
-INLA::inla.setOption(blas.num.threads = 1L)
-}
 
 Each formula response must be a single named column of \code{data}. Ordinary
 numeric right-hand-side terms become block-specific fixed effects. Use
@@ -128,8 +124,7 @@ if (requireNamespace("INLA", quietly = TRUE)) {
 
   fit <- inlacc(
     model = x_model,
-    data = data.frame(x = x, z = z),
-    num.threads = "2:1"
+    data = data.frame(x = x, z = z)
   )
   summary(fit)
 }

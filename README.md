@@ -4,14 +4,13 @@
 
 ## Documentation
 
-Start with the quick example below, then use the detailed guide for data preparation, priors, structured effects, joint models, LKJ effects, and interpreting results. The guide is the repository's user manual and the source of the installed R vignette.
+Start with the quick example below, then use the detailed guide for data preparation, priors, structured effects, joint models, LKJ effects, and interpreting results.
 
 - [User guide (PDF)](output/pdf/INLAcircular-guide.pdf): installation, complete examples, input and output conventions, priors, troubleshooting, and reproducibility.
 - [User guide (HTML)](output/html/INLAcircular-guide.html): on GitHub, download the raw file and open it in a browser.
-- [Function reference (PDF)](output/pdf/INLAcircular-reference.pdf): the manual generated from the same help files used by R and CRAN.
-- [Guide source](vignettes/INLAcircular-guide.Rmd) and [longer developer examples](tests/manual/README.md).
+- [Function reference (PDF)](output/pdf/INLAcircular-reference.pdf): arguments, return values, and examples for individual functions.
 
-The repository guide and the installed R vignette share one source. Their model outputs depend on the build mode, which is stated in the guide. The ordinary package build runs the lightweight examples; repository builds can also execute all INLA examples. After installing a package with built vignettes, open the guide with:
+After installing from CRAN, open the vignette and function help in R:
 
 ```r
 vignette("INLAcircular-guide", package = "INLAcircular")
@@ -75,7 +74,7 @@ z <- rnorm(60)
 x <- rlavm(60, eta = 0.5 + z, kappa = 50)
 dat <- data.frame(x = x, z = z)
 x_model <- likelihood(x ~ z, family = "lavm")
-fit <- inlacc(x_model, data = dat, num.threads = "2:1")
+fit <- inlacc(x_model, data = dat)
 summary(fit)
 ```
 
@@ -87,8 +86,7 @@ For a single response, the package also provides an `inla()` interface. Using th
 fit_inla <- INLAcircular::inla(
   x ~ z,
   family = "lavm",
-  data = dat,
-  num.threads = "2:1"
+  data = dat
 )
 fit_inla$summary.fixed
 fit_inla$summary.hyperpar
@@ -105,67 +103,18 @@ data("wind_newyork", package = "INLAcircular")
 dim(wind_newyork)
 ```
 
-The dataset contains 8,759 hourly climate-normal records for JFK International Airport, with wind direction, speed, temperature, and calendar fields. Its timestamps use 2010 as a reference calendar, not an observation year. The guide documents the actual columns and prepares a runnable example, including `hour + 1L` for latent node IDs `1:24`.
-
-For example, construct the hourly mapping for an `f(hour_effect, ...)` term with:
-
-```r
-hour_index <- index(
-  "hour_effect",
-  data.id = wind_newyork$hour + 1L,
-  process.id = 1:24
-)
-```
-
-Pass this mapping as `latent.index = hour_index` when fitting the corresponding model with `inlacc()`. Build `data.id` from the same rows, in the same order, as the fitting data; recreate the mapping after subsetting. The guide includes the complete cyclic model. The original wind-speed and temperature units and the climate-normal baseline period still need to be established from the upstream source before physical interpretation.
-
-## Build the documentation and run checks
-
-GitHub installations skip vignette building by default. To include the installed HTML vignette, install `knitr` and `rmarkdown`, ensure Pandoc is available, and use:
-
-```r
-remotes::install_github(
-  "XiangYEstats/INLAcircular",
-  build_vignettes = TRUE,
-  force = TRUE
-)
-```
-
-To rebuild both repository guides from the current source, also install `pkgload` and a LaTeX distribution with `pdflatex`. From the repository root:
-
-```sh
-Rscript tools/render-guide.R
-Rscript tools/render-guide.R --run-models
-Rscript tools/render-guide.R --run-lkj
-```
-
-Choose the first command for the lightweight edition, the second for ordinary INLA examples, or the third for all examples including LKJ. Enabled examples execute separately for HTML and PDF. Missing dependencies for a requested mode cause an error.
-
-The CRAN-style reference manual can be regenerated with:
-
-```sh
-R CMD Rd2pdf --no-preview --force --output=output/pdf/INLAcircular-reference.pdf .
-```
-
-For standard package checks:
-
-```sh
-R CMD build .
-R CMD check --as-cran INLAcircular_1.0.0.tar.gz
-```
-
-Use the archive filename printed by the build if the version changes. [Automated tests](tests) cover numerical and interface behaviour; [manual scripts](tests/manual/README.md) exercise larger models. [CI configuration](.github/workflows/R-CMD-check.yaml) defines platform checks; consult its run results for the particular version being used.
+The dataset contains 8,759 hourly climate-normal records for JFK International Airport, with wind direction, speed, temperature, and calendar fields. Its timestamps use 2010 as a reference calendar. The guide explains the data's limitations and provides a complete circular regression example with cyclic hourly effects, using `hour + 1L` and `process.id = 1:24`.
 
 ## Reproducibility, citation, and support
 
-For a publication, use the exact release tag or commit URL for both source code and its guide. Links under `main` can change. Record the software version, any local changes, dependency versions, seeds, and `sessionInfo()`; a versioned archive DOI can be included if one has been created.
+Use the package citation and record your software environment when reporting an analysis:
 
 ```r
 citation("INLAcircular")
 sessionInfo()
 ```
 
-The maintained method references are in [inst/CITATION](inst/CITATION). Report reproducible problems through [GitHub issues](https://github.com/XiangYEstats/INLAcircular/issues), including a small example and environment details. Maintainer contact is available with `maintainer("INLAcircular")`.
+For development versions, also record the Git commit used. Report problems through [GitHub issues](https://github.com/XiangYEstats/INLAcircular/issues), including a small reproducible example and the output of `sessionInfo()`. Maintainer contact is available with `maintainer("INLAcircular")`.
 
 ## License
 

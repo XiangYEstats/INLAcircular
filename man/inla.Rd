@@ -85,7 +85,6 @@ if (requireNamespace("INLA", quietly = TRUE)) {
     x ~ z,
     family = "lavm",
     data = data.frame(x = x, z = z),
-    num.threads = "2:1",
     control.family = list(
       link = "inverse.tangent",
       hyper = list(
