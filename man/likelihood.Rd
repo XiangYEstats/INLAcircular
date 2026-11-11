@@ -17,7 +17,7 @@ and bare INLA \code{f()} terms.}
 family names are passed to \code{INLA::inla()}.}
 
 \item{family.setting}{Optional per-block INLA \code{control.family} list. For an
-LAvM block, use \code{link} and \code{hyper$kappa}; see \code{\link[=lavm.cloglike]{lavm.cloglike()}}.}
+LAvM block, use \code{link} and \code{hyper$kappa}; see \code{\link[=inla]{inla()}}.}
 }
 \value{
 An object of class \code{inlacc_model} containing \code{formula}, \code{family},
@@ -37,7 +37,7 @@ the specification; validation that depends on the data occurs in
 }
 \examples{
 block <- likelihood(
-  angle ~ intercept(name = "alpha0", mean = 0, sd = 2) +
+  x ~ intercept(name = "alpha0", mean = 0, sd = 2) +
     covariate(z, name = "alpha_z", mean = 0, sd = 1),
   family = "lavm",
   family.setting = list(

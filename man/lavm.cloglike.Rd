@@ -2,7 +2,7 @@
 % Please edit documentation in R/cc.family.R
 \name{lavm.cloglike}
 \alias{lavm.cloglike}
-\title{Define the compiled LAvM cloglike for direct R-INLA fitting}
+\title{Construct the compiled LAvM likelihood object}
 \usage{
 lavm.cloglike(family.setting = NULL)
 }
@@ -20,9 +20,9 @@ likelihood, both \code{list(link = ..., hyper = ...)} and the nested INLA form
 An INLA cloglike object.
 }
 \description{
-Construct the custom likelihood object needed by a literal
-\code{INLA::inla(..., family = "cloglike")} call. The convenience \code{\link[=inla]{inla()}}
-function and \code{\link[=inlacc]{inlacc()}} call this constructor internally.
+Technical reference for the likelihood constructor used internally by
+\code{\link[=inla]{inla()}} and \code{\link[=inlacc]{inlacc()}}. For model fitting, use \code{family = "lavm"} with
+either of those functions; response preparation is automatic.
 }
 \details{
 The native likelihood entry point is
@@ -45,29 +45,6 @@ no discrete state at \code{theta = -Inf}. Its \code{c(u, alpha)} input should
 therefore be read as a rate calibration. For numerical stability, the
 compiled likelihood and prior use a working theta restricted to
 \verb{[-30, 30]}.
-
-For a direct fit, convert the response with \code{INLA::inla.mdata()}, use
-\code{family = "cloglike"}, and pass the returned object as
-\code{control.family = list(cloglike = object)}. A literal
-\code{INLA::inla(..., family = "lavm")} does not select this package's custom
-likelihood or priors.
-}
-\examples{
-if (requireNamespace("INLA", quietly = TRUE)) {
-  set.seed(1)
-  z <- seq(-1, 1, length.out = 30)
-  y <- rlavm(length(z), eta = 0.5 + z, kappa = 50)
-  y_lavm <- INLA::inla.mdata(y)
-  cloglike <- lavm.cloglike()
-  fit <- INLA::inla(
-    y_lavm ~ z,
-    family = "cloglike",
-    data = list(y_lavm = y_lavm, z = z),
-    control.family = list(cloglike = cloglike),
-    num.threads = "2:1"
-  )
-  fit$summary.fixed
-}
 }
 \seealso{
 \code{\link[=inla]{inla()}}, \code{\link[=inlacc]{inlacc()}}

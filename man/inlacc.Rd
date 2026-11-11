@@ -35,7 +35,7 @@ term is present.}
 overrides that block's \code{family.setting}; later blocks without an override
 use their block-level setting. Use the nested outer list even for one
 block. For LAvM, configure \code{link} and \code{hyper$kappa}; see
-\code{\link[=lavm.cloglike]{lavm.cloglike()}}.}
+\code{\link[=inla]{inla()}}.}
 
 \item{control.fixed}{Optional INLA fixed-effect control list. The package
 defaults are mean \code{0} and precision \code{0.001}. Named priors from
@@ -43,9 +43,9 @@ defaults are mean \code{0} and precision \code{0.001}. Named priors from
 \code{mean}/\code{prec} values and INLA named lists with a \code{default} entry are both
 supported; existing named entries are preserved.}
 
-\item{control.inla}{INLA approximation controls. The package default is
-\code{list(cmin = 0, compute.initial.values = TRUE)}. A user-supplied value
-replaces that complete list rather than being merged with it.}
+\item{control.inla}{INLA approximation controls. The defaults set \code{cmin}
+to \code{0} and \code{compute.initial.values} to \code{TRUE}. A user-supplied list
+replaces both defaults rather than being merged with them.}
 
 \item{metrics}{Logical; if \code{TRUE}, request CPO, DIC, WAIC, and INLA
 configuration output. The default is \code{FALSE}.}
@@ -53,8 +53,8 @@ configuration output. The default is \code{FALSE}.}
 \item{verbose}{Logical passed to \code{INLA::inla()}.}
 
 \item{...}{Further arguments for \code{INLA::inla()}. Common choices include
-\code{control.predictor}, \code{control.compute}, \code{control.mode}, \code{num.threads}, and
-\code{blas.num.threads}. A \code{control.compute} list is merged field by field with
+\code{control.predictor}, \code{control.compute}, \code{control.mode}, and \code{num.threads}.
+A \code{control.compute} list is merged field by field with
 the settings implied by \code{metrics}; other named arguments replace or add
 call entries.}
 }
@@ -74,6 +74,13 @@ latent-process index mappings, and optional graphpcor-backed LKJ covariance
 components.
 }
 \details{
+LAvM responses must be numeric angles in radians on the principal interval
+\verb{(-pi, pi)}; see \code{\link[=inla]{inla()}} for angle preparation and likelihood controls.
+BLAS thread count is an INLA session option. Set it separately when needed:
+\preformatted{
+INLA::inla.setOption(blas.num.threads = 1L)
+}
+
 Each formula response must be a single named column of \code{data}. Ordinary
 numeric right-hand-side terms become block-specific fixed effects. Use
 \code{\link[=intercept]{intercept()}} and \code{\link[=covariate]{covariate()}} for stable names or local priors. A bare
@@ -82,10 +89,10 @@ retained in the assembled formula. INLAcircular does not export its own
 \code{f()}; write \code{f(...)}, not \code{INLA::f(...)}, because the assembler recognizes
 the bare call while preprocessing indices.
 
-A discovered \code{f()} index is read from \code{data}, supplied through
-\code{latent.index}, or generated as \code{seq_len(nrow(data))}. A non-\code{NULL}
-\code{process.id} is injected as the term's \code{values} vector when \code{var} matches
-the first \code{f()} argument, replacing an existing \code{values} argument. See
+A named \code{f()} index is read from \code{data} or supplied through \code{latent.index}.
+If neither is present, the index numbers the data rows from 1. When \code{var}
+matches the first \code{f()} argument, a supplied \code{process.id} replaces the
+term's \code{values} vector. See
 \code{\link[=index]{index()}} for first-, group-, replicate-, and likelihood-index mappings.
 
 A response used directly as a bare term, or as
@@ -112,16 +119,16 @@ stacked formula and data are owned by \code{inlacc()}.
 if (requireNamespace("INLA", quietly = TRUE)) {
   set.seed(1)
   z <- rnorm(30)
-  angle <- rlavm(30, eta = 0.5 + z, kappa = 10)
-  angle_model <- likelihood(
-    angle ~ intercept(name = "alpha0", mean = 0, sd = 2) +
+  x <- rlavm(30, eta = 0.5 + z, kappa = 10)
+  x_model <- likelihood(
+    x ~ intercept(name = "alpha0", mean = 0, sd = 2) +
       covariate(z, name = "alpha_z", mean = 0, sd = 1),
     family = "lavm"
   )
 
   fit <- inlacc(
-    model = angle_model,
-    data = data.frame(angle = angle, z = z),
+    model = x_model,
+    data = data.frame(x = x, z = z),
     num.threads = "2:1"
   )
   summary(fit)
@@ -129,7 +136,7 @@ if (requireNamespace("INLA", quietly = TRUE)) {
 }
 \seealso{
 \code{\link[=likelihood]{likelihood()}}, \code{\link[=intercept]{intercept()}}, \code{\link[=covariate]{covariate()}}, \code{\link[=index]{index()}},
-\code{\link[=LKJcc]{LKJcc()}}, \code{\link[=lavm.cloglike]{lavm.cloglike()}}, \code{\link[=summary.inlacc]{summary.inlacc()}}
+\code{\link[=LKJcc]{LKJcc()}}, \code{\link[=inla]{inla()}}, \code{\link[=summary.inlacc]{summary.inlacc()}}
 }
 \author{
 Xiang Ye \email{xiang.ye@kaust.edu.sa}

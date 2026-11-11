@@ -20,25 +20,45 @@ in Details when LAvM is requested.
 \description{
 \code{inla()} is a compatibility layer over
 \code{INLA::inla()}. Calls without \code{family = "lavm"} are forwarded unchanged.
-For LAvM calls, it installs the package's C \code{cloglike}, converts the response
-to an INLA matrix-valued response, and evaluates the \code{pc.vm0} or \code{pc.vminf}
-concentration prior in the same C module used by \code{\link[=inlacc]{inlacc()}}.
+For LAvM calls, it prepares the response automatically and evaluates the
+\code{pc.vm0} or \code{pc.vminf} concentration prior in the same C module used by
+\code{\link[=inlacc]{inlacc()}}.
 }
 \details{
 Loading \code{INLAcircular} after \code{INLA} makes this function available
-as \code{inla()}. The underlying likelihood sent to INLA is \code{"cloglike"}, which
-is necessary because external packages cannot add a new compiled family or
-prior keyword to an already-built INLA executable. All non-LAvM arguments
-retain INLA's own matching and evaluation rules.
+as \code{inla()}. Use \code{INLAcircular::inla()} to select this function explicitly.
+The LAvM likelihood is implemented using INLA's compiled \code{cloglike}
+interface; users supply \code{family = "lavm"} and an ordinary numeric response.
+All non-LAvM arguments retain INLA's own matching and evaluation rules.
+
+Supply circular responses in radians on the principal interval
+\verb{(-pi, pi)}. The likelihood does not wrap angles from other intervals.
+For example, wrap a numeric vector with \code{x <- atan2(sin(x), cos(x))}.
+The scaled logit and scaled probit links require values strictly inside
+the interval, so choose a suitable reference direction when observations
+lie at its endpoints.
+
+\code{control.family$link} is \code{"inverse.tangent"} (the default),
+\code{"scaled.logit"}, or \code{"scaled.probit"}.
 
 Within \code{hyper$kappa}, \code{initial} is on the internal \code{log(kappa)} scale.
 The defaults are \code{initial = 6}, \code{prior = "pc.vminf"},
 \code{param = c(0.5, 0.5)}, and \code{fixed = FALSE}.
+The alternative prior is \code{"pc.vm0"}. In \code{param = c(u, alpha)}, both
+values lie strictly between zero and one, and \code{u} is a threshold for
+the mean resultant length \code{A(kappa) = I1(kappa) / I0(kappa)}. The PC rate
+is calibrated using \code{P(A(kappa) > u) = alpha} under the standalone law.
+The standalone \code{pc.vminf} law has an atom at zero; model fitting uses
+only its continuous component on the finite \code{log(kappa)} scale.
+Therefore this input calibrates the fitted prior's rate rather than
+retaining a discrete zero-concentration state. Standalone PC-prior
+d/p/q/r functions instead take \code{lambda} directly.
+With \code{fixed = TRUE}, \code{log(kappa)} is fixed at \code{initial}.
 
 When multiple families are requested and at least one is \code{"lavm"}, the
 formula response must evaluate to a matrix, data frame, or list with one
-component per family. LAvM components are converted with
-\code{INLA::inla.mdata()}; other families and controls are retained.
+component per family. Response preparation is automatic; other families
+and controls are retained.
 
 For any call containing LAvM, missing \code{control.inla$cmin} and
 \code{control.inla$compute.initial.values} fields are filled with \code{0} and
@@ -49,22 +69,22 @@ families, effective internal families, and LAvM prior labels. LAvM
 concentration summaries and marginals are normally transformed from
 internal \code{log(kappa)} to natural-scale \code{kappa} and renamed.
 
-For a literal namespaced \code{INLA::inla()} call, construct the external
-likelihood explicitly with \code{\link[=lavm.cloglike]{lavm.cloglike()}}, convert the response with
-\code{INLA::inla.mdata()}, and use \code{family = "cloglike"}. A namespaced call
-with \code{family = "lavm"} bypasses this compatibility layer.
+A namespaced \code{INLA::inla()} call bypasses this compatibility layer. Use
+\code{INLAcircular::inla(..., family = "lavm")} for the interface documented
+here. See \code{vignette("INLAcircular-guide", package = "INLAcircular")}
+for a complete modelling workflow.
 }
 \examples{
 if (requireNamespace("INLA", quietly = TRUE)) {
   set.seed(1)
   n <- 30
   z <- rnorm(n)
-  y <- rlavm(n, eta = 1 + 1.5 * z, kappa = 100)
+  x <- rlavm(n, eta = 1 + 1.5 * z, kappa = 100)
 
   fit <- INLAcircular::inla(
-    y ~ z,
+    x ~ z,
     family = "lavm",
-    data = data.frame(y = y, z = z),
+    data = data.frame(x = x, z = z),
     num.threads = "2:1",
     control.family = list(
       link = "inverse.tangent",
@@ -82,5 +102,5 @@ if (requireNamespace("INLA", quietly = TRUE)) {
 }
 }
 \seealso{
-\code{\link[=lavm.cloglike]{lavm.cloglike()}}, \code{\link[=inlacc]{inlacc()}}
+\code{\link[=inlacc]{inlacc()}}, \code{\link[=likelihood]{likelihood()}}
 }

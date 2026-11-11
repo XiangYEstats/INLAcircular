@@ -116,9 +116,9 @@
 #'
 #' `inla()` is a compatibility layer over
 #' `INLA::inla()`. Calls without `family = "lavm"` are forwarded unchanged.
-#' For LAvM calls, it installs the package's C `cloglike`, converts the response
-#' to an INLA matrix-valued response, and evaluates the `pc.vm0` or `pc.vminf`
-#' concentration prior in the same C module used by [inlacc()].
+#' For LAvM calls, it prepares the response automatically and evaluates the
+#' `pc.vm0` or `pc.vminf` concentration prior in the same C module used by
+#' [inlacc()].
 #'
 #' @param ... Arguments accepted by `INLA::inla()`. For one
 #'   `family = "lavm"`, use
@@ -127,19 +127,39 @@
 #'   `control.family` must contain exactly one list per family.
 #'
 #' @details Loading `INLAcircular` after `INLA` makes this function available
-#'   as `inla()`. The underlying likelihood sent to INLA is `"cloglike"`, which
-#'   is necessary because external packages cannot add a new compiled family or
-#'   prior keyword to an already-built INLA executable. All non-LAvM arguments
-#'   retain INLA's own matching and evaluation rules.
+#'   as `inla()`. Use `INLAcircular::inla()` to select this function explicitly.
+#'   The LAvM likelihood is implemented using INLA's compiled `cloglike`
+#'   interface; users supply `family = "lavm"` and an ordinary numeric response.
+#'   All non-LAvM arguments retain INLA's own matching and evaluation rules.
+#'
+#'   Supply circular responses in radians on the principal interval
+#'   `(-pi, pi)`. The likelihood does not wrap angles from other intervals.
+#'   For example, wrap a numeric vector with `x <- atan2(sin(x), cos(x))`.
+#'   The scaled logit and scaled probit links require values strictly inside
+#'   the interval, so choose a suitable reference direction when observations
+#'   lie at its endpoints.
+#'
+#'   `control.family$link` is `"inverse.tangent"` (the default),
+#'   `"scaled.logit"`, or `"scaled.probit"`.
 #'
 #'   Within `hyper$kappa`, `initial` is on the internal `log(kappa)` scale.
 #'   The defaults are `initial = 6`, `prior = "pc.vminf"`,
 #'   `param = c(0.5, 0.5)`, and `fixed = FALSE`.
+#'   The alternative prior is `"pc.vm0"`. In `param = c(u, alpha)`, both
+#'   values lie strictly between zero and one, and `u` is a threshold for
+#'   the mean resultant length `A(kappa) = I1(kappa) / I0(kappa)`. The PC rate
+#'   is calibrated using `P(A(kappa) > u) = alpha` under the standalone law.
+#'   The standalone `pc.vminf` law has an atom at zero; model fitting uses
+#'   only its continuous component on the finite `log(kappa)` scale.
+#'   Therefore this input calibrates the fitted prior's rate rather than
+#'   retaining a discrete zero-concentration state. Standalone PC-prior
+#'   d/p/q/r functions instead take `lambda` directly.
+#'   With `fixed = TRUE`, `log(kappa)` is fixed at `initial`.
 #'
 #'   When multiple families are requested and at least one is `"lavm"`, the
 #'   formula response must evaluate to a matrix, data frame, or list with one
-#'   component per family. LAvM components are converted with
-#'   `INLA::inla.mdata()`; other families and controls are retained.
+#'   component per family. Response preparation is automatic; other families
+#'   and controls are retained.
 #'
 #'   For any call containing LAvM, missing `control.inla$cmin` and
 #'   `control.inla$compute.initial.values` fields are filled with `0` and
@@ -150,26 +170,26 @@
 #'   concentration summaries and marginals are normally transformed from
 #'   internal `log(kappa)` to natural-scale `kappa` and renamed.
 #'
-#'   For a literal namespaced `INLA::inla()` call, construct the external
-#'   likelihood explicitly with [lavm.cloglike()], convert the response with
-#'   `INLA::inla.mdata()`, and use `family = "cloglike"`. A namespaced call
-#'   with `family = "lavm"` bypasses this compatibility layer.
+#'   A namespaced `INLA::inla()` call bypasses this compatibility layer. Use
+#'   `INLAcircular::inla(..., family = "lavm")` for the interface documented
+#'   here. See `vignette("INLAcircular-guide", package = "INLAcircular")`
+#'   for a complete modelling workflow.
 #'
 #' @return The fitted object returned by `INLA::inla()`, augmented as described
 #'   in Details when LAvM is requested.
-#' @seealso [lavm.cloglike()], [inlacc()]
+#' @seealso [inlacc()], [likelihood()]
 #' @export
 #' @examples
 #' if (requireNamespace("INLA", quietly = TRUE)) {
 #'   set.seed(1)
 #'   n <- 30
 #'   z <- rnorm(n)
-#'   y <- rlavm(n, eta = 1 + 1.5 * z, kappa = 100)
+#'   x <- rlavm(n, eta = 1 + 1.5 * z, kappa = 100)
 #'
 #'   fit <- INLAcircular::inla(
-#'     y ~ z,
+#'     x ~ z,
 #'     family = "lavm",
-#'     data = data.frame(y = y, z = z),
+#'     data = data.frame(x = x, z = z),
 #'     num.threads = "2:1",
 #'     control.family = list(
 #'       link = "inverse.tangent",

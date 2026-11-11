@@ -12,7 +12,7 @@
 #'   `"lavm"` for the package's link-adjusted von Mises likelihood. Other
 #'   family names are passed to `INLA::inla()`.
 #' @param family.setting Optional per-block INLA `control.family` list. For an
-#'   LAvM block, use `link` and `hyper$kappa`; see [lavm.cloglike()].
+#'   LAvM block, use `link` and `hyper$kappa`; see [inla()].
 #'
 #' @details All blocks supplied to one [inlacc()] call share the rows of a
 #' single data frame. Their order determines the stacking order and, for an
@@ -25,7 +25,7 @@
 #' @seealso [inlacc()], [intercept()], [covariate()], [index()]
 #' @examples
 #' block <- likelihood(
-#'   angle ~ intercept(name = "alpha0", mean = 0, sd = 2) +
+#'   x ~ intercept(name = "alpha0", mean = 0, sd = 2) +
 #'     covariate(z, name = "alpha_z", mean = 0, sd = 1),
 #'   family = "lavm",
 #'   family.setting = list(
@@ -125,12 +125,12 @@ intercept <- function(name = NULL, mean = NULL, sd = NULL) {
 #'   family = "gaussian"
 #' )
 #'
-#' # In a joint model, `angle` is copied automatically because it is another
+#' # In a joint model, `x` is copied automatically because it is another
 #' # likelihood block's response. Use predictor = TRUE to make that explicit.
 #' likelihood(
 #'   y ~ covariate(
-#'     angle,
-#'     name = "beta_angle_predictor",
+#'     x,
+#'     name = "beta_x",
 #'     mean = 0,
 #'     sd = 1,
 #'     initial = 0,
@@ -179,7 +179,7 @@ covariate <- function(var, name = NULL, mean = NULL, sd = NULL, initial = NULL, 
 #' hour_index <- index(
 #'   var = "hour_effect",
 #'   data.id = c(1, 2, 2, 4),
-#'   process.id = 1:4
+#'   process.id = 1:24
 #' )
 #' @export
 index <- function(var, data.id, process.id = NULL) {

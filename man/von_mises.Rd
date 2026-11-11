@@ -53,11 +53,11 @@ where \eqn{I_0\left(\kappa\right)} is the modified Bessel function of the first 
 rvm(10, mu = pi/2, kappa = 5)
 
 # Calculate the density at specific points
-x_grid <- seq(-pi, pi, length.out = 100)
-densities <- dvm(x_grid, mu = 0, kappa = 2)
+x <- seq(-pi, pi, length.out = 100)
+densities <- dvm(x, mu = 0, kappa = 2)
 
 # Plot the density curve
-plot(x_grid, densities, type = "l", main = "von Mises Density (kappa = 2)",
+plot(x, densities, type = "l", main = "von Mises Density (kappa = 2)",
      xlab = "Angle", ylab = "Density")
 
 # Calculate the cumulative probability up to pi/2

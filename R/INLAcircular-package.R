@@ -25,8 +25,14 @@
 #'     structured latent effects.
 #' }
 #'
-#' See the package guide, \code{vignette("INLAcircular-guide")}, for a
-#' complete workflow and function index.
+#' The tutorial and function reference share the source vignette
+#' \code{vignette("INLAcircular-guide", package = "INLAcircular")}.
+#' It provides installation instructions, complete workflows, interpretation,
+#' and reproducibility guidance. A rendered
+#' \href{https://github.com/XiangYEstats/INLAcircular/blob/main/output/pdf/INLAcircular-guide.pdf}{PDF guide}
+#' is available in the repository even when vignettes were not built during
+#' installation. Individual help topics document each function's arguments
+#' and return values; use \code{help(package = "INLAcircular")} to browse them.
 #'
 #' @docType package
 #' @name INLAcircular-package

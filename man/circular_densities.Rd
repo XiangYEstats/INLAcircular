@@ -58,14 +58,14 @@ This describes the point-mass limit; finite-parameter likelihoods should use
 \code{kappa < 1}.
 }
 \examples{
-angles <- seq(-pi, pi, length.out = 5)
-dcardioid(angles, mu = 0, kappa = 0.25)
-dwrappedcauchy(angles, mu = 0, kappa = 0.7)
+x <- seq(-pi, pi, length.out = 5)
+dcardioid(x, mu = 0, kappa = 0.25)
+dwrappedcauchy(x, mu = 0, kappa = 0.7)
 
 # Short aliases give the same results.
 identical(
-  dcard(angles, mu = 0, kappa = 0.25),
-  dcardioid(angles, mu = 0, kappa = 0.25)
+  dcard(x, mu = 0, kappa = 0.25),
+  dcardioid(x, mu = 0, kappa = 0.25)
 )
 
 }

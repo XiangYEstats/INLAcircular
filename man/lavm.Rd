@@ -67,11 +67,11 @@ The corresponding density function for the Link-Adjusted von Mises (LAvM) distri
 rlavm(10, eta = 1.5, kappa = 3)
 
 # Calculate the density at specific points
-x_grid <- seq(-pi, pi, length.out = 100)
-densities <- dlavm(x_grid, eta = 1.5, kappa = 3)
+x <- seq(-pi, pi, length.out = 100)
+densities <- dlavm(x, eta = 1.5, kappa = 3)
 
 # Plot the density curve
-plot(x_grid, densities, type = "l", main = "LAvM Density (eta = 1.5, kappa = 3)",
+plot(x, densities, type = "l", main = "LAvM Density (eta = 1.5, kappa = 3)",
      xlab = "Angle", ylab = "Density")
 
 # Calculate the cumulative probability up to pi/2

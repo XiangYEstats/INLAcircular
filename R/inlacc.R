@@ -48,25 +48,32 @@
 #'   overrides that block's `family.setting`; later blocks without an override
 #'   use their block-level setting. Use the nested outer list even for one
 #'   block. For LAvM, configure `link` and `hyper$kappa`; see
-#'   [lavm.cloglike()].
+#'   [inla()].
 #' @param control.fixed Optional INLA fixed-effect control list. The package
 #'   defaults are mean `0` and precision `0.001`. Named priors from
 #'   [intercept()] and [covariate()] override matching coefficients. Scalar
 #'   `mean`/`prec` values and INLA named lists with a `default` entry are both
 #'   supported; existing named entries are preserved.
-#' @param control.inla INLA approximation controls. The package default is
-#'   `list(cmin = 0, compute.initial.values = TRUE)`. A user-supplied value
-#'   replaces that complete list rather than being merged with it.
+#' @param control.inla INLA approximation controls. The defaults set `cmin`
+#'   to `0` and `compute.initial.values` to `TRUE`. A user-supplied list
+#'   replaces both defaults rather than being merged with them.
 #' @param metrics Logical; if `TRUE`, request CPO, DIC, WAIC, and INLA
 #'   configuration output. The default is `FALSE`.
 #' @param verbose Logical passed to `INLA::inla()`.
 #' @param ... Further arguments for `INLA::inla()`. Common choices include
-#'   `control.predictor`, `control.compute`, `control.mode`, `num.threads`, and
-#'   `blas.num.threads`. A `control.compute` list is merged field by field with
+#'   `control.predictor`, `control.compute`, `control.mode`, and `num.threads`.
+#'   A `control.compute` list is merged field by field with
 #'   the settings implied by `metrics`; other named arguments replace or add
 #'   call entries.
 #'
 #' @details
+#' LAvM responses must be numeric angles in radians on the principal interval
+#' `(-pi, pi)`; see [inla()] for angle preparation and likelihood controls.
+#' BLAS thread count is an INLA session option. Set it separately when needed:
+#' \preformatted{
+#' INLA::inla.setOption(blas.num.threads = 1L)
+#' }
+#'
 #' Each formula response must be a single named column of `data`. Ordinary
 #' numeric right-hand-side terms become block-specific fixed effects. Use
 #' [intercept()] and [covariate()] for stable names or local priors. A bare
@@ -75,10 +82,10 @@
 #' `f()`; write `f(...)`, not `INLA::f(...)`, because the assembler recognizes
 #' the bare call while preprocessing indices.
 #'
-#' A discovered `f()` index is read from `data`, supplied through
-#' `latent.index`, or generated as `seq_len(nrow(data))`. A non-`NULL`
-#' `process.id` is injected as the term's `values` vector when `var` matches
-#' the first `f()` argument, replacing an existing `values` argument. See
+#' A named `f()` index is read from `data` or supplied through `latent.index`.
+#' If neither is present, the index numbers the data rows from 1. When `var`
+#' matches the first `f()` argument, a supplied `process.id` replaces the
+#' term's `values` vector. See
 #' [index()] for first-, group-, replicate-, and likelihood-index mappings.
 #'
 #' A response used directly as a bare term, or as
@@ -109,21 +116,21 @@
 #'   from `log(kappa)` to natural-scale `kappa` and renamed.
 #'
 #' @seealso [likelihood()], [intercept()], [covariate()], [index()],
-#'   [LKJcc()], [lavm.cloglike()], [summary.inlacc()]
+#'   [LKJcc()], [inla()], [summary.inlacc()]
 #' @examples
 #' if (requireNamespace("INLA", quietly = TRUE)) {
 #'   set.seed(1)
 #'   z <- rnorm(30)
-#'   angle <- rlavm(30, eta = 0.5 + z, kappa = 10)
-#'   angle_model <- likelihood(
-#'     angle ~ intercept(name = "alpha0", mean = 0, sd = 2) +
+#'   x <- rlavm(30, eta = 0.5 + z, kappa = 10)
+#'   x_model <- likelihood(
+#'     x ~ intercept(name = "alpha0", mean = 0, sd = 2) +
 #'       covariate(z, name = "alpha_z", mean = 0, sd = 1),
 #'     family = "lavm"
 #'   )
 #'
 #'   fit <- inlacc(
-#'     model = angle_model,
-#'     data = data.frame(angle = angle, z = z),
+#'     model = x_model,
+#'     data = data.frame(x = x, z = z),
 #'     num.threads = "2:1"
 #'   )
 #'   summary(fit)

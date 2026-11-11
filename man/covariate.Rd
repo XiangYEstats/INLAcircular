@@ -65,12 +65,12 @@ likelihood(
   family = "gaussian"
 )
 
-# In a joint model, `angle` is copied automatically because it is another
+# In a joint model, `x` is copied automatically because it is another
 # likelihood block's response. Use predictor = TRUE to make that explicit.
 likelihood(
   y ~ covariate(
-    angle,
-    name = "beta_angle_predictor",
+    x,
+    name = "beta_x",
     mean = 0,
     sd = 1,
     initial = 0,

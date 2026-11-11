@@ -74,14 +74,14 @@ NULL
 #' @aliases dcard dwc
 #'
 #' @examples
-#' angles <- seq(-pi, pi, length.out = 5)
-#' dcardioid(angles, mu = 0, kappa = 0.25)
-#' dwrappedcauchy(angles, mu = 0, kappa = 0.7)
+#' x <- seq(-pi, pi, length.out = 5)
+#' dcardioid(x, mu = 0, kappa = 0.25)
+#' dwrappedcauchy(x, mu = 0, kappa = 0.7)
 #'
 #' # Short aliases give the same results.
 #' identical(
-#'   dcard(angles, mu = 0, kappa = 0.25),
-#'   dcardioid(angles, mu = 0, kappa = 0.25)
+#'   dcard(x, mu = 0, kappa = 0.25),
+#'   dcardioid(x, mu = 0, kappa = 0.25)
 #' )
 #'
 #' @export
@@ -229,11 +229,11 @@ lavm.link <- function(type = "tan") {
 #' rvm(10, mu = pi/2, kappa = 5)
 #'
 #' # Calculate the density at specific points
-#' x_grid <- seq(-pi, pi, length.out = 100)
-#' densities <- dvm(x_grid, mu = 0, kappa = 2)
+#' x <- seq(-pi, pi, length.out = 100)
+#' densities <- dvm(x, mu = 0, kappa = 2)
 #'
 #' # Plot the density curve
-#' plot(x_grid, densities, type = "l", main = "von Mises Density (kappa = 2)",
+#' plot(x, densities, type = "l", main = "von Mises Density (kappa = 2)",
 #'      xlab = "Angle", ylab = "Density")
 #'
 #' # Calculate the cumulative probability up to pi/2
@@ -364,11 +364,11 @@ rvm <- function(n, mu, kappa, len = 2048L) {
 #' rlavm(10, eta = 1.5, kappa = 3)
 #'
 #' # Calculate the density at specific points
-#' x_grid <- seq(-pi, pi, length.out = 100)
-#' densities <- dlavm(x_grid, eta = 1.5, kappa = 3)
+#' x <- seq(-pi, pi, length.out = 100)
+#' densities <- dlavm(x, eta = 1.5, kappa = 3)
 #'
 #' # Plot the density curve
-#' plot(x_grid, densities, type = "l", main = "LAvM Density (eta = 1.5, kappa = 3)",
+#' plot(x, densities, type = "l", main = "LAvM Density (eta = 1.5, kappa = 3)",
 #'      xlab = "Angle", ylab = "Density")
 #'
 #' # Calculate the cumulative probability up to pi/2

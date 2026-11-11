@@ -45,7 +45,7 @@ the component index is generated from likelihood order. See \code{\link[=LKJcc]{
 hour_index <- index(
   var = "hour_effect",
   data.id = c(1, 2, 2, 4),
-  process.id = 1:4
+  process.id = 1:24
 )
 }
 \seealso{

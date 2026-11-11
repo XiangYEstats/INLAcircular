@@ -223,11 +223,11 @@
   )
 }
 
-#' Define the compiled LAvM cloglike for direct R-INLA fitting
+#' Construct the compiled LAvM likelihood object
 #'
-#' Construct the custom likelihood object needed by a literal
-#' `INLA::inla(..., family = "cloglike")` call. The convenience [inla()]
-#' function and [inlacc()] call this constructor internally.
+#' Technical reference for the likelihood constructor used internally by
+#' [inla()] and [inlacc()]. For model fitting, use `family = "lavm"` with
+#' either of those functions; response preparation is automatic.
 #'
 #' @param family.setting A list of controls for the LAvM likelihood. `link` is
 #'   `"inverse.tangent"` (default), `"scaled.logit"`, or `"scaled.probit"`.
@@ -258,29 +258,8 @@
 #'   compiled likelihood and prior use a working theta restricted to
 #'   `[-30, 30]`.
 #'
-#'   For a direct fit, convert the response with `INLA::inla.mdata()`, use
-#'   `family = "cloglike"`, and pass the returned object as
-#'   `control.family = list(cloglike = object)`. A literal
-#'   `INLA::inla(..., family = "lavm")` does not select this package's custom
-#'   likelihood or priors.
 #' @return An INLA cloglike object.
 #' @seealso [inla()], [inlacc()]
-#' @examples
-#' if (requireNamespace("INLA", quietly = TRUE)) {
-#'   set.seed(1)
-#'   z <- seq(-1, 1, length.out = 30)
-#'   y <- rlavm(length(z), eta = 0.5 + z, kappa = 50)
-#'   y_lavm <- INLA::inla.mdata(y)
-#'   cloglike <- lavm.cloglike()
-#'   fit <- INLA::inla(
-#'     y_lavm ~ z,
-#'     family = "cloglike",
-#'     data = list(y_lavm = y_lavm, z = z),
-#'     control.family = list(cloglike = cloglike),
-#'     num.threads = "2:1"
-#'   )
-#'   fit$summary.fixed
-#' }
 #' @export
 lavm.cloglike <- function(family.setting = NULL) {
   .define_lavm_cloglike(.parse_lavm_family_setting(family.setting))
