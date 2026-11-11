@@ -1756,11 +1756,11 @@ correlation matrix. The example above has this all-free form.</p>
 <span id="cb37-9"><a href="#cb37-9" tabindex="-1"></a></span>
 <span id="cb37-10"><a href="#cb37-10" tabindex="-1"></a>sd_mode</span>
 <span id="cb37-11"><a href="#cb37-11" tabindex="-1"></a><span class="co">#&gt; Theta1 for i Theta2 for i </span></span>
-<span id="cb37-12"><a href="#cb37-12" tabindex="-1"></a><span class="co">#&gt;    0.5272970    0.6587168</span></span>
+<span id="cb37-12"><a href="#cb37-12" tabindex="-1"></a><span class="co">#&gt;    0.5267457    0.6576026</span></span>
 <span id="cb37-13"><a href="#cb37-13" tabindex="-1"></a>correlation_mode</span>
 <span id="cb37-14"><a href="#cb37-14" tabindex="-1"></a><span class="co">#&gt;           [,1]      [,2]</span></span>
-<span id="cb37-15"><a href="#cb37-15" tabindex="-1"></a><span class="co">#&gt; [1,] 1.0000000 0.4311846</span></span>
-<span id="cb37-16"><a href="#cb37-16" tabindex="-1"></a><span class="co">#&gt; [2,] 0.4311846 1.0000000</span></span></code></pre></div>
+<span id="cb37-15"><a href="#cb37-15" tabindex="-1"></a><span class="co">#&gt; [1,] 1.0000000 0.4254074</span></span>
+<span id="cb37-16"><a href="#cb37-16" tabindex="-1"></a><span class="co">#&gt; [2,] 0.4254074 1.0000000</span></span></code></pre></div>
 <p>For a mixture of free and fixed scales, reconstruct the complete SD
 vector before extracting the correlation parameters. The following code
 also works for the all-free example above:</p>
@@ -1846,14 +1846,14 @@ every returned row is a new observation.</p>
 <span id="cb42-3"><a href="#cb42-3" tabindex="-1"></a>eta_y <span class="ot">&lt;-</span> joint_fit<span class="sc">$</span>summary.linear.predictor[n <span class="sc">+</span> <span class="fu">seq_len</span>(n), ]</span>
 <span id="cb42-4"><a href="#cb42-4" tabindex="-1"></a><span class="fu">head</span>(eta_x[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;0.025quant&quot;</span>, <span class="st">&quot;0.975quant&quot;</span>)], <span class="dv">3</span>)</span>
 <span id="cb42-5"><a href="#cb42-5" tabindex="-1"></a><span class="co">#&gt;                     mean         sd 0.025quant 0.975quant</span></span>
-<span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.0013754 0.02445230  0.9533766  1.0494484</span></span>
-<span id="cb42-7"><a href="#cb42-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.2169077 0.02508145 -0.2660945 -0.1675544</span></span>
-<span id="cb42-8"><a href="#cb42-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  0.7936971 0.02436430  0.7458048  0.8415329</span></span>
+<span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.0013749 0.02445010  0.9533804  1.0494435</span></span>
+<span id="cb42-7"><a href="#cb42-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.2169085 0.02507923 -0.2660910 -0.1675595</span></span>
+<span id="cb42-8"><a href="#cb42-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  0.7936974 0.02436210  0.7458094  0.8415288</span></span>
 <span id="cb42-9"><a href="#cb42-9" tabindex="-1"></a><span class="fu">head</span>(eta_y[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>)], <span class="dv">3</span>)</span>
 <span id="cb42-10"><a href="#cb42-10" tabindex="-1"></a><span class="co">#&gt;                    mean         sd</span></span>
-<span id="cb42-11"><a href="#cb42-11" tabindex="-1"></a><span class="co">#&gt; Predictor.121 1.7310012 0.03418191</span></span>
-<span id="cb42-12"><a href="#cb42-12" tabindex="-1"></a><span class="co">#&gt; Predictor.122 0.8814658 0.03538820</span></span>
-<span id="cb42-13"><a href="#cb42-13" tabindex="-1"></a><span class="co">#&gt; Predictor.123 1.5861941 0.03166686</span></span></code></pre></div>
+<span id="cb42-11"><a href="#cb42-11" tabindex="-1"></a><span class="co">#&gt; Predictor.121 1.7310023 0.03418168</span></span>
+<span id="cb42-12"><a href="#cb42-12" tabindex="-1"></a><span class="co">#&gt; Predictor.122 0.8814635 0.03538795</span></span>
+<span id="cb42-13"><a href="#cb42-13" tabindex="-1"></a><span class="co">#&gt; Predictor.123 1.5861952 0.03166662</span></span></code></pre></div>
 <p>For the inverse-tangent LAvM link, <code>2 * atan(eta)</code> is the
 conditional location/median parameter. Transforming posterior quantiles
 of <code>eta</code> gives quantiles of this parameter. It is not the
@@ -1864,9 +1864,9 @@ interval for a new angle.</p>
 <span id="cb43-3"><a href="#cb43-3" tabindex="-1"></a>)</span>
 <span id="cb43-4"><a href="#cb43-4" tabindex="-1"></a><span class="fu">head</span>(location, <span class="dv">3</span>)</span>
 <span id="cb43-5"><a href="#cb43-5" tabindex="-1"></a><span class="co">#&gt;               0.025quant   0.5quant 0.975quant</span></span>
-<span id="cb43-6"><a href="#cb43-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.5230692  1.5721576  1.6190423</span></span>
-<span id="cb43-7"><a href="#cb43-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.5201363 -0.4272533 -0.3320245</span></span>
-<span id="cb43-8"><a href="#cb43-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  1.2816215  1.3417840  1.3991158</span></span></code></pre></div>
+<span id="cb43-6"><a href="#cb43-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.5230732  1.5721571  1.6190376</span></span>
+<span id="cb43-7"><a href="#cb43-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.5201297 -0.4272548 -0.3320346</span></span>
+<span id="cb43-8"><a href="#cb43-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  1.2816275  1.3417843  1.3991110</span></span></code></pre></div>
 <p>When data were rotated before fitting, add the recorded reference
 direction and wrap again to report locations in the original
 coordinates. Inspect <code>summary.linear.predictor</code> for
@@ -1963,7 +1963,7 @@ creates the hourly node IDs expected by <code>x_model</code>:</p>
 <span id="cb47-13"><a href="#cb47-13" tabindex="-1"></a><span class="fu">round</span>(wind_fit<span class="sc">$</span>summary.hyperpar[, columns], <span class="dv">3</span>)</span>
 <span id="cb47-14"><a href="#cb47-14" tabindex="-1"></a><span class="co">#&gt;                                 mean      sd 0.025quant 0.975quant</span></span>
 <span id="cb47-15"><a href="#cb47-15" tabindex="-1"></a><span class="co">#&gt; kappa for lavm observations  692.214  36.298    623.341    765.865</span></span>
-<span id="cb47-16"><a href="#cb47-16" tabindex="-1"></a><span class="co">#&gt; Precision for hour_effect   1013.198 316.707    516.694   1750.312</span></span></code></pre></div>
+<span id="cb47-16"><a href="#cb47-16" tabindex="-1"></a><span class="co">#&gt; Precision for hour_effect   1013.198 316.709    516.695   1750.319</span></span></code></pre></div>
 <p>This is a small demonstration of the interface, not a complete
 analysis of weather variability. The repository’s
 <code>tests/manual/06-wind-new-york.R</code> contains the larger joint
@@ -2274,11 +2274,13 @@ license</h1>
 framework and the PC-prior methods:</p>
 <div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" tabindex="-1"></a><span class="fu">citation</span>(<span class="st">&quot;INLAcircular&quot;</span>)</span>
 <span id="cb53-2"><a href="#cb53-2" tabindex="-1"></a><span class="fu">toBibtex</span>(<span class="fu">citation</span>(<span class="st">&quot;INLAcircular&quot;</span>))</span></code></pre></div>
-<p>The method references are Ye, Van Niekerk, and Rue’s <a href="https://doi.org/10.48550/arXiv.2602.08413">circular regression
-framework</a> and <a href="https://doi.org/10.1177/1471082X261453677">PC
-priors for circular models</a>. The installed <code>CITATION</code> file
-is the maintained source for their bibliographic entries. Cite the
-software version used as well as the applicable methods.</p>
+<p>The method references are Ye, Van Niekerk, and Rue’s <a href="https://doi.org/10.1093/jrsssc/qlag056">circular regression
+framework</a> in <em>Journal of the Royal Statistical Society Series C:
+Applied Statistics</em> and <a href="https://doi.org/10.1177/1471082X261453677">PC priors for circular
+models</a> in <em>Statistical Modelling</em>. The installed
+<code>CITATION</code> file is the maintained source for their
+bibliographic entries. Cite the software version used as well as the
+applicable methods.</p>
 <p>INLAcircular is distributed under GNU GPL version 3 or later, as
 recorded in <code>DESCRIPTION</code>. The full license and third-party
 notices are available through the repository and in an installed

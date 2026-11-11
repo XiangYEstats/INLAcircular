@@ -1718,8 +1718,10 @@ toBibtex(citation("INLAcircular"))
 ```
 
 The method references are Ye, Van Niekerk, and Rue's
-[circular regression framework](https://doi.org/10.48550/arXiv.2602.08413)
-and [PC priors for circular models](https://doi.org/10.1177/1471082X261453677).
+[circular regression framework](https://doi.org/10.1093/jrsssc/qlag056)
+in *Journal of the Royal Statistical Society Series C: Applied Statistics*
+and [PC priors for circular models](https://doi.org/10.1177/1471082X261453677)
+in *Statistical Modelling*.
 The installed `CITATION` file is the maintained source for their bibliographic
 entries. Cite the software version used as well as the applicable methods.
 

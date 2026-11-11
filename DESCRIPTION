@@ -33,7 +33,7 @@ Authors@R: c(person(
 Description: Provides a Bayesian regression framework for joint models with
     circular responses and covariates using integrated nested Laplace
     approximations, following Ye, Van Niekerk and Rue (2026)
-    <doi:10.48550/arXiv.2602.08413>. The package supports link-adjusted von
+    <doi:10.1093/jrsssc/qlag056>. The package supports link-adjusted von
     Mises likelihoods, shared latent predictors, structured latent effects, and optional
     LKJ-based multivariate covariance models. It also provides compiled
     circular densities and d/p/q/r penalized-complexity priors for von Mises,

@@ -1,15 +1,16 @@
 bibentry(
-  bibtype = "Misc",
-  title = "A Bayesian regression framework for circular models with INLA",
+  bibtype = "Article",
+  title = "A Bayesian regression framework for circular models with {INLA}",
   author = c(
     person("Xiang", "Ye"),
-    person("Janet", "Van Niekerk"),
-    person("Haavard", "Rue")
+    person("Janet", "van Niekerk"),
+    person("H\u00e5vard", "Rue")
   ),
+  journal = "Journal of the Royal Statistical Society Series C: Applied Statistics",
   year = "2026",
-  doi = "10.48550/arXiv.2602.08413",
-  url = "https://arxiv.org/abs/2602.08413",
-  note = "arXiv preprint",
+  pages = "qlag056",
+  doi = "10.1093/jrsssc/qlag056",
+  url = "https://doi.org/10.1093/jrsssc/qlag056",
   header = "To cite the circular regression framework implemented in INLAcircular:"
 )
 
