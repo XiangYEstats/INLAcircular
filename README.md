@@ -4,8 +4,10 @@
 
 ## Documentation
 
+Start with the quick example below, then use the detailed guide for data preparation, priors, structured effects, joint models, LKJ effects, and interpreting results. The guide is the repository's user manual and the source of the installed R vignette.
+
 - [User guide (PDF)](output/pdf/INLAcircular-guide.pdf): installation, complete examples, input and output conventions, priors, troubleshooting, and reproducibility.
-- [User guide (HTML download)](https://raw.githubusercontent.com/XiangYEstats/INLAcircular/main/output/html/INLAcircular-guide.html): save the file and open it in a browser.
+- [User guide (HTML)](output/html/INLAcircular-guide.html): on GitHub, download the raw file and open it in a browser.
 - [Function reference (PDF)](output/pdf/INLAcircular-reference.pdf): the manual generated from the same help files used by R and CRAN.
 - [Guide source](vignettes/INLAcircular-guide.Rmd) and [longer developer examples](tests/manual/README.md).
 
@@ -18,17 +20,17 @@ help(package = "INLAcircular")
 
 ## Installation
 
-The core package requires R >= 4.1.0. For a development installation:
+The core package requires R >= 4.1.0. Install the released version from [CRAN](https://cran.r-project.org/web/packages/INLAcircular/index.html):
+
+```r
+install.packages("INLAcircular")
+```
+
+For the development version from GitHub:
 
 ```r
 install.packages("remotes")
 remotes::install_github("XiangYEstats/INLAcircular")
-```
-
-After a version is published on CRAN, install it with:
-
-```r
-install.packages("INLAcircular")
 ```
 
 The numerical functions do not require INLA. Model fitting requires optional INLA >= 25.08.21, installed separately from its stable repository:
@@ -67,6 +69,7 @@ ppc.vm0(qpc.vm0(0.5, lambda = 2), lambda = 2)  # approximately 0.5
 With INLA installed, run a complete circular regression:
 
 ```r
+library(INLAcircular)
 set.seed(1)
 z <- rnorm(60)
 x <- rlavm(60, eta = 0.5 + z, kappa = 50)
@@ -76,7 +79,24 @@ fit <- inlacc(x_model, data = dat, num.threads = "2:1")
 summary(fit)
 ```
 
-The result contains posterior coefficients on the predictor scale and concentration on the natural `kappa` scale. Supply circular observations in radians inside `(-pi, pi)`; see the guide for wrapping, reference directions, joint models, and output interpretation.
+The simulation uses an intercept of `0.5`, a coefficient of `1` for `z`, and concentration `kappa = 50`. The fitted values will vary around these values. The result contains posterior coefficients on the predictor scale and concentration on the natural `kappa` scale.
+
+For a single response, the package also provides an `inla()` interface. Using the same `dat`:
+
+```r
+fit_inla <- INLAcircular::inla(
+  x ~ z,
+  family = "lavm",
+  data = dat,
+  num.threads = "2:1"
+)
+fit_inla$summary.fixed
+fit_inla$summary.hyperpar
+```
+
+`INLAcircular::inla()` selects the package's compatibility layer explicitly and prepares the circular response automatically. Use `inlacc()` to assemble likelihood blocks, copied predictors, and joint models as shown in the guide.
+
+Supply circular observations as `x` in radians inside `(-pi, pi)`. With the default inverse-tangent link, `2 * atan(eta)` is the circular location parameter corresponding to linear predictor `eta`. See the guide for wrapping, reference directions, and uncertainty summaries.
 
 ## Included wind data
 
@@ -86,6 +106,18 @@ dim(wind_newyork)
 ```
 
 The dataset contains 8,759 hourly climate-normal records for JFK International Airport, with wind direction, speed, temperature, and calendar fields. Its timestamps use 2010 as a reference calendar, not an observation year. The guide documents the actual columns and prepares a runnable example, including `hour + 1L` for latent node IDs `1:24`.
+
+For example, construct the hourly mapping for an `f(hour_effect, ...)` term with:
+
+```r
+hour_index <- index(
+  "hour_effect",
+  data.id = wind_newyork$hour + 1L,
+  process.id = 1:24
+)
+```
+
+Pass this mapping as `latent.index = hour_index` when fitting the corresponding model with `inlacc()`. Build `data.id` from the same rows, in the same order, as the fitting data; recreate the mapping after subsetting. The guide includes the complete cyclic model. The original wind-speed and temperature units and the climate-normal baseline period still need to be established from the upstream source before physical interpretation.
 
 ## Build the documentation and run checks
 

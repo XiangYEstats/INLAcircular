@@ -556,7 +556,7 @@ memory.</p>
 </div>
 <div id="install-and-load" class="section level2" number="2.2">
 <h2><span class="header-section-number">2.2</span> Install and load</h2>
-<p>After the package is published on CRAN, install it with:</p>
+<p>Install the released version from <a href="https://cran.r-project.org/web/packages/INLAcircular/index.html">CRAN</a>:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;INLAcircular&quot;</span>)</span></code></pre></div>
 <p>The installation above provides the circular distributions and
 PC-prior functions without installing INLA. For model fitting, install
@@ -569,7 +569,7 @@ separately:</p>
 <span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>    <span class="at">INLA =</span> <span class="st">&quot;https://inla.r-inla-download.org/R/stable&quot;</span></span>
 <span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  )</span>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>)</span></code></pre></div>
-<p>For a development installation from GitHub:</p>
+<p>For the development version from GitHub:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;remotes&quot;</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="st">&quot;XiangYEstats/INLAcircular&quot;</span></span>
@@ -1762,11 +1762,11 @@ correlation matrix. The example above has this all-free form.</p>
 <span id="cb37-9"><a href="#cb37-9" tabindex="-1"></a></span>
 <span id="cb37-10"><a href="#cb37-10" tabindex="-1"></a>sd_mode</span>
 <span id="cb37-11"><a href="#cb37-11" tabindex="-1"></a><span class="co">#&gt; Theta1 for i Theta2 for i </span></span>
-<span id="cb37-12"><a href="#cb37-12" tabindex="-1"></a><span class="co">#&gt;    0.5272961    0.6587163</span></span>
+<span id="cb37-12"><a href="#cb37-12" tabindex="-1"></a><span class="co">#&gt;    0.5267457    0.6576025</span></span>
 <span id="cb37-13"><a href="#cb37-13" tabindex="-1"></a>correlation_mode</span>
 <span id="cb37-14"><a href="#cb37-14" tabindex="-1"></a><span class="co">#&gt;           [,1]      [,2]</span></span>
-<span id="cb37-15"><a href="#cb37-15" tabindex="-1"></a><span class="co">#&gt; [1,] 1.0000000 0.4311855</span></span>
-<span id="cb37-16"><a href="#cb37-16" tabindex="-1"></a><span class="co">#&gt; [2,] 0.4311855 1.0000000</span></span></code></pre></div>
+<span id="cb37-15"><a href="#cb37-15" tabindex="-1"></a><span class="co">#&gt; [1,] 1.0000000 0.4254072</span></span>
+<span id="cb37-16"><a href="#cb37-16" tabindex="-1"></a><span class="co">#&gt; [2,] 0.4254072 1.0000000</span></span></code></pre></div>
 <p>For a mixture of free and fixed scales, reconstruct the complete SD
 vector before extracting the correlation parameters. The following code
 also works for the all-free example above:</p>
@@ -1852,14 +1852,14 @@ every returned row is a new observation.</p>
 <span id="cb42-3"><a href="#cb42-3" tabindex="-1"></a>eta_y <span class="ot">&lt;-</span> joint_fit<span class="sc">$</span>summary.linear.predictor[n <span class="sc">+</span> <span class="fu">seq_len</span>(n), ]</span>
 <span id="cb42-4"><a href="#cb42-4" tabindex="-1"></a><span class="fu">head</span>(eta_x[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;0.025quant&quot;</span>, <span class="st">&quot;0.975quant&quot;</span>)], <span class="dv">3</span>)</span>
 <span id="cb42-5"><a href="#cb42-5" tabindex="-1"></a><span class="co">#&gt;                     mean         sd 0.025quant 0.975quant</span></span>
-<span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.0013781 0.02444892  0.9533860  1.0494443</span></span>
-<span id="cb42-7"><a href="#cb42-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.2169090 0.02507789 -0.2660888 -0.1675627</span></span>
-<span id="cb42-8"><a href="#cb42-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  0.7936965 0.02436094  0.7458109  0.8415257</span></span>
+<span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.0013749 0.02445010  0.9533804  1.0494435</span></span>
+<span id="cb42-7"><a href="#cb42-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.2169085 0.02507923 -0.2660910 -0.1675595</span></span>
+<span id="cb42-8"><a href="#cb42-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  0.7936974 0.02436210  0.7458094  0.8415288</span></span>
 <span id="cb42-9"><a href="#cb42-9" tabindex="-1"></a><span class="fu">head</span>(eta_y[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>)], <span class="dv">3</span>)</span>
 <span id="cb42-10"><a href="#cb42-10" tabindex="-1"></a><span class="co">#&gt;                    mean         sd</span></span>
-<span id="cb42-11"><a href="#cb42-11" tabindex="-1"></a><span class="co">#&gt; Predictor.121 1.7310013 0.03418374</span></span>
-<span id="cb42-12"><a href="#cb42-12" tabindex="-1"></a><span class="co">#&gt; Predictor.122 0.8814668 0.03539017</span></span>
-<span id="cb42-13"><a href="#cb42-13" tabindex="-1"></a><span class="co">#&gt; Predictor.123 1.5861926 0.03166818</span></span></code></pre></div>
+<span id="cb42-11"><a href="#cb42-11" tabindex="-1"></a><span class="co">#&gt; Predictor.121 1.7310023 0.03418168</span></span>
+<span id="cb42-12"><a href="#cb42-12" tabindex="-1"></a><span class="co">#&gt; Predictor.122 0.8814635 0.03538795</span></span>
+<span id="cb42-13"><a href="#cb42-13" tabindex="-1"></a><span class="co">#&gt; Predictor.123 1.5861952 0.03166662</span></span></code></pre></div>
 <p>For the inverse-tangent LAvM link, <code>2 * atan(eta)</code> is the
 conditional location/median parameter. Transforming posterior quantiles
 of <code>eta</code> gives quantiles of this parameter. It is not the
@@ -1870,9 +1870,9 @@ interval for a new angle.</p>
 <span id="cb43-3"><a href="#cb43-3" tabindex="-1"></a>)</span>
 <span id="cb43-4"><a href="#cb43-4" tabindex="-1"></a><span class="fu">head</span>(location, <span class="dv">3</span>)</span>
 <span id="cb43-5"><a href="#cb43-5" tabindex="-1"></a><span class="co">#&gt;               0.025quant   0.5quant 0.975quant</span></span>
-<span id="cb43-6"><a href="#cb43-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.5230790  1.5721603  1.6190384</span></span>
-<span id="cb43-7"><a href="#cb43-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.5201257 -0.4272557 -0.3320408</span></span>
-<span id="cb43-8"><a href="#cb43-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  1.2816293  1.3417833  1.3991073</span></span></code></pre></div>
+<span id="cb43-6"><a href="#cb43-6" tabindex="-1"></a><span class="co">#&gt; Predictor.001  1.5230732  1.5721571  1.6190376</span></span>
+<span id="cb43-7"><a href="#cb43-7" tabindex="-1"></a><span class="co">#&gt; Predictor.002 -0.5201297 -0.4272548 -0.3320346</span></span>
+<span id="cb43-8"><a href="#cb43-8" tabindex="-1"></a><span class="co">#&gt; Predictor.003  1.2816275  1.3417843  1.3991110</span></span></code></pre></div>
 <p>When data were rotated before fitting, add the recorded reference
 direction and wrap again to report locations in the original
 coordinates. Inspect <code>summary.linear.predictor</code> for
@@ -1970,7 +1970,7 @@ creates the hourly node IDs expected by <code>x_model</code>:</p>
 <span id="cb47-14"><a href="#cb47-14" tabindex="-1"></a><span class="fu">round</span>(wind_fit<span class="sc">$</span>summary.hyperpar[, columns], <span class="dv">3</span>)</span>
 <span id="cb47-15"><a href="#cb47-15" tabindex="-1"></a><span class="co">#&gt;                                 mean      sd 0.025quant 0.975quant</span></span>
 <span id="cb47-16"><a href="#cb47-16" tabindex="-1"></a><span class="co">#&gt; kappa for lavm observations  692.214  36.298    623.341    765.865</span></span>
-<span id="cb47-17"><a href="#cb47-17" tabindex="-1"></a><span class="co">#&gt; Precision for hour_effect   1013.198 316.708    516.695   1750.318</span></span></code></pre></div>
+<span id="cb47-17"><a href="#cb47-17" tabindex="-1"></a><span class="co">#&gt; Precision for hour_effect   1013.198 316.709    516.695   1750.319</span></span></code></pre></div>
 <p>This is a small demonstration of the interface, not a complete
 analysis of weather variability. The repository’s
 <code>tests/manual/06-wind-new-york.R</code> contains the larger joint
